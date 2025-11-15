@@ -1,0 +1,53 @@
+import pygame
+
+COLLTYPE_DEFAULT = 0
+
+class Controller:
+    button_map = {
+    'a': 0,
+    'b': 1,
+    'x': 2,
+    'y': 3,
+    'rb': 5,
+    'lb': 4,
+    'select': 6,
+    'start': 7,
+    'xbox': 8,
+    'l3': 9,
+    'r3': 10,
+    }
+
+    axis_map = {
+    'lx': 0,
+    'ly': 1,
+    'lt': 2,
+    'rx': 3,
+    'ry': 4,
+    'rt': 5,
+    }
+
+    def __init__(self):
+
+        self.joystick = pygame.joystick.Joystick(0)
+
+    def get_left_stick(self):
+        xpos = self.joystick.get_axis(self.axis_map['lx'])
+        ypos = self.joystick.get_axis(self.axis_map['ly'])
+        return (xpos, ypos)
+
+    def get_right_trigger(self):
+        return self.joystick.get_axis(self.axis_map['rt']) > 0.5
+
+
+
+class Entity:
+    def draw(self):
+        pass
+    def update(self):
+        pass
+    def add_to_space(self, space):
+        space.add(self.body, self.shape)
+    def remove_from_space(self, space):
+        space.remove(self.body, self.shape)
+
+
