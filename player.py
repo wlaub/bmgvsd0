@@ -56,7 +56,7 @@ class Leg:
     def update(self):
         if self.active:
             dt = time.time()-self.active_time
-            t = dt*4
+            t = dt*2
 
             if t >= 1:
                 self.active = False
@@ -72,16 +72,20 @@ class Leg:
         self.active_time = time.time()
 
     def deactivate(self, other):
+        self.activate_target(Vec2d(self.x*2.5,0)+other.foot_body.position)
+
+    def activate_target(self, pos):
         self.active = True
         self.active_position = self.foot_body.position
-        self.active_direction = Vec2d(self.x*2.5,0)+(other.foot_body.position-self.foot_body.position)
+        self.active_direction = (pos-self.foot_body.position)
         self.active_time = time.time()
+
 
 
 
 class Player(Entity):
     def __init__(self, app, pos, m, r):
-        r = 5
+        r = 1
         self.app = app
         self.m = m
         self.r = r
@@ -175,7 +179,7 @@ class Player(Entity):
             new_angle = math.atan2(self.body.velocity.y, self.body.velocity.x)
             self.angle = new_angle
 
-        self.friction -=10
+        self.friction -=5
 
         for gun in self.guns:
             gun.update()
@@ -197,7 +201,83 @@ class Player(Entity):
         if stick_active:
             self.active_leg.foot_body.position += Vec2d(dx,dy)*10
             if not self.active_leg.active:
-                self.active_leg.activate(dx,dy)
+                if self.walking:
+                    if self.active_leg == self.left_leg:
+                        self.active_leg = self.right_leg
+                    else:
+                        self.active_leg = self.left_leg
+
+                left = self.left_leg.foot_body.position
+                right = self.right_leg.foot_body.position
+
+                aim = Vec2d(dx,dy)
+
+                if left.dot(aim) < right.dot(aim):
+                    self.active_leg = self.left_leg
+                    other_leg = self.right_leg
+                else:
+                    self.active_leg = self.right_leg
+                    other_leg = self.left_leg
+
+                pos = self.active_leg.foot_body.position
+                other_pos = other_leg.foot_body.position
+                x1, y1 = pos - other_pos
+                x2 = x1+dx
+                y2 = y1+dy
+                dr = abs(aim)
+                dr2 = dr*dr
+                D = x1*y2-x2*y1
+                r = 2*self.leg
+                dis = r*r*dr2-D*D
+                if dis < 0:
+                    print('beep')
+                    self.active_leg.activate(dx,dy)
+                elif True:
+                    x1,y1 = pos
+                    x0,y0 = other_pos
+                    R = self.leg*2
+                    c1 = dr2*x0
+                    c2 = abs(dx*R*dr)
+
+                    sgn = -1 if dy < 0 else 1
+
+                    cx1 = (c1-c2)/dr2
+                    cx2 = (c1+c2)/dr2
+                    cy1 = y0 + sgn*math.sqrt(R*R+2*x0*cx1 -x0*x0 - cx1*cx1)
+                    cy2 = y0 + sgn*math.sqrt(R*R+2*x0*cx2 -x0*x0 - cx2*cx2)
+
+
+                    p0 = Vec2d(cx1, cy1)
+                    p1 = Vec2d(cx2, cy2)
+
+                    if (p0-pos).dot(aim) > (p1-pos).dot(aim):
+                        self.active_leg.activate_target(p0)
+                    else:
+                        self.active_leg.activate_target(p1)
+
+
+                else:
+                    sgn = -1 if dy < 0 else 1
+                    c1 = D*dy
+                    c2 = sgn*dx*(dis)**0.5
+                    c3 = -D*dx
+                    c4 = abs(dy)*(dis)**0.5
+
+                    cx1 = (c1+c2)/(dr2)
+                    cy1 = (c3+c4)/(dr2)
+                    cx2 = (c1-c2)/(dr2)
+                    cy2 = (c3-c4)/(dr2)
+
+                    p0 = Vec2d(cx1, cy1)+other_pos
+                    p1 = Vec2d(cx2, cy2)+other_pos
+
+                    if (p0-pos).dot(aim) > (p1-pos).dot(aim):
+                        self.active_leg.activate_target(p0)
+                    else:
+                        self.active_leg.activate_target(p1)
+
+
+
                 self.walking = True
 
         self.active_leg.update()

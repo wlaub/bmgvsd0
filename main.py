@@ -64,10 +64,10 @@ class PhysicsDemo:
         for i in range(1):
             self.spawn()
 
-        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
-        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
-        self.add_entity(Wall(self, (0, self.h), (self.w, self.h)))
-        self.add_entity(Wall(self, (0, self.h), (0, 0)))
+#        self.add_entity(Wall(self, (0, 0), (self.w, 0)))
+#        self.add_entity(Wall(self, (self.w, 0), (self.w, self.h)))
+#        self.add_entity(Wall(self, (0, self.h), (self.w, self.h)))
+#        self.add_entity(Wall(self, (0, self.h), (0, 0)))
 
         self.running = True
 
@@ -112,8 +112,8 @@ class PhysicsDemo:
     def do_updates(self):
 
         dt = time.time()-self.last_spawn
-#        if dt > 0.1 + 0.01*len(self.tracker[Ball]):
-        self.spawn()
+        if dt > 0.1 + 0.01*len(self.tracker[Ball]):
+            self.spawn()
 
 
         for entity in self.entities:

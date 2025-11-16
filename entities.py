@@ -35,7 +35,7 @@ class Ball(Entity):
         delta = player.body.position-self.body.position
         delta /=abs(delta)
 #        self.body.velocity = delta*70
-        self.body.apply_force_at_local_point(delta*1000*self.m)
+        self.body.apply_force_at_local_point(delta*200*self.m)
 
         friction = self.body.velocity*-10*self.m
         self.body.apply_force_at_local_point(friction)
