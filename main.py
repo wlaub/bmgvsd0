@@ -41,8 +41,8 @@ class PhysicsDemo:
     def __init__(self):
 
         pygame.init()
-        self.w, self.h = 800, 600
-        self.screen = pygame.display.set_mode((self.w, self.h))
+        self.w, self.h = 400, 300
+        self.screen = pygame.display.set_mode((self.w*2, self.h*2))
         self.clock = pygame.time.Clock()
 
         self.draw_options = pygame_util.DrawOptions(self.screen)
@@ -87,7 +87,7 @@ class PhysicsDemo:
             y = self.h+margin
             x = (t-0.75)*4*(self.w+2*margin)-margin
 
-        r = 8+8*random.random()
+        r = 4+4*random.random()
         m = r*r/1.8
 
         self.add_entity(Ball(self, (x,y), m, r) )
@@ -96,10 +96,13 @@ class PhysicsDemo:
     def draw(self):
         self.screen.fill((255,255,255))
 
-#        for entity in self.entities:
-#            entity.draw()
+#        self.space.debug_draw(self.draw_options)
 
-        self.space.debug_draw(self.draw_options)
+        for entity in self.entities:
+            entity.draw()
+
+        hello = pygame.transform.scale(self.screen, (self.w*4, self.h*4))
+        self.screen.blit(hello, (0,0))
 
         pygame.display.flip()
 

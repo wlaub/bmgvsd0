@@ -41,6 +41,10 @@ class Controller:
 
 
 class Entity:
+    def __init__(self):
+        self.last_hit = 0
+        self.health = 1
+
     def draw(self):
         pass
     def update(self):
@@ -49,5 +53,8 @@ class Entity:
         space.add(self.body, self.shape)
     def remove_from_space(self, space):
         space.remove(self.body, self.shape)
+
+    def get_hit(self, now, dmg):
+      pass
 
 

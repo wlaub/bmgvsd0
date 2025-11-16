@@ -37,11 +37,11 @@ class Leg:
         knee_body.position = pos+Vec2d(x,l/2)
         self.app.space.add(knee_body)
 
-        self.c = pymunk.SlideJoint(self.parent_body, self.knee_body, (x,0), (0,0), l/2,l/2+1)
+        self.thigh = c = pymunk.SlideJoint(self.parent_body, self.knee_body, (x,0), (0,0), l/2,l/2+1)
 #        self.c = pymunk.SlideJoint(self.parent_body, self.foot_body, (x,0), (0,0), 0,l*2+1)
-        self.app.space.add(self.c)
-        self.c = pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
-        self.app.space.add(self.c)
+        self.app.space.add(c)
+        self.c =c= pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
+        self.app.space.add(c)
 #        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
         c = pymunk.DampedSpring(self.parent_body, self.foot_body,
                                 (0,-l), (0,0),
@@ -64,6 +64,14 @@ class Leg:
 
             self.foot_body.position = self.active_position+self.active_direction*t
 
+    def draw(self):
+
+        p0 = self.parent_body.position+self.thigh.anchor_a
+        p1 = self.foot_body.position
+
+        pygame.draw.line(self.app.screen, (0,0,0), p0, p1)
+
+
 
     def activate(self, dx, dy):
         self.active = True
@@ -85,6 +93,8 @@ class Leg:
 
 class Player(Entity):
     def __init__(self, app, pos, m, r):
+        super().__init__()
+        self.health = 3
         r = 1
         self.app = app
         self.m = m
@@ -93,7 +103,8 @@ class Player(Entity):
         body.position = Vec2d(*pos)
 
         self.w =w= 10*r
-        self.h =h= 30*r
+        self.h =h= 17*r
+        self.hips = r
 
         self.shape = pm.Poly(self.body, [
             (-w/2, -h+w),
@@ -108,10 +119,10 @@ class Player(Entity):
 
         self.feets = []
 
-        self.leg = leg = 20*r
+        self.leg = leg = 3*r
 
-        self.left_leg = Leg(self.app, self.body, pos, leg, (-w/2,0), m, 1)
-        self.right_leg = Leg(self.app, self.body, pos, leg, (w/2,0), m, 1)
+        self.left_leg = Leg(self.app, self.body, pos, leg, (-self.hips,0), m, 1)
+        self.right_leg = Leg(self.app, self.body, pos, leg, (self.hips,0), m, 1)
 
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         self.set_center_position()
@@ -131,7 +142,7 @@ class Player(Entity):
         self.angle = 0
 
         self.guns = []
-
+        self.guns.append(Sord(self.app, self, Vec2d(self.r*12,-5*self.r), self.r ))
 #        self.guns.append(FaceGun(self.app, r))
 
     def set_center_position(self):
@@ -156,16 +167,68 @@ class Player(Entity):
     def draw(self):
 
 
-        for body, poly in [(self.body, self.shape)]:
-            v = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
-            p = self.app.flipyv(v)
+        body = self.body
+        poly = self.shape
+        v = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
+#            p = self.app.flipyv(v)
+        p = v
 
-            ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
-            ps.append(ps[0])
-            ps = list(map(self.app.flipyv, ps))
-            color = (128,128,128)
-            pygame.draw.lines(self.app.screen, color, False, ps)
-            pygame.draw.polygon(self.app.screen, color, ps)
+#        ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
+#        ps.append(ps[0])
+#            ps = list(map(self.app.flipyv, ps))
+        color = (240,192,160)
+#        pygame.draw.polygon(self.app.screen, color, ps)
+#        pygame.draw.lines(self.app.screen, (0,0,0), False, ps)
+        pygame.draw.rect(self.app.screen, color,
+            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.w, self.w))
+            )
+
+        pygame.draw.rect(self.app.screen, (0,0,0),
+            pygame.Rect(p+Vec2d(-self.w/2-1, -self.h-1), (self.w+2, self.w+2)),
+            1
+            )
+
+        #hair
+        pygame.draw.rect(self.app.screen, (128,128,128),
+            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.r*5, self.r*3))
+            )
+        #eye
+        pygame.draw.rect(self.app.screen, (0,0,128),
+            pygame.Rect(p+Vec2d(self.r*4, -self.h+self.r*2), (self.r*2, self.r*2))
+            )
+
+
+
+
+        #body
+        pygame.draw.line(self.app.screen, (0,0,0), p, p+Vec2d(0,-self.r*6))
+        pygame.draw.line(self.app.screen, (0,0,0), p-Vec2d(-self.r,0), p-Vec2d(self.r,0))
+
+        #arms
+        pygame.draw.line(self.app.screen, (0,0,0),
+                p+Vec2d(-self.r*2,-5*self.r),
+                p+Vec2d(self.r*4,-5*self.r)
+                )
+        pygame.draw.line(self.app.screen, (0,0,0),
+                p+Vec2d(-self.r*2,-5*self.r),
+                p+Vec2d(-self.r*2,-5*self.r+1),
+                )
+
+        #sord
+        pygame.draw.line(self.app.screen, (128,128,128),
+                p+Vec2d(self.r*4,-5*self.r),
+                p+Vec2d(self.r*12,-5*self.r)
+                )
+        pygame.draw.line(self.app.screen, (128,128,128),
+                p+Vec2d(self.r*5,-6*self.r),
+                p+Vec2d(self.r*5,-4*self.r),
+                )
+
+
+        #layugs
+        for leg in self.legs:
+            leg.draw()
+
 
         for gun in self.guns:
             gun.draw()
@@ -233,6 +296,11 @@ class Player(Entity):
                     print('beep')
                     self.active_leg.activate(dx,dy)
                 elif True:
+                    """
+                    select the position on a radius around the other foot that
+                    maximizes the motion of their center of mass in the direction
+                    of the stick
+                    """
                     x1,y1 = pos
                     x0,y0 = other_pos
                     R = self.leg*2
@@ -299,6 +367,47 @@ class Player(Entity):
 #        self.mouse_body.position += Vec2d(dx,dy)
 
 
+class Sord(Entity):
+    def __init__(self, app, parent, offset, r):
+        self.app = app
+        self.parent = parent
+        self.last_hit = time.time()
+
+        self.offset = offset*r
+        x,y = self.offset
+
+        self.body = pm.Body(body_type = pm.Body.KINEMATIC)
+        self.body.position = parent.body.position + self.offset
+        self.shape = pm.Circle(self.body, r/2)
+        self.shape.sensor=True
+        self.shape.collision_type = COLLTYPE_DEFAULT
+
+    def update(self):
+        controller = self.app.controller
+        player = self.parent
+
+        now = time.time()
+        dt = now-self.last_hit
+
+        self.body.position = player.body.position+self.offset
+        for ball in self.app.tracker[Ball]:
+            try:
+                hit = self.shape.shapes_collide(ball.shape)
+                dmg = 1
+                dv = player.body.velocity.x - ball.body.velocity.x
+#                print(dv)
+                if dv > 30:
+                    dmg = 2
+
+                if dv > 0:
+                    ball.get_hit(now, dmg)
+#                    self.app.remove_entity(ball)
+            except AssertionError: pass
+
+
+
+
+
 class FaceGun:
     def __init__(self, app, r):
         self.app = app
@@ -325,7 +434,7 @@ class FaceGun:
             poly = self.shape
             ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
             ps.append(ps[0])
-            ps = list(map(self.app.flipyv, ps))
+#            ps = list(map(self.app.flipyv, ps))
             color = (0,128,0)
             pygame.draw.lines(self.app.screen, color, False, ps)
             pygame.draw.polygon(self.app.screen, color, ps)
