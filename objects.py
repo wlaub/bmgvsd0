@@ -43,6 +43,7 @@ class Controller:
 
 
 class Entity:
+    track_as = []
     def __init__(self):
         self.last_hit = -100
         self.grace_time = 0.2

@@ -59,6 +59,37 @@ class Ball(Entity):
             elif random.random() > .75 and self.r > 7:
                 self.app.add_entity(LengthPickup(self.app, self.body.position))
 
+class ForgetfulBall(Ball):
+    track_as = ['Ball']
+    def __init__(self, app, pos):
+        super().__init__(app, pos)
+        self.last_aggro = self.app.engine_time+7
+
+    def update(self):
+        player = self.app.player
+
+        dt = self.app.engine_time-self.last_aggro
+
+        delta = player.body.position-self.body.position
+        r = abs(delta)
+
+        go = False
+        if dt < 10:
+            go = True
+        elif dt > 15:
+            if r < 80:
+                self.last_aggro = self.app.engine_time
+                go = True
+
+        if go:
+            delta /= r
+            self.body.apply_force_at_local_point(delta*150*self.m)
+
+        friction = self.body.velocity*-10*self.m
+        self.body.apply_force_at_local_point(friction)
+
+
+
 class Wall(Entity):
     def __init__(self, app, start, end):
         self.app = app

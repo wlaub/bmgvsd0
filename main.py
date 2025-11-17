@@ -13,7 +13,7 @@ from pymunk import pygame_util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
-from entities import Ball, Wall
+from entities import Ball, Wall, ForgetfulBall
 from player import Player
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
@@ -33,12 +33,16 @@ class PhysicsDemo:
         e.add_to_space(self.space)
         self.entities.append(e)
         self.tracker[e.__class__.__name__].append(e)
+        for name in e.track_as:
+            self.tracker[name].append(e)
         e.on_add()
 
     def remove_entity(self, e):
         e.remove_from_space(self.space)
         self.entities.remove(e)
         self.tracker[e.__class__.__name__].remove(e)
+        for name in e.track_as:
+            self.tracker[name].remove(e)
         e.on_remove()
 
 
@@ -106,7 +110,13 @@ class PhysicsDemo:
             y = self.h+margin
             x = (t-0.75)*4*(self.w+2*margin)-margin
 
-        self.add_entity(Ball(self, (x,y)) )
+        pos = Vec2d(x,y)
+        if random.random() < 0.1:
+            new_entity = ForgetfulBall(self, pos)
+        else:
+            new_entity = Ball(self, pos)
+
+        self.add_entity(new_entity)
         self.last_spawn = self.engine_time
 
     def draw(self):
