@@ -36,7 +36,9 @@ class Leg:
         knee_body.position = pos+Vec2d(x,l/2)
         self.app.space.add(knee_body)
 
-        self.thigh = c = pymunk.SlideJoint(self.parent_body, self.knee_body, (x,0), (0,0), l/2,l/2+1)
+        self.anchor = Vec2d(x,0)
+
+        self.thigh = c = pymunk.SlideJoint(self.parent_body, self.knee_body, self.anchor, (0,0), l/2,l/2+1)
 #        self.c = pymunk.SlideJoint(self.parent_body, self.foot_body, (x,0), (0,0), 0,l*2+1)
         self.app.space.add(c)
         self.c =c= pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
@@ -72,7 +74,7 @@ class Leg:
 
     def draw(self):
 
-        p0 = self.parent_body.position+self.thigh.anchor_a
+        p0 = self.parent_body.position+self.anchor
         p1 = self.foot_body.position
 
         pygame.draw.line(self.app.screen, (0,0,0), p0, p1)
