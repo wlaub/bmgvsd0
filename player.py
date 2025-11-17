@@ -26,29 +26,12 @@ class Leg:
         self.l = l
         self.parent_body = parent_body
 
-#        self.foot_body = foot_body = pymunk.Body(self.m, float("inf"))
         self.foot_body = foot_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         foot_body.position = pos+Vec2d(x, l)
         self.foot_shape = foot_shape = pymunk.Poly.create_box(foot_body, (4,2))
         self.app.space.add(foot_body, foot_shape)
 
         self.anchor = Vec2d(x,0)
-
-#        self.knee_body = knee_body = pymunk.Body(1, math.inf)
-#        knee_body.position = pos+Vec2d(x,l/2)
-#        self.app.space.add(knee_body)
-#
-#        self.thigh = c = pymunk.SlideJoint(self.parent_body, self.knee_body, self.anchor, (0,0), l/2,l/2+1)
-##        self.c = pymunk.SlideJoint(self.parent_body, self.foot_body, (x,0), (0,0), 0,l*2+1)
-#        self.app.space.add(c)
-#        self.c =c= pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
-#        self.app.space.add(c)
-##        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
-#        c = pymunk.DampedSpring(self.parent_body, self.foot_body,
-#                                (0,-l), (0,0),
-#                                (l*l*4+x*x)**0.5,
-#                                m*10000,10000)
-##        self.app.space.add(c)
 
         self.active = False
         self.active_position = Vec2d(*self.foot_body.position)
@@ -133,6 +116,10 @@ class Player(Entity):
         self.hips = 1
         self.leg = leg = 3
 
+        self.front_hand_position = Vec2d(4,-5)
+        self.back_hand_position = Vec2d(-2,-4)
+        self.back_elbow_position = Vec2d(-2,-5)
+
         self.shape = pm.Poly(self.body, [
             (-w/2, -h+w),
             (-w/2, -h),
@@ -163,7 +150,7 @@ class Player(Entity):
         self.angle = 0
 
         self.guns = []
-        self.guns.append(Sord(self.app, self, Vec2d(12,-5), 1 ))
+        self.guns.append(Sord(self.app, self))
 
     def set_center_position(self):
         left = self.left_leg.foot_body.position
@@ -214,21 +201,12 @@ class Player(Entity):
         pygame.draw.line(self.app.screen, (0,0,0), p-Vec2d(-1,0), p-Vec2d(1,0))
         #arms
         pygame.draw.line(self.app.screen, (0,0,0),
-                p+Vec2d(-2,-5),
-                p+Vec2d(4,-5)
+                p+self.back_elbow_position,
+                p+self.front_hand_position,
                 )
         pygame.draw.line(self.app.screen, (0,0,0),
-                p+Vec2d(-2,-5),
-                p+Vec2d(-2,-6),
-                )
-        #sord TODO move me to sord
-        pygame.draw.line(self.app.screen, (128,128,128),
-                p+Vec2d(4,-5),
-                p+Vec2d(12,-5)
-                )
-        pygame.draw.line(self.app.screen, (128,128,128),
-                p+Vec2d(5,-6),
-                p+Vec2d(5,-4),
+                p+self.back_elbow_position,
+                p+self.back_hand_position,
                 )
 
         #layugs
@@ -358,19 +336,30 @@ class Player(Entity):
 
 
 class Sord(Entity):
-    def __init__(self, app, parent, offset, r):
+    def __init__(self, app, parent):
         self.app = app
         self.parent = parent
         self.last_hit = self.app.engine_time
 
-        self.offset = offset*r
+        self.offset = self.parent.front_hand_position + Vec2d(8,0)
         x,y = self.offset
 
         self.body = pm.Body(body_type = pm.Body.KINEMATIC)
         self.body.position = parent.body.position + self.offset
-        self.shape = pm.Circle(self.body, r/2)
+        self.shape = pm.Circle(self.body, 0.5)
         self.shape.sensor=True
         self.shape.collision_type = COLLTYPE_DEFAULT
+
+        self.lines = [
+                [
+                self.parent.front_hand_position,
+                self.offset,
+                ],
+                [
+                self.parent.front_hand_position + Vec2d(1,-1),
+                self.parent.front_hand_position + Vec2d(1,1)
+                ],
+            ]
 
     def update(self):
         controller = self.app.controller
@@ -391,10 +380,18 @@ class Sord(Entity):
 
                 if dv > -5:
                     ball.get_hit(dmg)
-#                    self.app.remove_entity(ball)
             except AssertionError: pass
 
-
+    def draw(self):
+        p = self.parent.body.position
+        pygame.draw.line(self.app.screen, (128,128,128),
+                p+self.lines[0][0],
+                p+self.lines[0][1]
+                )
+        pygame.draw.line(self.app.screen, (128,128,128),
+                p+self.lines[1][0],
+                p+self.lines[1][1],
+                )
 
 
 
