@@ -15,15 +15,11 @@ from pickups import HealthPickup
 class Leg:
     debug_draw = False
 
-    def __init__(self, app, parent_body, pos, l, offset, m, r):
+    def __init__(self, app, parent_body, pos, l, offset, m):
         self.app = app
         self.m = m
-        self.r = r
 
-        l*=r
         x,y = offset
-        x*=r
-        y*=r
 
         self.x = x
         self.y = y
@@ -33,7 +29,7 @@ class Leg:
 #        self.foot_body = foot_body = pymunk.Body(self.m, float("inf"))
         self.foot_body = foot_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         foot_body.position = pos+Vec2d(x, l)
-        self.foot_shape = foot_shape = pymunk.Poly.create_box(foot_body, (4*r,2*r))
+        self.foot_shape = foot_shape = pymunk.Poly.create_box(foot_body, (4,2))
         self.app.space.add(foot_body, foot_shape)
 
         self.knee_body = knee_body = pymunk.Body(1, math.inf)
@@ -152,7 +148,7 @@ class Player(Entity):
         self.app.space.add(self.sensor_body, self.sensor_shape)
 
 
-#        self.shape = shape = pm.Poly.create_box(body, (10*r,20*r))
+#        self.shape = shape = pm.Poly.create_box(body, (10,20))
 #        self.shape.mass = m
         self.shape.collision_type = COLLTYPE_DEFAULT
 
@@ -160,8 +156,8 @@ class Player(Entity):
 
         self.leg = leg = 3
 
-        self.left_leg = Leg(self.app, self.body, pos, leg, (-self.hips,0), m, 1)
-        self.right_leg = Leg(self.app, self.body, pos, leg, (self.hips,0), m, 1)
+        self.left_leg = Leg(self.app, self.body, pos, leg, (-self.hips,0), m)
+        self.right_leg = Leg(self.app, self.body, pos, leg, (self.hips,0), m)
 
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         self.set_center_position()
@@ -182,7 +178,7 @@ class Player(Entity):
 
         self.guns = []
         self.guns.append(Sord(self.app, self, Vec2d(12,-5), 1 ))
-#        self.guns.append(FaceGun(self.app, r))
+#        self.guns.append(FaceGun(self.app, 1))
 
     def set_center_position(self):
         left = self.left_leg.foot_body.position
