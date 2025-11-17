@@ -133,7 +133,7 @@ class PhysicsDemo:
     def do_updates(self):
 
         dt = self.engine_time-self.last_spawn
-        if dt > 0.1 + 0.01*len(self.tracker[Ball]):
+        if dt > 0.2 + 0.02*len(self.tracker[Ball]):
             self.spawn()
 
 

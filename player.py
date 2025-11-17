@@ -300,13 +300,13 @@ class Player(Entity):
                 self.get_hit(1)
             except: AssertionError
 
-        for entity in self.app.tracker[HealthPickup]:
-            try:
-                hit = self.shape.shapes_collide(entity.shape)
-                if self.health < 3:
-                    self.health += 1
-                self.app.remove_entity(entity)
-            except: AssertionError
+#        for entity in self.app.tracker[HealthPickup]:
+#            try:
+#                hit = self.shape.shapes_collide(entity.shape)
+#                if self.health < 3:
+#                    self.health += 1
+#                self.app.remove_entity(entity)
+#            except: AssertionError
 
 
 
