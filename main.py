@@ -18,6 +18,14 @@ from player import Player
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
+SEED = random.randrange(0,7852)
+random.seed(SEED)
+
+print(SEED)
+if len(sys.argv) > 1:
+    TITLE = ' '.join(sys.argv[1:])
+    print(TITLE)
+
 class PhysicsDemo:
 
     def run(self):
@@ -130,9 +138,21 @@ class PhysicsDemo:
         header = self.font.render(f'{self.lore_score}', False, (0,0,128))
         self.screen.blit(header, (2,2))
 
-        hello = pygame.transform.scale(self.screen, (self.ws, self.hs))
 
+        ypos = self.h-2
+        text = self.font.render(f'{TITLE}', False, (128,128,0))
+        ypos -= text.get_height()
+        self.screen.blit(text, (2,ypos))
+
+        text = self.font.render(f'{SEED}', False, (128,128,0))
+        ypos -= text.get_height()
+        self.screen.blit(text, (2,ypos))
+
+
+
+        hello = pygame.transform.scale(self.screen, (self.ws, self.hs))
         self.main_screen.blit(hello, (0,0))
+
         pygame.display.flip()
         self.screen.fill((255,255,255))
 
