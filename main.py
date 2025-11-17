@@ -19,24 +19,26 @@ from player import Player
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 class PhysicsDemo:
-    def flipyv(self, v):
-        return int(v.x), int(-v.y + self.h)
 
     def run(self):
         while self.running:
-            self.loop()
+            try:
+                self.loop()
+            except Exception as e:
+                print(e)
+
 
     def add_entity(self, e):
 #        self.space.add(e.body, e.shape)
         e.add_to_space(self.space)
         self.entities.append(e)
-        self.tracker[e.__class__].append(e)
+        self.tracker[e.__class__.__name__].append(e)
         e.on_add()
 
     def remove_entity(self, e):
         e.remove_from_space(self.space)
         self.entities.remove(e)
-        self.tracker[e.__class__].remove(e)
+        self.tracker[e.__class__.__name__].remove(e)
         e.on_remove()
 
 
@@ -135,7 +137,7 @@ class PhysicsDemo:
     def do_updates(self):
 
         dt = self.engine_time-self.last_spawn
-        if dt > 0.2 + 0.02*len(self.tracker[Ball]):
+        if dt > 0.2 + 0.02*len(self.tracker['Ball']):
             self.spawn()
 
 

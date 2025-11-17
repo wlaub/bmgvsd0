@@ -9,7 +9,7 @@ import pymunk.util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
-from pickups import HealthPickup, LoreOrePickup
+from pickups import HealthPickup, LoreOrePickup, LengthPickup
 
 class Ball(Entity):
     def __init__(self, app, pos):
@@ -51,10 +51,13 @@ class Ball(Entity):
     def get_hit(self, dmg):
         dead = self._basic_hit_spell(dmg)
         if dead:
+
             if random.random() > 1-(self.r-5)/16:
                 self.app.add_entity(HealthPickup(self.app, self.body.position))
             elif random.random() > 1-self.r/8:
                 self.app.add_entity(LoreOrePickup(self.app, self.body.position))
+            elif random.random() > .75 and self.r > 7:
+                self.app.add_entity(LengthPickup(self.app, self.body.position))
 
 class Wall(Entity):
     def __init__(self, app, start, end):
