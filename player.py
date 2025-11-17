@@ -32,23 +32,23 @@ class Leg:
         self.foot_shape = foot_shape = pymunk.Poly.create_box(foot_body, (4,2))
         self.app.space.add(foot_body, foot_shape)
 
-        self.knee_body = knee_body = pymunk.Body(1, math.inf)
-        knee_body.position = pos+Vec2d(x,l/2)
-        self.app.space.add(knee_body)
-
         self.anchor = Vec2d(x,0)
 
-        self.thigh = c = pymunk.SlideJoint(self.parent_body, self.knee_body, self.anchor, (0,0), l/2,l/2+1)
-#        self.c = pymunk.SlideJoint(self.parent_body, self.foot_body, (x,0), (0,0), 0,l*2+1)
-        self.app.space.add(c)
-        self.c =c= pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
-        self.app.space.add(c)
-#        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
-        c = pymunk.DampedSpring(self.parent_body, self.foot_body,
-                                (0,-l), (0,0),
-                                (l*l*4+x*x)**0.5,
-                                m*10000,10000)
+#        self.knee_body = knee_body = pymunk.Body(1, math.inf)
+#        knee_body.position = pos+Vec2d(x,l/2)
+#        self.app.space.add(knee_body)
+#
+#        self.thigh = c = pymunk.SlideJoint(self.parent_body, self.knee_body, self.anchor, (0,0), l/2,l/2+1)
+##        self.c = pymunk.SlideJoint(self.parent_body, self.foot_body, (x,0), (0,0), 0,l*2+1)
 #        self.app.space.add(c)
+#        self.c =c= pymunk.SlideJoint(self.foot_body, self.knee_body, (0,0), (0,0), l/2,l/2+1)
+#        self.app.space.add(c)
+##        c = pymunk.DampedSpring(self.parent_body, self.foot_body, (x,0), (0,0), l, m*10000,100)
+#        c = pymunk.DampedSpring(self.parent_body, self.foot_body,
+#                                (0,-l), (0,0),
+#                                (l*l*4+x*x)**0.5,
+#                                m*10000,10000)
+##        self.app.space.add(c)
 
         self.active = False
         self.active_position = Vec2d(*self.foot_body.position)
@@ -93,7 +93,8 @@ class Leg:
         self.active_time = self.app.engine_time
 
     def deactivate(self, other):
-        self.speed = 7
+        #TODO turn all this nonsense into a proper state machine
+        self.speed = 12
         dx = 2*(random.random()-0.5)
         rest = self.x*2.5
 
@@ -353,27 +354,6 @@ class Player(Entity):
                         self.active_leg.activate_target(p0)
                     else:
                         self.active_leg.activate_target(p1)
-
-                else:
-                    sgn = -1 if dy < 0 else 1
-                    c1 = D*dy
-                    c2 = sgn*dx*(dis)**0.5
-                    c3 = -D*dx
-                    c4 = abs(dy)*(dis)**0.5
-
-                    cx1 = (c1+c2)/(dr2)
-                    cy1 = (c3+c4)/(dr2)
-                    cx2 = (c1-c2)/(dr2)
-                    cy2 = (c3-c4)/(dr2)
-
-                    p0 = Vec2d(cx1, cy1)+other_pos
-                    p1 = Vec2d(cx2, cy2)+other_pos
-
-                    if (p0-pos).dot(aim) > (p1-pos).dot(aim):
-                        self.active_leg.activate_target(p0)
-                    else:
-                        self.active_leg.activate_target(p1)
-
 
 
                 self.walking = True
