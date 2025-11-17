@@ -44,7 +44,8 @@ class Controller:
 
 class Entity:
     def __init__(self):
-        self.last_hit = 0
+        self.last_hit = -100
+        self.grace_time = 0.2
         self.health = 1
 
     def draw(self):
@@ -56,7 +57,15 @@ class Entity:
     def remove_from_space(self, space):
         space.remove(self.body, self.shape)
 
-    def get_hit(self, now, dmg):
+    def get_hit(self, dmg):
       pass
+
+
+    def _basic_hit_spell(self, dmg):
+        if self.app.engine_time - self.last_hit > self.grace_time:
+            self.health -= dmg
+            self.last_hit = self.app.engine_time
+            if self.health <= 0:
+                self.app.remove_entity(self)
 
 

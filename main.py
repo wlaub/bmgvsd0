@@ -41,9 +41,15 @@ class PhysicsDemo:
     def __init__(self):
 
         pygame.init()
-        self.w, self.h = 400, 300
-        self.screen = pygame.display.set_mode((self.w*2, self.h*2))
+        self.scale = 4
+        self.w, self.h = 1280/self.scale, 720/self.scale
+        self.ws = self.w*self.scale
+        self.hs = self.h*self.scale
+
+        self.main_screen = pygame.display.set_mode((self.ws, self.hs))
         self.clock = pygame.time.Clock()
+
+        self.screen = pygame.Surface((self.w, self.h))
 
         self.engine_time = 0
 
@@ -53,6 +59,7 @@ class PhysicsDemo:
 
         ### Init pymunk and create space
         self.run_physics = True
+        self.render_physics = False
         self.space = pm.Space()
 #        self.space.gravity = (0.0, -900.0)
 
@@ -62,6 +69,7 @@ class PhysicsDemo:
         self.player = Player(self, (self.w/2, self.h/2), 10000, 32)
 
         self.add_entity(self.player)
+
 
         self.last_spawn = self.engine_time
         for i in range(1):
@@ -97,25 +105,26 @@ class PhysicsDemo:
         self.last_spawn = self.engine_time
 
     def draw(self):
-        self.screen.fill((255,255,255))
 
-#        self.space.debug_draw(self.draw_options)
+        if self.render_physics:
+            self.space.debug_draw(self.draw_options)
 
         for entity in self.entities:
             entity.draw()
 
-        hello = pygame.transform.scale(self.screen, (self.w*4, self.h*4))
-        self.screen.blit(hello, (0,0))
+        hello = pygame.transform.scale(self.screen, (self.ws, self.hs))
 
+        self.main_screen.blit(hello, (0,0))
         pygame.display.flip()
+        self.screen.fill((255,255,255))
 
     def do_physics(self):
-        N = 2
-        dt = 1/(60*N)
+        N = 1
+        dt = 1/(120*N)
         for _ in range(N):
             self.space.step(dt)
 
-        self.engine_time += dt
+        self.engine_time += dt*N
 
     def do_updates(self):
 
@@ -133,16 +142,19 @@ class PhysicsDemo:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.run_physics = False
+                self.run_physics = not self.run_physics
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 tick = True
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                self.render_physics = not self.render_physics
 
-        self.do_updates()
 
         if self.run_physics or tick:
+            self.do_updates()
+
             self.do_physics()
 
-        self.draw()
+            self.draw()
 
         self.clock.tick(60)
         pygame.display.set_caption(f"fps: {len(self.entities)}, {self.clock.get_fps():.2f}")

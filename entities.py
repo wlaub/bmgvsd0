@@ -48,12 +48,8 @@ class Ball(Entity):
         friction = self.body.velocity*-10*self.m
         self.body.apply_force_at_local_point(friction)
 
-    def get_hit(self, now, dmg):
-        if now - self.last_hit > 0.2:
-            self.health -= dmg
-            self.last_hit = now
-            if self.health <= 0:
-                self.app.remove_entity(self)
+    def get_hit(self, dmg):
+        self._basic_hit_spell(dmg)
 
 class Wall(Entity):
     def __init__(self, app, start, end):

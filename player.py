@@ -58,11 +58,16 @@ class Leg:
             dt = self.app.engine_time-self.active_time
             t = dt*4
 
+#            print(t, self.app.player.left_leg == self)
             if t >= 1:
                 self.active = False
                 t = 1
 
             self.foot_body.position = self.active_position+self.active_direction*t
+
+#            pygame.draw.circle(self.app.screen, (0,128,0), self.active_position, 2)
+#            pygame.draw.circle(self.app.screen, (128,0,128), self.active_position+self.active_direction, 2)
+
 
     def draw(self):
 
@@ -72,6 +77,11 @@ class Leg:
         pygame.draw.line(self.app.screen, (0,0,0), p0, p1)
 
 
+#        if self.app.player.active_leg == self:
+#            if self.app.player.left_leg == self:
+#                pygame.draw.circle(self.app.screen, (0,0,128), p1, 2)
+#            else:
+#                pygame.draw.circle(self.app.screen, (128,0,0), p1, 2)
 
     def activate(self, dx, dy):
         self.active = True
@@ -83,6 +93,9 @@ class Leg:
         self.activate_target(Vec2d(self.x*2.5,0)+other.foot_body.position)
 
     def activate_target(self, pos):
+        if self.active:
+            print('no')
+            return
         self.active = True
         self.active_position = self.foot_body.position
         self.active_direction = (pos-self.foot_body.position)
@@ -95,6 +108,7 @@ class Player(Entity):
     def __init__(self, app, pos, m, r):
         super().__init__()
         self.health = 3
+        self.grace_time = 1
         r = 1
         self.app = app
         self.m = m
@@ -112,6 +126,19 @@ class Player(Entity):
             (w/2, -h),
             (w/2, -h+w),
             ])
+
+        self.sensor_body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.sensor_body.position = self.body.position
+        self.sensor_shape = pm.Poly(self.sensor_body, [
+            (-w/2-1, -h+w+1),
+            (-w/2-1, -h-1),
+            (w/2+1, -h-1),
+            (w/2+1, -h+w+1),
+            ])
+        self.sensor_shape.sensor=True
+        self.sensor_shape.collision_type = COLLTYPE_DEFAULT
+        self.app.space.add(self.sensor_body, self.sensor_shape)
+
 
 #        self.shape = shape = pm.Poly.create_box(body, (10*r,20*r))
 #        self.shape.mass = m
@@ -176,12 +203,18 @@ class Player(Entity):
 #        ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
 #        ps.append(ps[0])
 #            ps = list(map(self.app.flipyv, ps))
-        color = (240,192,160)
+#        color = (240,192,160)
 #        pygame.draw.polygon(self.app.screen, color, ps)
 #        pygame.draw.lines(self.app.screen, (0,0,0), False, ps)
-        pygame.draw.rect(self.app.screen, color,
-            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.w, self.w))
-            )
+
+        #head
+        color = (240,192,160)
+        if ( self.app.engine_time-self.last_hit >= self.grace_time-0.1 or
+             int(7*(self.app.engine_time-self.last_hit)/self.grace_time) % 2 == 0
+            ):
+            pygame.draw.rect(self.app.screen, color,
+                pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.w, self.w))
+                )
 
         pygame.draw.rect(self.app.screen, (0,0,0),
             pygame.Rect(p+Vec2d(-self.w/2-1, -self.h-1), (self.w+2, self.w+2)),
@@ -190,7 +223,7 @@ class Player(Entity):
 
         #hair
         pygame.draw.rect(self.app.screen, (128,128,128),
-            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.r*5, self.r*3))
+            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.r*5, self.r*self.health))
             )
         #eye
         pygame.draw.rect(self.app.screen, (0,0,128),
@@ -233,6 +266,8 @@ class Player(Entity):
         for gun in self.guns:
             gun.draw()
 
+    def get_hit(self, dmg):
+        self._basic_hit_spell(dmg)
 
     def update(self):
         self.friction = 0
@@ -246,6 +281,13 @@ class Player(Entity):
 
         for gun in self.guns:
             gun.update()
+
+        for ball in self.app.tracker[Ball]:
+            try:
+                hit = self.shape.shapes_collide(ball.shape)
+                self.get_hit(1)
+            except: AssertionError
+
 
         controller = self.app.controller
         dx, dy = controller.get_left_stick()
@@ -264,7 +306,7 @@ class Player(Entity):
 
         stick_active = (dx*dx+dy*dy) > 0.5
         if stick_active:
-            self.active_leg.foot_body.position += Vec2d(dx,dy)*10
+#            self.active_leg.foot_body.position += Vec2d(dx,dy)*10
             if not self.active_leg.active:
                 if self.walking:
                     if self.active_leg == self.left_leg:
@@ -294,10 +336,7 @@ class Player(Entity):
                 D = x1*y2-x2*y1
                 r = 2*self.leg
                 dis = r*r*dr2-D*D
-                if dis < 0:
-                    print('beep')
-                    self.active_leg.activate(dx,dy)
-                elif True:
+                if True:
                     """
                     select the position on a radius around the other foot that
                     maximizes the motion of their center of mass in the direction
@@ -305,9 +344,9 @@ class Player(Entity):
                     """
                     x1,y1 = pos
                     x0,y0 = other_pos
-                    R = self.leg*2
+                    R = self.leg*4
                     if not fast_walk:
-                        R = 1
+                        R = self.leg*2
 
                     c1 = dr2*x0
                     c2 = abs(dx*R*dr)
@@ -319,6 +358,7 @@ class Player(Entity):
                     cy1 = y0 + sgn*math.sqrt(R*R+2*x0*cx1 -x0*x0 - cx1*cx1)
                     cy2 = y0 + sgn*math.sqrt(R*R+2*x0*cx2 -x0*x0 - cx2*cx2)
 
+#                    pygame.draw.circle(self.app.screen, (255,0,0), other_pos, R, 1)
 
                     p0 = Vec2d(cx1, cy1)
                     p1 = Vec2d(cx2, cy2)
@@ -408,7 +448,7 @@ class Sord(Entity):
                     dmg = 2
 
                 if dv > 0:
-                    ball.get_hit(now, dmg)
+                    ball.get_hit(dmg)
 #                    self.app.remove_entity(ball)
             except AssertionError: pass
 
