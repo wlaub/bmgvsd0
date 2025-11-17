@@ -4,10 +4,10 @@ source venv/bin/activate
 
 checksum=`git rev-parse --short HEAD`
 git status --porcelain > /dev/null
-if [ -z $? ]; then
-    title=$checksum
-else
+if [ $? ]; then
     title=$checksum"+"
+else
+    title=$checksum
 fi
 
 python main.py $title
