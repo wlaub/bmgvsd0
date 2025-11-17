@@ -45,11 +45,14 @@ class PhysicsDemo:
         self.screen = pygame.display.set_mode((self.w*2, self.h*2))
         self.clock = pygame.time.Clock()
 
+        self.engine_time = 0
+
         self.draw_options = pygame_util.DrawOptions(self.screen)
 
         self.controller = Controller()
 
         ### Init pymunk and create space
+        self.run_physics = True
         self.space = pm.Space()
 #        self.space.gravity = (0.0, -900.0)
 
@@ -60,7 +63,7 @@ class PhysicsDemo:
 
         self.add_entity(self.player)
 
-        self.last_spawn = time.time()
+        self.last_spawn = self.engine_time
         for i in range(1):
             self.spawn()
 
@@ -91,7 +94,7 @@ class PhysicsDemo:
         m = r*r/1.8
 
         self.add_entity(Ball(self, (x,y), m, r) )
-        self.last_spawn = time.time()
+        self.last_spawn = self.engine_time
 
     def draw(self):
         self.screen.fill((255,255,255))
@@ -112,9 +115,11 @@ class PhysicsDemo:
         for _ in range(N):
             self.space.step(dt)
 
+        self.engine_time += dt
+
     def do_updates(self):
 
-        dt = time.time()-self.last_spawn
+        dt = self.engine_time-self.last_spawn
         if dt > 0.1 + 0.01*len(self.tracker[Ball]):
             self.spawn()
 
@@ -123,15 +128,19 @@ class PhysicsDemo:
             entity.update()
 
     def loop(self):
+        tick = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.running = False
+                self.run_physics = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                tick = True
 
         self.do_updates()
 
-        self.do_physics()
+        if self.run_physics or tick:
+            self.do_physics()
 
         self.draw()
 

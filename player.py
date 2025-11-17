@@ -55,8 +55,8 @@ class Leg:
 
     def update(self):
         if self.active:
-            dt = time.time()-self.active_time
-            t = dt*2
+            dt = self.app.engine_time-self.active_time
+            t = dt*4
 
             if t >= 1:
                 self.active = False
@@ -77,7 +77,7 @@ class Leg:
         self.active = True
         self.active_position = self.foot_body.position
         self.active_direction = self.l*1.5*Vec2d(dx,dy)
-        self.active_time = time.time()
+        self.active_time = self.app.engine_time
 
     def deactivate(self, other):
         self.activate_target(Vec2d(self.x*2.5,0)+other.foot_body.position)
@@ -86,7 +86,7 @@ class Leg:
         self.active = True
         self.active_position = self.foot_body.position
         self.active_direction = (pos-self.foot_body.position)
-        self.active_time = time.time()
+        self.active_time = self.app.engine_time
 
 
 
@@ -242,7 +242,7 @@ class Player(Entity):
             new_angle = math.atan2(self.body.velocity.y, self.body.velocity.x)
             self.angle = new_angle
 
-        self.friction -=5
+        self.friction -=10
 
         for gun in self.guns:
             gun.update()
@@ -254,6 +254,8 @@ class Player(Entity):
             base_force = 6000
         else:
             base_force = 1500
+
+        fast_walk = controller.get_button('x')
 
         v = Vec2d(dx, dy)*base_force*self.m
 #        self.left_leg.foot_body.apply_force_at_local_point(v)
@@ -304,6 +306,9 @@ class Player(Entity):
                     x1,y1 = pos
                     x0,y0 = other_pos
                     R = self.leg*2
+                    if not fast_walk:
+                        R = 1
+
                     c1 = dr2*x0
                     c2 = abs(dx*R*dr)
 
@@ -352,6 +357,8 @@ class Player(Entity):
 
         if self.walking and not self.active_leg.active and not stick_active:
             self.walking = False
+
+        if not self.walking and not stick_active and not self.active_leg.active:
             if self.active_leg == self.left_leg:
                 self.right_leg.deactivate(self.left_leg)
                 self.active_leg = self.right_leg
@@ -362,7 +369,8 @@ class Player(Entity):
 
         self.set_center_position()
 
-        self.body.apply_force_at_local_point(self.friction*self.body.velocity*self.m)
+        if not fast_walk:
+            self.body.apply_force_at_local_point(self.friction*self.body.velocity*self.m)
 
 #        self.mouse_body.position += Vec2d(dx,dy)
 
@@ -371,7 +379,7 @@ class Sord(Entity):
     def __init__(self, app, parent, offset, r):
         self.app = app
         self.parent = parent
-        self.last_hit = time.time()
+        self.last_hit = self.app.engine_time
 
         self.offset = offset*r
         x,y = self.offset
@@ -386,7 +394,7 @@ class Sord(Entity):
         controller = self.app.controller
         player = self.parent
 
-        now = time.time()
+        now = self.app.engine_time
         dt = now-self.last_hit
 
         self.body.position = player.body.position+self.offset
@@ -411,7 +419,7 @@ class Sord(Entity):
 class FaceGun:
     def __init__(self, app, r):
         self.app = app
-        self.last_hit = time.time()
+        self.last_hit = self.app.engine_time
 
         self.body = pm.Body(body_type = pm.Body.KINEMATIC)
         self.shape = pm.Poly(self.body, [
@@ -443,7 +451,7 @@ class FaceGun:
         controller = self.app.controller
         player = self.app.player
 
-        now = time.time()
+        now = self.app.engine_time
 
         dt = now-self.last_hit
         if now-self.last_hit > 2 and not controller.get_right_trigger():

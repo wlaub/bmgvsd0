@@ -32,7 +32,7 @@ class Ball(Entity):
         p = v
 
         color = (0,0,255)
-        if time.time()-self.last_hit < 0.08:
+        if self.app.engine_time-self.last_hit < 0.08:
             color = (255,0,0)
 
         pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)

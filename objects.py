@@ -38,6 +38,8 @@ class Controller:
     def get_right_trigger(self):
         return self.joystick.get_axis(self.axis_map['rt']) > 0.5
 
+    def get_button(self, name):
+        return self.joystick.get_button(self.button_map[name])
 
 
 class Entity:
