@@ -1,9 +1,10 @@
-#!/bin/bash
+#!/bin/bash 
 
 source venv/bin/activate
 
 checksum=`git rev-parse --short HEAD`
-if [ -z `git status --porcelain` ]; then
+git status --porcelain > /dev/null
+if [ -z $? ]; then
     title=$checksum
 else
     title=$checksum"+"
