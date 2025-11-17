@@ -57,6 +57,12 @@ class Entity:
     def remove_from_space(self, space):
         space.remove(self.body, self.shape)
 
+    def on_add(self):
+        pass
+
+    def on_remove(self):
+        pass
+
     def get_hit(self, dmg):
       pass
 

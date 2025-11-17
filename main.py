@@ -31,11 +31,13 @@ class PhysicsDemo:
         e.add_to_space(self.space)
         self.entities.append(e)
         self.tracker[e.__class__].append(e)
+        e.on_add()
 
     def remove_entity(self, e):
         e.remove_from_space(self.space)
         self.entities.remove(e)
         self.tracker[e.__class__].remove(e)
+        e.on_remove()
 
 
     def __init__(self):

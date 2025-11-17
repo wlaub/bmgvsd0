@@ -166,12 +166,12 @@ class Player(Entity):
 
     def add_to_space(self, space):
         space.add(self.body, self.shape)
+
+    def on_remove(self):
         for gun in self.guns:
-            gun.add_to_space(space)
+            self.app.remove_entity(gun)
 
     def draw(self):
-
-
         body = self.body
         poly = self.shape
         p = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
@@ -361,6 +361,8 @@ class Sord(Entity):
                 ],
             ]
 
+        self.app.add_entity(self)
+
     def update(self):
         controller = self.app.controller
         player = self.parent
@@ -385,8 +387,8 @@ class Sord(Entity):
     def draw(self):
         p = self.parent.body.position
         pygame.draw.line(self.app.screen, (128,128,128),
-                p+self.lines[0][0],
-                p+self.lines[0][1]
+                p+self.parent.front_hand_position,
+                p+self.offset
                 )
         pygame.draw.line(self.app.screen, (128,128,128),
                 p+self.lines[1][0],
