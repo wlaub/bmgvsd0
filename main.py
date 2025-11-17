@@ -68,7 +68,7 @@ class PhysicsDemo:
         self.entities = []
         self.tracker = defaultdict(list)
 
-        self.player = Player(self, (self.w/2, self.h/2), 10000, 32)
+        self.player = Player(self, (self.w/2, self.h/2))
 
         self.add_entity(self.player)
 

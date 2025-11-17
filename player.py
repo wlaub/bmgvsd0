@@ -13,6 +13,8 @@ from entities import Ball, Wall
 from pickups import HealthPickup
 
 class Leg:
+    debug_draw = False
+
     def __init__(self, app, parent_body, pos, l, offset, m, r):
         self.app = app
         self.m = m
@@ -79,12 +81,12 @@ class Leg:
 
         pygame.draw.line(self.app.screen, (0,0,0), p0, p1)
 
-
-#        if self.app.player.active_leg == self:
-#            if self.app.player.left_leg == self:
-#                pygame.draw.circle(self.app.screen, (0,0,128), p1, 2)
-#            else:
-#                pygame.draw.circle(self.app.screen, (128,0,0), p1, 2)
+        if self.debug_draw:
+            if self.app.player.active_leg == self:
+                if self.app.player.left_leg == self:
+                    pygame.draw.circle(self.app.screen, (0,0,128), p1, 2)
+                else:
+                    pygame.draw.circle(self.app.screen, (128,0,0), p1, 2)
 
     def activate(self, dx, dy):
         self.active = True
@@ -117,20 +119,18 @@ class Leg:
 
 
 class Player(Entity):
-    def __init__(self, app, pos, m, r):
+    def __init__(self, app, pos):
         super().__init__()
         self.health = 3
         self.grace_time = 1
-        r = 1
         self.app = app
-        self.m = m
-        self.r = r
+        self.m = m = 10000
         self.body = body = pm.Body(self.m, float("inf"))
         body.position = Vec2d(*pos)
 
-        self.w =w= 10*r
-        self.h =h= 17*r
-        self.hips = r
+        self.w =w= 10
+        self.h =h= 17
+        self.hips = 1
 
         self.shape = pm.Poly(self.body, [
             (-w/2, -h+w),
@@ -158,7 +158,7 @@ class Player(Entity):
 
         self.feets = []
 
-        self.leg = leg = 3*r
+        self.leg = leg = 3
 
         self.left_leg = Leg(self.app, self.body, pos, leg, (-self.hips,0), m, 1)
         self.right_leg = Leg(self.app, self.body, pos, leg, (self.hips,0), m, 1)
@@ -181,7 +181,7 @@ class Player(Entity):
         self.angle = 0
 
         self.guns = []
-        self.guns.append(Sord(self.app, self, Vec2d(self.r*12,-5*self.r), self.r ))
+        self.guns.append(Sord(self.app, self, Vec2d(12,-5), 1 ))
 #        self.guns.append(FaceGun(self.app, r))
 
     def set_center_position(self):
@@ -208,16 +208,7 @@ class Player(Entity):
 
         body = self.body
         poly = self.shape
-        v = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
-#            p = self.app.flipyv(v)
-        p = v
-
-#        ps = [p.rotated(body.angle) + body.position for p in poly.get_vertices()]
-#        ps.append(ps[0])
-#            ps = list(map(self.app.flipyv, ps))
-#        color = (240,192,160)
-#        pygame.draw.polygon(self.app.screen, color, ps)
-#        pygame.draw.lines(self.app.screen, (0,0,0), False, ps)
+        p = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
 
         #head
         color = (240,192,160)
@@ -227,48 +218,39 @@ class Player(Entity):
             pygame.draw.rect(self.app.screen, color,
                 pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.w, self.w))
                 )
-
         pygame.draw.rect(self.app.screen, (0,0,0),
             pygame.Rect(p+Vec2d(-self.w/2-1, -self.h-1), (self.w+2, self.w+2)),
             1
             )
-
         #hair
         pygame.draw.rect(self.app.screen, (128,128,128),
-            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (self.r*5, self.r*self.health))
+            pygame.Rect(p+Vec2d(-self.w/2, -self.h), (5, self.health))
             )
         #eye
         pygame.draw.rect(self.app.screen, (0,0,128),
-            pygame.Rect(p+Vec2d(self.r*4, -self.h+self.r*2), (self.r*2, self.r*2))
+            pygame.Rect(p+Vec2d(4, -self.h+2), (2, 2))
             )
-
-
-
-
         #body
-        pygame.draw.line(self.app.screen, (0,0,0), p, p+Vec2d(0,-self.r*6))
-        pygame.draw.line(self.app.screen, (0,0,0), p-Vec2d(-self.r,0), p-Vec2d(self.r,0))
-
+        pygame.draw.line(self.app.screen, (0,0,0), p, p+Vec2d(0,-6))
+        pygame.draw.line(self.app.screen, (0,0,0), p-Vec2d(-1,0), p-Vec2d(1,0))
         #arms
         pygame.draw.line(self.app.screen, (0,0,0),
-                p+Vec2d(-self.r*2,-5*self.r),
-                p+Vec2d(self.r*4,-5*self.r)
+                p+Vec2d(-2,-5),
+                p+Vec2d(4,-5)
                 )
         pygame.draw.line(self.app.screen, (0,0,0),
-                p+Vec2d(-self.r*2,-5*self.r),
-                p+Vec2d(-self.r*2,-5*self.r+1),
+                p+Vec2d(-2,-5),
+                p+Vec2d(-2,-6),
                 )
-
-        #sord
+        #sord TODO move me to sord
         pygame.draw.line(self.app.screen, (128,128,128),
-                p+Vec2d(self.r*4,-5*self.r),
-                p+Vec2d(self.r*12,-5*self.r)
+                p+Vec2d(4,-5),
+                p+Vec2d(12,-5)
                 )
         pygame.draw.line(self.app.screen, (128,128,128),
-                p+Vec2d(self.r*5,-6*self.r),
-                p+Vec2d(self.r*5,-4*self.r),
+                p+Vec2d(5,-6),
+                p+Vec2d(5,-4),
                 )
-
 
         #layugs
         for leg in self.legs:
@@ -300,34 +282,14 @@ class Player(Entity):
                 self.get_hit(1)
             except: AssertionError
 
-#        for entity in self.app.tracker[HealthPickup]:
-#            try:
-#                hit = self.shape.shapes_collide(entity.shape)
-#                if self.health < 3:
-#                    self.health += 1
-#                self.app.remove_entity(entity)
-#            except: AssertionError
-
-
 
         controller = self.app.controller
         dx, dy = controller.get_left_stick()
 
-        if controller.get_right_trigger():
-            base_force = 6000
-        else:
-            base_force = 1500
-
-        fast_walk = controller.get_button('x')
-
-        v = Vec2d(dx, dy)*base_force*self.m
-#        self.left_leg.foot_body.apply_force_at_local_point(v)
-
-
+        fast_walk = controller.get_right_trigger()
 
         stick_active = (dx*dx+dy*dy) > 0.5
         if stick_active:
-#            self.active_leg.foot_body.position += Vec2d(dx,dy)*10
             if not self.active_leg.active:
                 if self.walking:
                     if self.active_leg == self.left_leg:
