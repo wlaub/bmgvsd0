@@ -64,7 +64,8 @@ class ForgetfulBall(Ball):
     track_as = ['Ball']
     def __init__(self, app, pos):
         super().__init__(app, pos)
-        self.last_aggro = self.app.engine_time+7
+#        self.last_aggro = self.app.engine_time
+        self.last_aggro = 0
 
     def update(self):
         player = self.app.player
