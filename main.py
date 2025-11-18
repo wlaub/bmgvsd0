@@ -63,7 +63,7 @@ class PhysicsDemo:
         self.hs = self.h*self.scale
 
         self.main_screen = pygame.display.set_mode((self.ws, self.hs))
-        pygame.display.set_caption(f"BLDNG MAN: GAIDN VSP0")
+        pygame.display.set_caption(f"BLDNG MAN: GAIDN VSD0")
         self.clock = pygame.time.Clock()
 
         self.screen = pygame.Surface((self.w, self.h))
