@@ -1,7 +1,7 @@
 just playing around with a little walking simulator idea that happened to me the other day. obviously inspired by the likes of ginormo sword, sexy hiking, hammerfight, and probably something else i'm not thinking of right now.
 
 
-this uses python with pymunk and pygame. the support scripts are all for linux, so if not linux then your on you're own (not that you weren't already).
+this uses python with pymunk and pygame. you're probably looking at like 60 MB dependencies in a venv. the support scripts are all for linux, so if not linux then your on you're own (not that you weren't already).
 
 setup.sh creates a directory called "stats" for saving stats and a python3 virtualenv called venv with pymunk and pygame installed. run.sh sources the venv and runs the game with some version information from git. if any of this is not to your liking (maybe you want to manage your dependencies differently, use a specific python installation, or run outside of a repo), you really just need a stats directory, pymunk, and pygame, and you can get there however you'd like. the setup and run scripts are very shrimple, so it shouldn't be too difficult to make them do what you want (unless you just wanna do all the setup and stuff by hand).
 
