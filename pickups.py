@@ -8,137 +8,56 @@ import pymunk as pm
 import pymunk.util
 from pymunk import Vec2d
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
 from guns import Sord
 
-class HealthPickup(Entity):
+class HealthPickup(Pickup):
 
     def __init__(self, app, pos):
-        super().__init__()
-        self.app = app
-        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
-        body.position = Vec2d(*pos)
+        super().__init__(app, pos, 4)
 
-        self.r = 4
-        self.shape = shape = pm.Circle(body, self.r)
-#        shape.friction = 1.5
-        shape.sensor = True
-        shape.collision_type = COLLTYPE_DEFAULT
+    def on_player(self, player):
+        extra = max(0,player.health-3)
+        player.health += 1/(1+extra)
+        super().on_player(player)
 
-    def draw(self):
-        p = self.body.position
-
-        color = (0,0,255)
-
-        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
-
-    def update(self):
-        player = self.app.player
-        if player is None: return
-        try:
-            hit = self.shape.shapes_collide(player.shape)
-
-            extra = max(0,player.health-3)
-            player.health += 1/(1+extra)
-
-            self.app.remove_entity(self)
-        except AssertionError: pass
-
-class LengthPickup(Entity):
+class LengthPickup(Pickup):
 
     def __init__(self, app, pos):
-        super().__init__()
-        self.app = app
-        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
-        body.position = Vec2d(*pos)
+        super().__init__(app, pos, 4)
 
-        self.r = 4
-        self.shape = shape = pm.Circle(body, self.r)
-#        shape.friction = 1.5
-        shape.sensor = True
-        shape.collision_type = COLLTYPE_DEFAULT
+    def on_player(self, player):
+        for sord in self.app.tracker['Sord']:
+            sord.offset += Vec2d(1,0)
+        super().on_player(player)
 
-    def draw(self):
-        p = self.body.position
-
-        color = (0,0,255)
-
-        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
-
-    def update(self):
-        player = self.app.player
-        if player is None: return
-        try:
-            hit = self.shape.shapes_collide(player.shape)
-
-            for sord in self.app.tracker['Sord']:
-                sord.offset += Vec2d(1,0)
-
-            self.app.remove_entity(self)
-        except AssertionError: pass
-
-
-
-class LoreOrePickup(Entity):
+class LoreOrePickup(Pickup):
 
     def __init__(self, app, pos):
-        super().__init__()
-        self.app = app
-        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
-        body.position = Vec2d(*pos)
+        super().__init__(app, pos, 2)
 
-        self.r = 2
-        self.shape = shape = pm.Circle(body, self.r)
-#        shape.friction = 1.5
-        shape.sensor = True
-        shape.collision_type = COLLTYPE_DEFAULT
+    def on_player(self, player):
+        self.app.lore_score += 1
+        super().on_player(player)
 
-    def draw(self):
-        p = self.body.position
-
-        color = (0,0,255)
-
-        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
-
-    def update(self):
-        player = self.app.player
-        if player is None: return
-        try:
-            hit = self.shape.shapes_collide(player.shape)
-            self.app.lore_score += 1
-            self.app.remove_entity(self)
-        except AssertionError: pass
-
-
-
-class BeanPickup(Entity):
+class BeanPickup(Pickup):
 
     def __init__(self, app, pos):
-        super().__init__()
-        self.app = app
-        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
-        body.position = Vec2d(*pos)
+        super().__init__(app, pos, 2)
 
-        self.r = 2
-        self.shape = shape = pm.Circle(body, self.r)
-#        shape.friction = 1.5
-        shape.sensor = True
-        shape.collision_type = COLLTYPE_DEFAULT
+    def on_player(self, player):
+        self.app.beans += 1
+        super().on_player(player)
 
-    def draw(self):
-        p = self.body.position
+class CoffeePotPickup(Pickup):
 
-        color = (0,0,255)
+    def __init__(self, app, pos):
+        super().__init__(app, pos, 16)
 
-        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
-
-    def update(self):
-        player = self.app.player
-        if player is None: return
-        try:
-            hit = self.shape.shapes_collide(player.shape)
-            self.app.beans += 1
-            self.app.remove_entity(self)
-        except AssertionError: pass
+    def on_player(self, player):
+        if self.app.beans > 0:
+            self.app.beans -= 1
+            player.boost_speed(amt=10, dur=10)
+            super().on_player(player)
 
 

@@ -9,12 +9,11 @@ import pymunk.util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
-from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup
+from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 class Ball(Entity):
     def __init__(self, app, pos):
-        super().__init__()
-        self.app = app
+        super().__init__(app)
         self.r =r= 4+4*random.random()
         self.m = m = r*r/1.8
 
@@ -58,16 +57,19 @@ class Ball(Entity):
         dead = self._basic_hit_spell(dmg)
         if dead:
 
-
-            if random.random() > 1-(self.r-5)/16:
+            if random.random() > 1-(self.r-5)/16: #heath drop
                 self.app.add_entity(HealthPickup(self.app, self.body.position))
-            elif random.random() > 1-self.r/8:
+            elif random.random() > 1-self.r/8: #lore/bean
                 if random.random() > self.app.field_richness:
                     self.app.add_entity(BeanPickup(self.app, self.body.position))
                 else:
                     self.app.add_entity(LoreOrePickup(self.app, self.body.position))
-            elif random.random() > .75 and self.r > 7:
+            elif random.random() > .75 and self.r > 7: #length pickup
                 self.app.add_entity(LengthPickup(self.app, self.body.position))
+            elif random.random() > 0.97-0.03*self.app.beans:
+                if len(self.app.tracker['CoffeePotPickup']) == 0:
+                    self.app.add_entity(CoffeePotPickup(self.app, self.body.position))
+
 
 class ForgetfulBall(Ball):
     track_as = ['Ball']
@@ -111,7 +113,7 @@ class ForgetfulBall(Ball):
 
 class Wall(Entity):
     def __init__(self, app, start, end):
-        self.app = app
+        super().__init__(app)
         self.start = start
         self.end = end
 

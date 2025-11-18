@@ -5,6 +5,10 @@ import pygame
 
 from pygame.locals import *
 
+import pymunk as pm
+import pymunk.util
+from pymunk import Vec2d
+
 COLLTYPE_DEFAULT = 0
 
 class Controller:
@@ -61,7 +65,9 @@ class Controller:
 
 class Entity:
     track_as = []
-    def __init__(self):
+    def __init__(self, app, parent = None):
+        self.app = app
+        self.parent = parent
         self.last_hit = -100
         self.grace_time = 0.2
         self.health = 1
@@ -93,4 +99,33 @@ class Entity:
                 self.app.remove_entity(self)
                 return True
         return False
+
+class Pickup(Entity):
+    def __init__(self, app, pos, r):
+        super().__init__(app)
+        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
+        body.position = Vec2d(*pos)
+
+        self.r = r
+        self.shape = shape = pm.Circle(body, self.r)
+        shape.sensor = True
+        shape.collision_type = COLLTYPE_DEFAULT
+
+    def draw(self):
+        p = self.body.position
+        color = (0,0,255)
+        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
+
+    def update(self):
+        player = self.app.player
+        if player is None: return
+        try:
+            hit = self.shape.shapes_collide(player.shape)
+            self.on_player(player)
+
+        except AssertionError: pass
+
+    def on_player(self, player):
+        self.app.remove_entity(self)
+
 

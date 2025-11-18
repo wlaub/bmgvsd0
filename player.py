@@ -17,11 +17,12 @@ from entities import Ball, Wall
 from pickups import HealthPickup
 from guns import Sord
 
-class Leg:
+class Leg(Entity):
     debug_draw = False
 
-    def __init__(self, app, parent_body, pos, l, offset, m):
-        self.app = app
+    def __init__(self, app, parent, pos, l, offset, m):
+        super().__init__(app, parent)
+        parent_body = parent.body
         self.m = m
 
         x,y = offset
@@ -82,7 +83,6 @@ class Leg:
 
     def deactivate(self, other):
         #TODO turn all this nonsense into a proper state machine
-        self.speed = 12
         dx = 2*(random.random()-0.5)
         rest = self.x*2.5
 
@@ -108,7 +108,7 @@ class Leg:
 class Player(Entity):
     debug_draw = False
     def __init__(self, app, pos):
-        super().__init__()
+        super().__init__(app)
         self.health = 3
         self.grace_time = 1
         self.app = app
@@ -125,6 +125,12 @@ class Player(Entity):
         self.back_hand_position = Vec2d(-2,-4)
         self.back_elbow_position = Vec2d(-2,-5)
 
+        #stuff
+        self.bean_hot_counter = 0
+        self.bean_hot_potency = 1
+        self.walk_rate = 1
+
+        #physics
         self.shape = pm.Poly(self.body, [
             (-w/2, -h+w),
             (-w/2, -h),
@@ -135,8 +141,8 @@ class Player(Entity):
 
         self.feets = []
 
-        self.left_leg = Leg(self.app, self.body, pos, leg, (-self.hips,0), m)
-        self.right_leg = Leg(self.app, self.body, pos, leg, (self.hips,0), m)
+        self.left_leg = Leg(self.app, self, pos, leg, (-self.hips,0), m)
+        self.right_leg = Leg(self.app, self, pos, leg, (self.hips,0), m)
 
         self.legs = [self.left_leg, self.right_leg]
         self.active_leg_idx = 0
@@ -152,10 +158,14 @@ class Player(Entity):
         c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
         self.app.space.add(c)
 
-        self.angle = 0
-
         self.guns = []
         self.guns.append(Sord(self.app, self))
+
+    def boost_speed(self, amt, dur):
+        if self.bean_hot_counter > self.app.engine_time:
+            return
+        self.bean_hot_potency = amt
+        self.bean_hot_counter = self.app.engine_time+dur
 
     def set_center_position(self):
         left = self.left_leg.foot_body.position
@@ -252,6 +262,13 @@ class Player(Entity):
         for gun in self.guns:
             gun.update()
 
+        #boosts
+        dt = self.bean_hot_counter - self.app.engine_time
+        if dt > 0:
+            self.walk_speed = self.bean_hot_potency
+        else:
+            self.walk_speed = 1
+
         #controls
         speed = abs(self.body.velocity)
         controller = self.app.controller
@@ -297,10 +314,10 @@ class Player(Entity):
 
                 if not fast_walk:
                     R = self.leg*1
-                    self.active_leg.speed = 7
+                    self.active_leg.speed = 7*self.walk_speed
                 else:
                     R = self.leg*7
-                    self.active_leg.speed = 3
+                    self.active_leg.speed = 3*self.walk_speed
 
                 c1 = dr2*x0
                 c2 = abs(dx*R*dr)
@@ -339,9 +356,11 @@ class Player(Entity):
         #deactivate and shufle in place
         if not self.walking and not stick_active and not self.active_leg.active:
             if self.active_leg == self.left_leg:
+                self.right_leg.speed=12*self.walk_speed
                 self.right_leg.deactivate(self.left_leg)
                 self.active_leg = self.right_leg
             elif self.active_leg == self.right_leg:
+                self.left_leg.speed=12*self.walk_speed
                 self.left_leg.deactivate(self.right_leg)
                 self.active_leg = self.left_leg
 

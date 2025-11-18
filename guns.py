@@ -12,8 +12,7 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT
 
 class Sord(Entity):
     def __init__(self, app, parent):
-        self.app = app
-        self.parent = parent
+        super().__init__(app, parent)
         self.last_hit = self.app.engine_time
 
         self.offset = self.parent.front_hand_position + Vec2d(8,0)
