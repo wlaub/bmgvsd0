@@ -126,6 +126,69 @@ class Entity:
                 return True
         return False
 
+class BallEnemy(Entity):
+    def __init__(self, app, pos, r, m, health, speed=150, friction =-10):
+        super().__init__(app)
+        self.r = r
+        self.m = m = r*r/1.8
+        self.speed = speed*m
+        self.friction = friction*m
+
+        self.moment = pm.moment_for_circle(m, 0, r)
+        self.body = body = pm.Body(m, self.moment)
+        body.position = Vec2d(*pos)
+
+        self.shape = shape = pm.Circle(body, r)
+#        shape.friction = 1.5
+        shape.collision_type = COLLTYPE_DEFAULT
+
+        self.health = health
+
+    def draw(self):
+        p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
+        p = self.app.jj(p)
+
+        color = (0,0,255)
+        if self.app.engine_time-self.last_hit < 0.08:
+            color = (255,0,0)
+
+        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
+
+
+    def hit_player(self, player, dmg=1):
+        try:
+            hit = self.shape.shapes_collide(player.shape)
+            player.get_hit(dmg)
+        except AssertionError: pass
+
+    def seek_player(self, player):
+        delta = player.body.position-self.body.position
+        delta /= abs(delta)
+        self.body.apply_force_at_local_point(delta*self.speed)
+
+    def apply_friction(self, player):
+        friction = self.body.velocity*self.friction
+        self.body.apply_force_at_local_point(friction)
+
+
+    def update(self):
+        player = self.app.player
+        if player is None: return
+        self.hit_player(player)
+        self.seek_player(player)
+        self.apply_friction(player)
+
+    def get_hit(self, dmg):
+        dead = self._basic_hit_spell(dmg)
+        if dead:
+            for drop in self.get_drops():
+                self.app.add_entity(drop)
+            self.app.remove_entity(self)
+
+    def get_drops(self):
+        return []
+
+
 class Pickup(Entity):
     def __init__(self, app, pos, r):
         super().__init__(app)

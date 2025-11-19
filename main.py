@@ -220,7 +220,7 @@ class PhysicsDemo:
             self.draw()
 
         self.clock.tick(60)
-#        pygame.display.set_caption(f"fps: {len(self.entities)}, {self.clock.get_fps():.2f}")
+#        pygame.display.set_caption(f"fps: {len(self.tracker['Ball'])}, {self.clock.get_fps():.2f}")
 
 demo = PhysicsDemo()
 demo.run()

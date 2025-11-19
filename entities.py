@@ -8,7 +8,7 @@ import pymunk as pm
 import pymunk.util
 from pymunk import Vec2d
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT
+from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 """
@@ -20,65 +20,27 @@ like the camera upgrade
 diver enemy targets player when it comes on screen and goes until offscreen
 """
 
-class Ball(Entity):
+class Ball(BallEnemy):
     def __init__(self, app, pos):
-        super().__init__(app)
-        self.r =r= 4+4*random.random()
-        self.m = m = r*r/1.8
+        r= 4+4*random.random()
+        m = r*r/1.8
+        h = r/4
+        super().__init__(app, pos, r, m, h)
 
-
-        self.moment = pm.moment_for_circle(m, 0, r)
-        self.body = body = pm.Body(m, self.moment)
-        body.position = Vec2d(*pos)
-
-        self.shape = shape = pm.Circle(body, r)
-#        shape.friction = 1.5
-        shape.collision_type = COLLTYPE_DEFAULT
-
-        self.health = r/4
-
-    def draw(self):
-        p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
-        p = self.app.jj(p)
-
-        color = (0,0,255)
-        if self.app.engine_time-self.last_hit < 0.08:
-            color = (255,0,0)
-
-        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
-
-    def update(self):
-        player = self.app.player
-        if player is None: return
-
-        try:
-            hit = self.shape.shapes_collide(player.shape)
-            player.get_hit(1)
-        except AssertionError: pass
-
-        delta = player.body.position-self.body.position
-        delta /=abs(delta)
-        self.body.apply_force_at_local_point(delta*150*self.m)
-
-        friction = self.body.velocity*-10*self.m
-        self.body.apply_force_at_local_point(friction)
-
-    def get_hit(self, dmg):
-        dead = self._basic_hit_spell(dmg)
-        if dead:
-
-            if random.random() > 1-(self.r-5)/16: #heath drop
-                self.app.add_entity(HealthPickup(self.app, self.body.position))
-            elif random.random() > 1-self.r/8: #lore/bean
-                if random.random() > self.app.field_richness:
-                    self.app.add_entity(BeanPickup(self.app, self.body.position))
-                else:
-                    self.app.add_entity(LoreOrePickup(self.app, self.body.position))
-            elif random.random() > .75 and self.r > 7: #length pickup
-                self.app.add_entity(LengthPickup(self.app, self.body.position))
-            elif random.random() > 0.97-0.03*self.app.beans:
-                if len(self.app.tracker['CoffeePotPickup']) == 0:
-                    self.app.add_entity(CoffeePotPickup(self.app, self.body.position))
+    def get_drops(self):
+        if random.random() > 1-(self.r-5)/16: #heath drop
+            return [HealthPickup(self.app, self.body.position)]
+        elif random.random() > 1-self.r/8: #lore/bean
+            if random.random() > self.app.field_richness:
+                return [BeanPickup(self.app, self.body.position)]
+            else:
+                return [LoreOrePickup(self.app, self.body.position)]
+        elif random.random() > .75 and self.r > 7: #length pickup
+            return [LengthPickup(self.app, self.body.position)]
+        elif random.random() > 0.97-0.03*self.app.beans:
+            if len(self.app.tracker['CoffeePotPickup']) == 0:
+                return [CoffeePotPickup(self.app, self.body.position)]
+        return []
 
 
 class ForgetfulBall(Ball):
@@ -90,17 +52,10 @@ class ForgetfulBall(Ball):
 
     def update(self):
         player = self.app.player
-
-        if player is None:
-            return
-
-        try:
-            hit = self.shape.shapes_collide(player.shape)
-            player.get_hit(1)
-        except AssertionError: pass
+        if player is None: return
+        self.hit_player(player)
 
         dt = self.app.engine_time-self.last_aggro
-
         delta = player.body.position-self.body.position
         r = abs(delta)
 
@@ -113,11 +68,9 @@ class ForgetfulBall(Ball):
                 go = True
 
         if go:
-            delta /= r
-            self.body.apply_force_at_local_point(delta*150*self.m)
+            self.seek_player(player)
 
-        friction = self.body.velocity*-10*self.m
-        self.body.apply_force_at_local_point(friction)
+        self.apply_friction(player)
 
 
 
