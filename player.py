@@ -38,15 +38,17 @@ class Player(Entity):
         self.w =w= 10
         self.h =h= 17
         self.hips = 1
-        self.leg = leg = 3
+        self.leg = 3
 
-        self.slots = {
-            'front_hand': None,
-            'back_hand': None,
-            'legs': None,
-            'feets': None,
-            'eyes': None,
+        self.slots = {}
+
+        self.base_slots = {
+            'front_hand', 'back_hand',
+            'legs', 'feets', 'eyes'
             }
+
+        for slot in self.base_slots:
+            self.create_slot(slot)
 
         self.shoulder_position = Vec2d(0,-5)
         self.front_hand_position = Vec2d(3,-5)
@@ -96,6 +98,9 @@ class Player(Entity):
         c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
         self.app.space.add(c)
 
+    def create_slot(self, slot):
+        if not slot in self.slots.keys():
+            self.slots[slot] = None
 
     def equip(self, slot, entity):
         if slot in entity.valid_slots and self.slots[slot] is None:
