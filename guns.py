@@ -8,9 +8,10 @@ import pymunk as pm
 import pymunk.util
 from pymunk import Vec2d
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 
-class Sord(Entity):
+class Sord(Equipment):
+    valid_slots = ['front_hand']
     def __init__(self, app, parent):
         super().__init__(app, parent)
         self.last_hit = self.app.engine_time
@@ -26,16 +27,14 @@ class Sord(Entity):
 
         self.lines = [
                 [
-                self.parent.front_hand_position,
+                self.parent.front_hand_position+Vec2d(1,0),
                 self.offset,
                 ],
                 [
-                self.parent.front_hand_position + Vec2d(1,-1),
-                self.parent.front_hand_position + Vec2d(1,1)
+                self.parent.front_hand_position + Vec2d(2,-1),
+                self.parent.front_hand_position + Vec2d(2,1)
                 ],
             ]
-
-        self.app.add_entity(self)
 
     def update(self):
         controller = self.app.controller

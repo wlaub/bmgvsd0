@@ -96,6 +96,7 @@ class Camera:
 
 class Entity:
     track_as = []
+
     def __init__(self, app, parent = None):
         self.app = app
         self.parent = parent
@@ -130,6 +131,10 @@ class Entity:
                 self.app.remove_entity(self)
                 return True
         return False
+
+class Equipment(Entity):
+    valid_slots = []
+    is_feets = False
 
 class BallEnemy(Entity):
     def __init__(self, app, pos, r, m, health, speed=150, friction =-10):

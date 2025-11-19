@@ -40,8 +40,21 @@ class Player(Entity):
         self.hips = 1
         self.leg = leg = 3
 
-        self.front_hand_position = Vec2d(4,-5)
-        self.back_hand_position = Vec2d(-2,-4)
+        self.slots = {
+            'front_hand': None,
+            'back_hand': None,
+            'legs': None,
+            'feets': None,
+            'eyes': None,
+            }
+
+        self.shoulder_position = Vec2d(0,-5)
+        self.front_hand_position = Vec2d(3,-5)
+        self.front_elbow_position = Vec2d(2,-5)
+        self.front_unarmed_position = Vec2d(2,-4)
+
+        self.back_hand_position = Vec2d(-3,-5)
+        self.back_unarmed_position = Vec2d(-2,-4)
         self.back_elbow_position = Vec2d(-2,-5)
 
         #stuff
@@ -66,11 +79,14 @@ class Player(Entity):
         self.active_leg_idx = 0
         self.active_leg = self.legs[self.active_leg_idx]
 
-
         #feets
         self.feets = []
         feets = Exoskeleton(self.app, self, pos, self.hips)
-        self.feets.append(feets)
+        self.equip('legs', feets)
+
+        #hayunds
+        sord = Sord(self.app, self)
+        self.equip('front_hand', sord)
 
         #body control
         self.center_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
@@ -80,8 +96,22 @@ class Player(Entity):
         c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
         self.app.space.add(c)
 
-        self.guns = []
-        self.guns.append(Sord(self.app, self))
+
+    def equip(self, slot, entity):
+        if slot in entity.valid_slots and self.slots[slot] is None:
+            self.slots[slot] = entity
+            self.app.add_entity(entity)
+            if entity.is_feets:
+                self.feets.append(entity)
+
+    def unequip(self, slot):
+        if self.slots[slot] is not None:
+            entity = self.slots[slot]
+            self.app.remove_entity(entity)
+            self.slots[slot] = None
+            if entity.is_feets:
+                self.feets.remove(entity)
+
 
     def boost_speed(self, amt, dur):
         if self.bean_hot_counter > self.app.engine_time:
@@ -105,10 +135,9 @@ class Player(Entity):
         space.add(self.body, self.shape)
 
     def on_remove(self):
-        for gun in self.guns:
-            self.app.remove_entity(gun)
-        for feet in self.feets:
-            self.app.remove_entity(feet)
+        for slot, entity in self.slots.items():
+            self.unequip(slot)
+
         self.app.player = None
         self.write_session_stats()
 
@@ -161,14 +190,35 @@ class Player(Entity):
         pygame.draw.line(self.app.screen, (0,0,0), p, p+Vec2d(0,-6))
         pygame.draw.line(self.app.screen, (0,0,0), p-Vec2d(-1,0), p-Vec2d(1,0))
         #arms
-        pygame.draw.line(self.app.screen, (0,0,0),
-                p+self.back_elbow_position,
+        if self.slots['front_hand'] is not None:
+            pygame.draw.line(self.app.screen, (0,0,0),
+                p+self.shoulder_position,
                 p+self.front_hand_position,
                 )
-        pygame.draw.line(self.app.screen, (0,0,0),
-                p+self.back_elbow_position,
+        else:
+            pygame.draw.line(self.app.screen, (0,0,0),
+                p+self.shoulder_position,
+                p+self.front_elbow_position,
+                )
+            pygame.draw.line(self.app.screen, (0,0,0),
+                p+self.front_elbow_position,
+                p+self.front_unarmed_position,
+                )
+        if self.slots['back_hand'] is not None:
+            pygame.draw.line(self.app.screen, (0,0,0),
+                p+self.shoulder_position,
                 p+self.back_hand_position,
                 )
+        else:
+            pygame.draw.line(self.app.screen, (0,0,0),
+                p+self.shoulder_position,
+                p+self.back_elbow_position,
+                )
+            pygame.draw.line(self.app.screen, (0,0,0),
+                p+self.back_elbow_position,
+                p+self.back_unarmed_position,
+                )
+
 
         #layugs
         for leg in self.legs:
@@ -198,14 +248,14 @@ class Player(Entity):
         self.aim = aim = Vec2d(dx,dy)
 
         for feet in self.feets:
-            feet.update()
+            feet.pre_foot_update()
 
         #update legs
         self.active_leg.update()
 
         idle = True
         for feet in self.feets:
-            feet.post_update()
+            feet.post_foot_update()
             if feet.walking:
                 idle = False
 

@@ -14,7 +14,7 @@ from enum import Enum
 
 from pymunk import Vec2d
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 
 class StepState(Enum):
     idle = 0
@@ -121,7 +121,9 @@ class Leg(Entity):
         self.step_start_time = self.app.engine_time
 
 
-class Exoskeleton(Entity):
+class Exoskeleton(Equipment):
+    valid_slots = ['legs']
+    is_feets = True
     def __init__(self, app, parent, pos, hips, leg_length = 3):
         super().__init__(app, parent)
 
@@ -138,6 +140,9 @@ class Exoskeleton(Entity):
         pass
 
     def update(self):
+        pass
+
+    def pre_foot_update(self):
         fast_walk = self.parent.fast_walk
         stick_active = self.parent.stick_active
         aim = self.parent.aim
@@ -202,7 +207,7 @@ class Exoskeleton(Entity):
 
             self.walking = True
 
-    def post_update(self):
+    def post_foot_update(self):
 
         fast_walk = self.parent.fast_walk
         stick_active = self.parent.stick_active
