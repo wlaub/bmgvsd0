@@ -12,15 +12,18 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 """
-what if like a forgetful ball that stops on top of a bean
-with the bean centered turned into an EyeBall that drops
-like the camera upgrade
+zippy ball pursues and eats beans?
+if it gets enough it transforms into eye ball and multiple eye balls can merge into eye boss
+and eye boss drops portable camera pickup
+
+
+forgetful ball rests on lore wil eat it and ??
 """
 
 class Zippy(BallEnemy):
     track_as = ['Enemy']
     def __init__(self, app, pos):
-        super().__init__(app, pos, 3, 32*32/1.8, 2, 1200)
+        super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
         self.direction = Vec2d(0,0)
         self.going = False
         self.cooldown = self.app.engine_time
