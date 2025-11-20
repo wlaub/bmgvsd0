@@ -97,9 +97,11 @@ class Camera:
             return
 
         if self.parent is not None:
-            self.position = self.parent.body.position+self.half_off
+            self.reference_position = self.parent.body.position
+
         elif position is not None:
-            self.position = Vec2d(*position)+self.half_off
+            self.reference_position = Vec2d(*position)
+        self.position = self.reference_position+self.half_off
 
         self.left = self.position.x
         self.right = self.position.x+self.w

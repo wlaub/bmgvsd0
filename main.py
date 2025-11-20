@@ -105,8 +105,6 @@ class PhysicsDemo:
 
         self.player = Player(self, (0,0))
 
-#        self.connect_camera(self.player)
-
         self.add_entity(self.player)
 
         self.last_spawn = self.engine_time
@@ -211,14 +209,22 @@ class PhysicsDemo:
                 tick = True
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 self.render_physics = not self.render_physics
-#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-#                self.camera.set_scale(1)
-#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-#                self.camera.set_scale(2)
-#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-#                self.camera.set_scale(4)
-#            elif event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-#                self.camera.set_scale(8)
+            elif False:
+                if event.type == pygame.KEYDOWN and event.key == ord('`'):
+                    pass
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                    if self.camera.parent is None:
+                        self.connect_camera(self.player)
+                    else:
+                        self.disconnect_camera()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_1:
+                    self.camera.set_scale(1)
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
+                    self.camera.set_scale(2)
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
+                    self.camera.set_scale(4)
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_4:
+                    self.camera.set_scale(8)
 
         if self.run_physics or tick:
             self.do_updates()
