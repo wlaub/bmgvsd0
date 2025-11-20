@@ -153,6 +153,35 @@ class ForgetfulBall(Ball):
 
         self.apply_friction(player)
 
+class LustfulBall(Ball):
+    track_as = ['Ball', 'Enemy']
+    def __init__(self, app, pos):
+        super().__init__(app, pos)
+        self.lores = 0
+
+    def update(self):
+        player = self.app.player
+        if player is None: return
+        self.hit_player(player)
+
+        target = player
+        lores = self.app.tracker['LoreOrePickup']
+
+        if len(lores) > 0:
+            target = lores[0]
+
+            try:
+                hit = self.shape.shapes_collide(target.shape)
+                self.lores+= 1
+                self.app.remove_entity(target)
+                target = player
+            except AssertionError: pass
+
+
+        self.seek_player(target)
+
+        self.apply_friction(player)
+
 
 
 class Wall(Entity):

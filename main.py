@@ -14,7 +14,7 @@ from pymunk import pygame_util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
-from entities import Ball, Wall, ForgetfulBall, Zippy
+from entities import Ball, Wall, ForgetfulBall, Zippy, LustfulBall
 from player import Player
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
@@ -144,6 +144,7 @@ class PhysicsDemo:
             new_entity = Zippy(self, pos)
         elif random.random() < 0.15:
             new_entity = ForgetfulBall(self, pos)
+#            new_entity = LustfulBall(self, pos)
         else:
             new_entity = Ball(self, pos)
 
