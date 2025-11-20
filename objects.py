@@ -121,6 +121,11 @@ class Camera:
 class Entity:
     track_as = []
 
+    def __str__(self):
+        p = self.position
+        name = self.__class__.__name__
+        return f'E {p.x:6.1f} {p.y:6.1f} {name}'
+
     def __init__(self, app, parent = None):
         self.app = app
         self.parent = parent
@@ -208,8 +213,10 @@ class BallEnemy(Entity):
         friction = self.body.velocity*self.friction
         self.body.apply_force_at_local_point(friction)
 
-
     def update(self):
+        self.normal_update()
+
+    def normal_update(self):
         player = self.app.player
         if player is None: return
         self.hit_player(player)

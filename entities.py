@@ -1,6 +1,7 @@
 import math
 import random
 import time
+import enum
 
 import pygame
 
@@ -100,38 +101,47 @@ class Zippy(BallEnemy):
         return result
 
 
+class BallState(enum.Enum):
+    NORML = 0
+    FGTFL = 1
+    LSTFL = 2
+
 class Ball(BallEnemy):
     track_as = ['Enemy']
-    def __init__(self, app, pos):
-        r= 4+4*random.random()
-        m = r*r/1.8
-        h = r/4
+
+    update_map = {
+        BallState.NORML: BallEnemy.update,
+        }
+
+    def __str__(self):
+        p = self.position
+        return f'E {p.x:6.1f} {p.y:6.1f} Ball {self.state}'
+
+    def __init__(self, app, pos, r = None, m = None, h = None):
+        if r is None:
+            r= 4+4*random.random()
+            m = r*r/1.8
+            h = r/4
         super().__init__(app, pos, r, m, h)
-
-    def get_drops(self):
-        if random.random() > 1-(self.r-5)/16: #heath drop
-            return [HealthPickup(self.app, self.body.position)]
-        elif random.random() > 1-self.r/8: #lore/bean
-            if random.random() > self.app.field_richness:
-                return [BeanPickup(self.app, self.body.position)]
-            else:
-                return [LoreOrePickup(self.app, self.body.position)]
-        elif random.random() > .75 and self.r > 7: #length pickup
-            return [LengthPickup(self.app, self.body.position)]
-        elif random.random() > 0.97-0.03*self.app.beans:
-            if len(self.app.tracker['CoffeePotPickup']) == 0:
-                return [CoffeePotPickup(self.app, self.body.position)]
-        return []
-
-
-class ForgetfulBall(Ball):
-    track_as = ['Ball', 'Enemy']
-    def __init__(self, app, pos):
-        super().__init__(app, pos)
-#        self.last_aggro = self.app.engine_time
         self.last_aggro = 0
+        self._going = True
+        self.lores = 0
 
-    def update(self):
+        if random.random() > 0.15:
+            self.set_state(BallState.NORML)
+        else:
+            self.set_state(BallState.FGTFL)
+
+    def set_state(self, state):
+        self.state = state
+        if state is BallState.NORML:
+            self.update = self.normal_update
+        elif state is BallState.FGTFL:
+            self.update = self.forgetful_update
+        elif state is BallState.LSTFL:
+            self.update = self.lustful_update
+
+    def forgetful_update(self):
         player = self.app.player
         if player is None: return
         self.hit_player(player)
@@ -140,26 +150,28 @@ class ForgetfulBall(Ball):
         delta = player.body.position-self.body.position
         r = abs(delta)
 
-        go = False
-        if dt < 10:
-            go = True
-        elif dt > 15:
+        if self._going and dt > 10:
+            self._going = False
+            lores = self.app.tracker['LoreOrePickup']
+            for lore in lores:
+                try:
+                    hit = self.shape.shapes_collide(lore.shape)
+                    self.app.remove_entity(lore)
+                    self.set_state(BallState.LSTFL)
+                    break
+                except AssertionError: pass
+
+        if not self._going and dt > 15:
             if r < 80:
                 self.last_aggro = self.app.engine_time
-                go = True
+                self._going = True
 
-        if go:
+        if self._going:
             self.seek_player(player)
 
         self.apply_friction(player)
 
-class LustfulBall(Ball):
-    track_as = ['Ball', 'Enemy']
-    def __init__(self, app, pos):
-        super().__init__(app, pos)
-        self.lores = 0
-
-    def update(self):
+    def lustful_update(self):
         player = self.app.player
         if player is None: return
         self.hit_player(player)
@@ -177,11 +189,24 @@ class LustfulBall(Ball):
                 target = player
             except AssertionError: pass
 
-
         self.seek_player(target)
 
         self.apply_friction(player)
 
+    def get_drops(self):
+        if random.random() > 1-(self.r-5)/16: #heath drop
+            return [HealthPickup(self.app, self.body.position)]
+        elif random.random() > 1-self.r/8: #lore/bean
+            if random.random() > self.app.field_richness:
+                return [BeanPickup(self.app, self.body.position)]
+            else:
+                return [LoreOrePickup(self.app, self.body.position)]
+        elif random.random() > .75 and self.r > 7: #length pickup
+            return [LengthPickup(self.app, self.body.position)]
+        elif random.random() > 0.97-0.03*self.app.beans:
+            if len(self.app.tracker['CoffeePotPickup']) == 0:
+                return [CoffeePotPickup(self.app, self.body.position)]
+        return []
 
 
 class Wall(Entity):

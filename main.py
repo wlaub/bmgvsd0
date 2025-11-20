@@ -14,7 +14,7 @@ from pymunk import pygame_util
 from pymunk import Vec2d
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
-from entities import Ball, Wall, ForgetfulBall, Zippy, LustfulBall
+from entities import Ball, Wall, Zippy
 from player import Player
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
@@ -142,8 +142,8 @@ class PhysicsDemo:
         pos = Vec2d(x,y)
         if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
             new_entity = Zippy(self, pos)
-        elif random.random() < 0.15:
-            new_entity = ForgetfulBall(self, pos)
+#        elif random.random() < 0.15:
+#            new_entity = ForgetfulBall(self, pos)
 #            new_entity = LustfulBall(self, pos)
         else:
             new_entity = Ball(self, pos)
@@ -217,9 +217,7 @@ class PhysicsDemo:
                     print('okay')
                     for entity in self.entities:
                         pos = entity.position - self.camera.reference_position
-                        name = entity.__class__.__name__
-                        if name == 'Ball': continue
-                        print(f'  {name} {pos}')
+                        print(f'  {entity}')
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     if self.camera.parent is None:
                         self.connect_camera(self.player)
