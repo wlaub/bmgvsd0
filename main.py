@@ -211,7 +211,12 @@ class PhysicsDemo:
                 self.render_physics = not self.render_physics
             elif False:
                 if event.type == pygame.KEYDOWN and event.key == ord('`'):
-                    pass
+                    print('okay')
+                    for entity in self.entities:
+                        pos = entity.position - self.camera.reference_position
+                        name = entity.__class__.__name__
+                        if name == 'Ball': continue
+                        print(f'  {name} {pos}')
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                     if self.camera.parent is None:
                         self.connect_camera(self.player)

@@ -132,7 +132,9 @@ class Exoskeleton(Equipment):
 
         self.walking = False
 
-        self.app.add_entity(self)
+    @property
+    def position(self):
+        return self.parent.body.position
 
     def add_to_space(self, space):
         pass

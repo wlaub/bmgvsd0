@@ -128,6 +128,10 @@ class Entity:
         self.grace_time = 0.2
         self.health = 1
 
+    @property
+    def position(self):
+        return self.body.position
+
     def draw(self):
         pass
     def update(self):
