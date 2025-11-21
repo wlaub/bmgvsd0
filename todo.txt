@@ -1,0 +1,115 @@
+here be spoilers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+registry.py
+    entity class registry
+    register decorators  
+    access entity classes by category etc
+    allow entity to be spawned without importing
+        take a kwargs and pass it to the constructor with a copy of the kwargs that the entity can store for spawning children or w/e i am like 51% sure this is a good idea that i have, in the past, yearned for.
+
+debug console
+    pause simulation
+    list entities in a pane
+    show player, camera location
+    spawn entities
+    inspect entities
+    make unkillable
+    give bean/lore
+    etc
+
+figure out the right way to do collision
+    need to be able to quickly get any pair of entities that collided
+
+boss 1
+
+camera movement mechanics
+
+geographical support conditions
+    parameters for controlling spawning by location
+    max number of <entity>
+    scaling coefficients
+    that kind of thing
+    tunable parameters used by spawner entities to make
+    spawn decisions that vary with position (of the camera)
+
+spawner entities
+    spawn enemies when within range of camera
+ 
+
+# down the stack:
+
+saving/loading
+
+spawner entity creation mechanics
+
+camera zoom mechanics
+
+lustful ball
+
+rooms/transitions
+
+geography persistence mechanics
+
+unfuck the cursor
+
+keyboard controls:
+    walk toward mouse if in window
+    space for fast walk
+
+
+
+
