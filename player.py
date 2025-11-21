@@ -17,10 +17,7 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT
-from entities import Ball, Wall
-from pickups import HealthPickup
-from guns import Sord
-from feets import Leg, Exoskeleton, StepState
+from feets import StepState
 
 @register
 class Player(Entity):
@@ -77,8 +74,8 @@ class Player(Entity):
         self.shape.collision_type = COLLTYPE_DEFAULT
 
         #layugs
-        self.left_leg = Leg(self.app, self, pos, self.leg, (-self.hips,0))
-        self.right_leg = Leg(self.app, self, pos, self.leg, (self.hips,0))
+        self.left_leg = self.app.create_entity('Leg', self, pos, self.leg, (-self.hips,0))
+        self.right_leg = self.app.create_entity('Leg', self, pos, self.leg, (self.hips,0))
 
         self.legs = [self.left_leg, self.right_leg]
         self.active_leg_idx = 0
@@ -86,11 +83,12 @@ class Player(Entity):
 
         #feets
         self.feets = []
-        feets = Exoskeleton(self.app, self, pos, self.hips)
+        feets = self.app.create_entity('Exoskeleton', self, pos, self.hips)
+
         self.equip('legs', feets)
 
         #hayunds
-        sord = Sord(self.app, self)
+        sord = self.app.create_entity('Sord', self)
         self.equip('front_hand', sord)
 
         #body control

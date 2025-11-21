@@ -11,7 +11,6 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
-from guns import Sord
 
 @register
 class HealthPickup(Pickup):

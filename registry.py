@@ -7,8 +7,6 @@ import functools
 
 from collections import defaultdict
 
-
-
 class EntityRegistry:
 
     def __init__(self):

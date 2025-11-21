@@ -12,7 +12,7 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
-from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
+#from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 """
 need a debug console that can spawn enemies and stuff
@@ -66,7 +66,7 @@ class Zippy(BallEnemy):
                     self.app.remove_entity(bean)
                     if self.beans == 7:
                         self.app.remove_entity(self)
-                        self.app.add_entity(Zeeker(self.app, self.position))
+                        self.app.spawn_entity('Zeeker', self.position)
                         return
 
                 except AssertionError: pass
@@ -88,9 +88,9 @@ class Zippy(BallEnemy):
     def get_drops(self):
         result = []
         if random.random() < 0.1 and  len(self.app.tracker['CoffeePotPickup']) == 0:
-           result.append(CoffeePotPickup(self.app, self.position))
+           result.append(self.app.create_entity('CoffeePotPickup', self.position))
 
-        result.append(BeanPickup(self.app, self.position))
+        result.append(self.app.create_entity('BeanPickup', self.position))
         t = random.random()
         M = 7 + int(self.beans/7)*7
         N = int((M+1)*t)
@@ -100,8 +100,8 @@ class Zippy(BallEnemy):
                 aa = a+2*math.pi*i/M
                 dx,dy = random.random()-0.5, random.random()-0.5
                 r = 7+2*i%2
-                result.append(LoreOrePickup(self.app, self.position +
-                    Vec2d(r*math.cos(aa)+dx, r*math.sin(aa)+dy)
+                result.append(self.app.create_entity('LoreOrePickup',
+                    self.position + Vec2d(r*math.cos(aa)+dx, r*math.sin(aa)+dy)
                     ))
 
         return result
@@ -293,17 +293,17 @@ class Ball(BallEnemy):
 
     def get_drops(self):
         if random.random() > 1-(self.r-5)/16: #heath drop
-            return [HealthPickup(self.app, self.position)]
+            return [self.app.create_entity('HealthPickup', self.position)]
         elif random.random() > 1-self.r/8: #lore/bean
             if random.random() > self.app.field_richness:
-                return [BeanPickup(self.app, self.position)]
+                return [self.app.create_entity('BeanPickup', self.position)]
             else:
-                return [LoreOrePickup(self.app, self.position)]
+                return [self.app.create_entity('LoreOrePickup', self.position)]
         elif random.random() > .75 and self.r > 7: #length pickup
             return [LengthPickup(self.app, self.position)]
         elif random.random() > 0.97-0.03*self.app.beans:
             if len(self.app.tracker['CoffeePotPickup']) == 0:
-                return [CoffeePotPickup(self.app, self.position)]
+                return [self.app.create_entity('CoffeePotPickup', self.position)]
         return []
 
 @register

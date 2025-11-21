@@ -16,8 +16,13 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
-from entities import Ball, Wall, Zippy, Zeeker
-from player import Player
+#from entities import Ball, Wall, Zippy, Zeeker
+
+import player
+import entities
+import pickups
+import guns
+import feets
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
@@ -71,10 +76,6 @@ class PhysicsDemo:
         self.title = TITLE
 
         pygame.init()
-#        self.scale = 4
-#        self.w, self.h = 1280/self.scale, 720/self.scale
-#        self.ws = self.w*self.scale
-#        self.hs = self.h*self.scale
 
         self.ws = 1280
         self.hs = 720
@@ -90,7 +91,6 @@ class PhysicsDemo:
 
         self.engine_time = 0
 
-#        self.camera = Camera(self, None, (-self.w/2,-self.h/2))
         self.camera = Camera(self, None, (0,0), 4)
 
         self.controller = Controller(self)
@@ -153,7 +153,7 @@ class PhysicsDemo:
 
         pos = Vec2d(x,y)
         if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
-            new_entity = Zippy(self, pos)
+            new_entity = self.create_entity('Zippy', pos)
 #        if random.random() < 0.01 and len(self.tracker['Zeeker']) < 2:
 #            new_entity = Zeeker(self, pos)
 #
@@ -161,7 +161,7 @@ class PhysicsDemo:
 #            new_entity = ForgetfulBall(self, pos)
 #            new_entity = LustfulBall(self, pos)
         else:
-            new_entity = Ball(self, pos)
+            new_entity = self.create_entity('Ball', pos)
 
         self.add_entity(new_entity)
         self.last_spawn = self.engine_time
