@@ -33,20 +33,20 @@ class Zippy(BallEnemy):
 
         beans = self.app.tracker['BeanPickup']
 
-        if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.body.position, 1)):
+        if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.position, 1)):
 #            print('going')
             self.going = True
             self.can_stop = False
 
 
             target = player
-            if len(beans) > 0:
-                #TODO this might want to filter for on-screen beans
-                self.say('bean')
-                target = beans[0]
+            for bean in beans:
+                if self.app.camera.contains(bean.position, 0):
+                    self.say('bean')
+                    target = bean
+                    break
 
-
-            delta = target.body.position-self.body.position
+            delta = target.position-self.position
             delta /= abs(delta)
             self.direction = delta*self.speed
             self.friction = -10*self.m
@@ -68,11 +68,11 @@ class Zippy(BallEnemy):
 
             self.body.apply_force_at_local_point(self.direction)
 
-            if not self.can_stop and self.app.camera.contains(self.body.position, 0):
+            if not self.can_stop and self.app.camera.contains(self.position, 0):
                 self.say('can stop')
                 self.can_stop = True
 
-            if self.can_stop and not self.app.camera.contains(self.body.position, 50):
+            if self.can_stop and not self.app.camera.contains(self.position, 50):
                 self.say('stopping')
                 self.going = False
                 self.cooldown = self.app.engine_time+5
@@ -83,9 +83,9 @@ class Zippy(BallEnemy):
     def get_drops(self):
         result = []
         if random.random() < 0.1 and  len(self.app.tracker['CoffeePotPickup']) == 0:
-           result.append(CoffeePotPickup(self.app, self.body.position))
+           result.append(CoffeePotPickup(self.app, self.position))
 
-        result.append(BeanPickup(self.app, self.body.position))
+        result.append(BeanPickup(self.app, self.position))
         t = random.random()
         M = 7 + int(self.beans/7)*7
         N = int((M+1)*t)
@@ -95,7 +95,7 @@ class Zippy(BallEnemy):
                 aa = a+2*math.pi*i/M
                 dx,dy = random.random()-0.5, random.random()-0.5
                 r = 7+2*i%2
-                result.append(LoreOrePickup(self.app, self.body.position +
+                result.append(LoreOrePickup(self.app, self.position +
                     Vec2d(r*math.cos(aa)+dx, r*math.sin(aa)+dy)
                     ))
 
@@ -113,8 +113,10 @@ class Zeeker(BallEnemy):
         self.can_stop = False
         self.beans = 0
         self.target = None
+        self.target_position = None
 
         self.zeek_radius = 90
+
 
     def update(self):
         player = self.app.player
@@ -125,21 +127,24 @@ class Zeeker(BallEnemy):
 
         if self.target is None:
             self.target = player
+            self.target_position = self.target.position
 
         if not self.going:
             self.say('going')
             self.going = True
             self.can_stop = False
+            for bean in beans:
+                if bean is not self and self.app.camera.contains(bean.position, 0):
+                    self.say('hello there')
+                    self.target = bean
+                    break
+            else:
+                self.target = player
 
-            if len(beans) > 0:
-                #TODO this might want to filter for on-screen beans
-                self.say('hello there')
-                for bean in beans:
-                    if bean is not self:
-                        self.target = bean
-                        break
-                delta = self.target.body.position-self.body.position
-                r = abs(delta)
+            self.target_position = self.target.position
+            delta = self.target_position-self.position
+            r = abs(delta)
+            r2=r
 
             if r != 0:
                 delta /= r
@@ -149,8 +154,9 @@ class Zeeker(BallEnemy):
                 self.going = False
                 self.direction = Vec2d(0,0)
         else:
-            delta = self.target.body.position-self.body.position
+            delta = self.target_position-self.position
             r = abs(delta)
+            r2 = abs(self.target.position-self.position)
 
 
         if self.going:
@@ -167,11 +173,11 @@ class Zeeker(BallEnemy):
 
             self.body.apply_force_at_local_point(self.direction)
 
-            if not self.can_stop and r < self.zeek_radius-5:
+            if not self.can_stop and min(r,r2) < self.zeek_radius-5:
                 self.say('can stop')
                 self.can_stop = True
 
-            if self.can_stop and r > self.zeek_radius:
+            if self.can_stop and max(r,r2) > self.zeek_radius:
                 self.say('stopping')
                 self.going = False
                 self.cooldown = self.app.engine_time+5
@@ -232,7 +238,7 @@ class Ball(BallEnemy):
         self.hit_player(player)
 
         dt = self.app.engine_time-self.last_aggro
-        delta = player.body.position-self.body.position
+        delta = player.position-self.position
         r = abs(delta)
 
         if self._going and dt > 10:
@@ -281,17 +287,17 @@ class Ball(BallEnemy):
 
     def get_drops(self):
         if random.random() > 1-(self.r-5)/16: #heath drop
-            return [HealthPickup(self.app, self.body.position)]
+            return [HealthPickup(self.app, self.position)]
         elif random.random() > 1-self.r/8: #lore/bean
             if random.random() > self.app.field_richness:
-                return [BeanPickup(self.app, self.body.position)]
+                return [BeanPickup(self.app, self.position)]
             else:
-                return [LoreOrePickup(self.app, self.body.position)]
+                return [LoreOrePickup(self.app, self.position)]
         elif random.random() > .75 and self.r > 7: #length pickup
-            return [LengthPickup(self.app, self.body.position)]
+            return [LengthPickup(self.app, self.position)]
         elif random.random() > 0.97-0.03*self.app.beans:
             if len(self.app.tracker['CoffeePotPickup']) == 0:
-                return [CoffeePotPickup(self.app, self.body.position)]
+                return [CoffeePotPickup(self.app, self.position)]
         return []
 
 
