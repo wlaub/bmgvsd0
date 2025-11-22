@@ -16,7 +16,8 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
-#from entities import Ball, Wall, Zippy, Zeeker
+
+from debug import DebugConsole
 
 import player
 import entities
@@ -91,6 +92,8 @@ class PhysicsDemo:
 
         self.engine_time = 0
 
+        self.debug_console = DebugConsole(self)
+
         self.camera = Camera(self, None, (0,0), 4)
 
         self.controller = Controller(self)
@@ -154,12 +157,6 @@ class PhysicsDemo:
         pos = Vec2d(x,y)
         if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
             new_entity = self.create_entity('Zippy', pos)
-#        if random.random() < 0.01 and len(self.tracker['Zeeker']) < 2:
-#            new_entity = Zeeker(self, pos)
-#
-#        elif random.random() < 0.15:
-#            new_entity = ForgetfulBall(self, pos)
-#            new_entity = LustfulBall(self, pos)
         else:
             new_entity = self.create_entity('Ball', pos)
 
@@ -187,13 +184,9 @@ class PhysicsDemo:
         ypos -= text.get_height()
         self.screen.blit(text, (2,ypos))
 
-
-
+    def render_game(self):
         hello = pygame.transform.scale(self.screen, (self.ws, self.hs))
         self.main_screen.blit(hello, (0,0))
-
-        pygame.display.flip()
-        self.screen.fill((255,255,255))
 
     def do_physics(self):
         M = 1
@@ -218,43 +211,31 @@ class PhysicsDemo:
     def loop(self):
         tick = False
         self.keys = pygame.key.get_pressed()
+        self.mpos_screen = pygame.mouse.get_pos()
+        self.mpos = self.camera.s2w(self.mpos_screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.run_physics = not self.run_physics
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                tick = True
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_q:
-                self.render_physics = not self.render_physics
-            elif True:
-                if event.type == pygame.KEYDOWN and event.key == ord('`'):
-                    print('okay')
-                    for entity in self.entities:
-                        pos = entity.position - self.camera.reference_position
-                        print(f'  {entity}')
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                    if self.camera.parent is None:
-                        self.connect_camera(self.player)
-                    else:
-                        self.disconnect_camera()
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_1:
-                    self.camera.set_scale(1)
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_2:
-                    self.camera.set_scale(2)
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_3:
-                    self.camera.set_scale(4)
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_4:
-                    self.camera.set_scale(8)
+            elif False:
+                self.debug_console.handle_event(event)
 
         if self.run_physics or tick:
+            self.screen.fill((255,255,255))
+
             self.do_updates()
 
             self.do_physics()
 
             self.draw()
 
+        self.render_game()
+
         self.camera.update_scale()
+
+        self.debug_console.draw(self.main_screen)
+
+        pygame.display.flip()
+
         self.clock.tick(60)
 
 #        pygame.display.set_caption(f"fps: {len(self.tracker['Ball'])}, {self.clock.get_fps():.2f}")

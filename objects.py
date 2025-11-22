@@ -75,6 +75,11 @@ class Camera:
         self.update_scale()
         self.update_position(position)
 
+    def s2w(self, pos):
+        pos = Vec2d(*pos)/self.scale
+        pos += self.half_off
+        return pos
+
     def set_scale(self, scale):
         self.pending_scale = scale
 
