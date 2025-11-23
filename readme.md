@@ -1,4 +1,4 @@
-just playing around with a little walking simulator idea that happened to me the other day. obviously inspired by the likes of ginormo sword, sexy hiking, hammerfight, meritous, saturated dreams?, peasant's quest/trogdor, and probably something else i'm not thinking of right now.
+just playing around with a little walking simulator idea that happened to me the other day. obviously inspired by the likes of ginormo sword, sexy hiking, hammerfight, meritous, saturated dreams?, peasant's quest/trogdor, space funeral, bool, and probably something else i'm not thinking of right now.
 
 
 this uses python with pymunk and pygame. you're probably looking at like 60 MB dependencies in a venv. the support scripts are all for linux, so if not linux then your on you're own (not that you weren't already).

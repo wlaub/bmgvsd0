@@ -55,19 +55,13 @@ here be spoilers
 
 
 registry.py
-x    entity class registry
-x    register decorators  
-x    access entity classes by category etc
-x    allow entity to be spawned without importing
         take a kwargs and pass it to the constructor with a copy of the kwargs that the entity can store for spawning children or w/e i am like 51% sure this is a good idea that i have, in the past, yearned for.
 
-unfuck the cursor
+x unfuck the cursor
 
 debug console
-x    pause simulation
     list entities in a pane
     show player, camera location
-x    spawn entities
     inspect entities
     make unkillable
     give bean/lore

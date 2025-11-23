@@ -1,5 +1,6 @@
 import random
 import math
+import enum
 
 import pygame
 
@@ -13,6 +14,10 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 COLLTYPE_DEFAULT = 0
+
+class ControlType(enum.Enum):
+    joy = 0
+    key = 1
 
 class Controller:
     button_map = {
@@ -41,6 +46,9 @@ class Controller:
     def __init__(self, app):
         self.app = app
         self.joystick = pygame.joystick.Joystick(0)
+        self.last_kind = ControlType.joy
+
+        self.last_stick = (0,0)
 
     def get_left_stick(self):
         keys = self.app.keys
@@ -51,16 +59,25 @@ class Controller:
             ypos = 1 if D else -1 if U else 0
             xpos += random.random()*0.05-0.025
             ypos += random.random()*0.05-0.025
+            self.last_kind = ControlType.key
             return (xpos, ypos)
 
         xpos = self.joystick.get_axis(self.axis_map['lx'])
         ypos = self.joystick.get_axis(self.axis_map['ly'])
+        if (xpos, ypos) != self.last_stick:
+            self.last_kind = ControlType.joy
+            self.last_stick = (xpos, ypos)
+
         return (xpos, ypos)
 
     def get_right_trigger(self):
         if self.app.keys[K_SPACE]:
+            self.last_kind = ControlType.key
             return True
-        return self.joystick.get_axis(self.axis_map['rt']) > 0.5
+        if self.joystick.get_axis(self.axis_map['rt']) > 0.5:
+            self.last_kind = ControlType.joy
+            return True
+        return False
 
     def get_button(self, name):
         return self.joystick.get_button(self.button_map[name])

@@ -15,7 +15,7 @@ from pymunk import Vec2d
 
 from registry import register, entity_registry
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType
 
 from debug import DebugConsole
 
@@ -42,6 +42,7 @@ class PhysicsDemo:
         return pos
 
     def run(self):
+        self.last_mpos_screen = pygame.mouse.get_pos()
         while self.running:
             try:
                 self.loop()
@@ -216,8 +217,11 @@ class PhysicsDemo:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif False:
+            elif False or True:
                 self.debug_console.handle_event(event)
+
+        if self.mpos_screen != self.last_mpos_screen: #TODO
+            self.controller.last_kind = ControlType.key
 
         if self.run_physics or tick:
             self.screen.fill((255,255,255))
@@ -233,6 +237,11 @@ class PhysicsDemo:
         self.camera.update_scale()
 
         self.debug_console.draw(self.main_screen)
+
+        if (not self.run_physics or self.controller.last_kind is ControlType.key) and pygame.mouse.get_focused():
+            pygame.draw.circle(self.main_screen, (0,0,0), self.mpos_screen, 2)
+
+        self.last_mpos_screen = self.mpos_screen
 
         pygame.display.flip()
 
