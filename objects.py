@@ -67,8 +67,7 @@ class Controller:
             return self.last_stick
         else:
             result = Vec2d(*self.app.mpos)-self.app.player.position
-            r2 = result.get_length_sqrd()
-            if r2 < 64:
+            if not self.get_right_trigger() and result.get_length_sqrd() < 64:
                 return Vec2d(0,0)
             else:
                 return result
