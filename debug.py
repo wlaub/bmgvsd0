@@ -17,6 +17,27 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 
+class EntityButton:
+    def __init__(self, console, entity, w, h):
+        self.app = console.app
+        self.console = console
+        self.entity = entity
+        self.w = w
+        self.h = h
+
+        self.l = 0
+        self.r = 0
+        self.t = 0
+        self.b = 0
+
+    def set_size(self, l,r,t,b):
+        self.l, self.r, self.t, self.b = l,r,t,b
+
+    def get_hit(self, pos):
+        x,y = pos
+        return x > self.l and x < self.r and y < self.b and y > self.t
+
+
 class DebugConsole:
 
     def __init__(self, app):
@@ -32,6 +53,23 @@ class DebugConsole:
         self.stashed = ''
         self.cursor = 0
 
+        self.entity_list = []
+        self.hides = set()
+        self.shows = set()
+
+    def get_entity_list(self):
+        result = []
+        for entity in self.app.entities:
+            tags = entity.get_tags()
+            if self.hides & tags:
+                continue
+            if len(self.shows) == 0 or self.shows&tags:
+                result.append(EntityButton(self, entity, 100, 20))
+
+            if len(result) == 24:
+                break
+        return result
+
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == ord('`'):
@@ -39,11 +77,17 @@ class DebugConsole:
                 self.app.run_physics = not self.active
                 if self.active:
                     pygame.key.start_text_input()
+                    self.entity_list = self.get_entity_list()
                 else:
                     pygame.key.stop_text_input()
 
         if not self.active:
             return
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for button in self.entity_list:
+                if button.get_hit(self.app.mpos_screen):
+                    pass
 
         mods = pygame.key.get_mods()
 
@@ -51,7 +95,7 @@ class DebugConsole:
             if event.text != '`':
                 self.cmd_buffer = self.cmd_buffer[:self.cursor] + event.text + self.cmd_buffer[self.cursor:]
                 self.cursor+=len(event.text)
-        if event.type == pygame.KEYDOWN:
+        elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
                 self.cmd_buffer = self.cmd_buffer[:self.cursor-1]+self.cmd_buffer[self.cursor:]
                 self.cursor -=1
@@ -104,6 +148,27 @@ class DebugConsole:
             if cmd == 'spawn':
                 name = parts[1]
                 self.app.spawn_entity(name, self.app.mpos)
+                self.entity_list = self.get_entity_list()
+            elif cmd == 'hide':
+                self.hides = set()
+                if len(parts) > 1:
+                    name = parts[1]
+                    self.hides.add(name)
+                self.entity_list = self.get_entity_list()
+            elif cmd == 'show':
+                self.shows = set()
+                if len(parts) > 1:
+                    name = parts[1]
+                    self.shows.add(name)
+                self.entity_list = self.get_entity_list()
+            elif cmd == 'give':
+                what = parts[1].lower()
+                if what == 'bean':
+                    self.app.beans+=1
+                elif what == 'lore':
+                    self.app.lore_score+=1
+            elif cmd == 'pain':
+                self.app.player.can_get_hurt = not self.app.player.can_get_hurt
         except Exception as e:
             print(e)
 
@@ -114,7 +179,7 @@ class DebugConsole:
 
         screen = self.app.main_screen
         w,h = self.app.ws, self.app.hs
-        m = 14
+        m = 11
 
         pygame.gfxdraw.box(screen, pygame.Rect(0,0,w,h), (0,0,0,49))
 
@@ -122,14 +187,81 @@ class DebugConsole:
         bg_color = (0,0,0,173)
         font_color = (255,255,255)
 
+        #command line
+
         dh = self.fs + 6
         pygame.gfxdraw.box(screen, pygame.Rect(m,h-m-dh,w-2*m,dh), bg_color)
         ypos = h-m-dh+3
         text = self.font.render(f'> {self.cmd_buffer}', True, font_color)
         screen.blit(text, (m+3,ypos))
 
+        ## cursor
         text = self.font.render(f'> {self.cmd_buffer[:self.cursor]}', True, font_color)
         xpos = m+3+text.get_width()
         pygame.gfxdraw.line(screen, xpos, ypos, xpos, ypos+19, font_color)
+
+        #entity listo
+
+        dh = self.fs + 6
+
+        dw = 0
+        texts = []
+        for button in self.entity_list:
+            text = self.font.render(f'{button.entity}', True, font_color)
+            dw = max(text.get_width()+6, dw)
+            texts.append(text)
+
+        r = w-m
+        l = r-dw
+        t = 0+m+1
+        b = t+dh
+        for text, button in zip(texts, self.entity_list):
+
+            pygame.gfxdraw.box(screen, pygame.Rect(l, t, dw, dh), bg_color)
+
+            screen.blit(text, (l+3, t+3))
+            t += dh+3
+            b = t+dh
+
+            button.set_size(l,r,t,b)
+
+        #infopane
+        cpos = self.app.camera.reference_position
+        health = 0
+        if self.app.player is not None:
+            health = self.app.player.health
+        info_text = f"""
+{cpos.x:6.1f} {cpos.y:6.1f} {len(self.app.entities):05}
+{health:03} {self.app.lore_score:05} {self.app.beans:05}
+"""
+        texts = []
+        dw = 0
+        for line in info_text.split('\n'):
+            if len(line.strip()) == 0: continue
+            text = self.font.render(line, True, font_color)
+            dw = max(text.get_width()+6, dw)
+            texts.append(text)
+
+        ls = 0
+        dh = self.fs*len(texts)+(ls*len(texts)-1) + 6
+
+        l = m
+        r = m+dw
+        t = 0+m+1
+        b = t+dh
+        pygame.gfxdraw.box(screen, pygame.Rect(l, t, dw, dh), bg_color)
+        for text in texts:
+
+            screen.blit(text, (l+3, t+3))
+            t += self.fs
+
+
+
+
+
+
+
+
+
 
 

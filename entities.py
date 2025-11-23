@@ -212,7 +212,7 @@ class Ball(BallEnemy):
 
     def __str__(self):
         p = self.position
-        return f'{super().__str__()} {self.state}'
+        return f'{super().__str__()} {self.state.name}'
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -300,7 +300,7 @@ class Ball(BallEnemy):
             else:
                 return [self.app.create_entity('LoreOrePickup', self.position)]
         elif random.random() > .75 and self.r > 7: #length pickup
-            return [self.app.create_entity('LengthPickup', self.app, self.position)]
+            return [self.app.create_entity('LengthPickup', self.position)]
         elif random.random() > 0.97-0.03*self.app.beans:
             if len(self.app.tracker['CoffeePotPickup']) == 0:
                 return [self.app.create_entity('CoffeePotPickup', self.position)]

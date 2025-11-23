@@ -75,16 +75,14 @@ make equipment pickups show a controls popup when active?
     maybe the hand moves or blinks?
 
 debug console
-    list entities in a pane
-    show player, camera location
+x    list entities in a pane
+x    show player, camera location
     inspect entities
-    make unkillable
-    give bean/lore
+x    make unkillable
+x    give bean/lore
     etc
 
-make the player pick up the sord at the start to start spawning happening
-
-better body management for add/remove to facilite arbitrary structures and merging
+x make the player pick up the sord at the start to start spawning happening
 
 figure out the right way to do collision
     need to be able to quickly get any pair of entities that collided
@@ -103,6 +101,7 @@ geographical support conditions
 
 spawner entities
     spawn enemies when within range of camera
+    starting node spawners (and other later) conditional on player having weapon
  
 
 # down the stack:

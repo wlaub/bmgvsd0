@@ -35,6 +35,8 @@ class Player(Entity):
         self.stick_active = False
         self.aim = Vec2d(0,0)
 
+        self.can_get_hurt = True
+
         self.w =w= 10
         self.h =h= 17
         self.hips = 1
@@ -236,7 +238,8 @@ class Player(Entity):
             leg.draw()
 
     def get_hit(self, dmg):
-        self._basic_hit_spell(dmg)
+        if self.can_get_hurt:
+            self._basic_hit_spell(dmg)
 
     def update(self):
         self.friction =-10

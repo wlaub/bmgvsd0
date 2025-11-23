@@ -170,6 +170,10 @@ class Entity:
         self.eid = self.app.get_eid()
         self.layer = layer
 
+    def get_tags(self):
+        name = self.__class__.__name__
+        return set(entity_registry.name_tags.get(name, set()))
+
     def __hash__(self):
         return self.eid
 
