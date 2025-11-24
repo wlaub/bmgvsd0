@@ -22,6 +22,11 @@ and eye boss drops portable camera pickup
 
 @register
 class Zippy(BallEnemy):
+    """
+    its eyes remain perpetually closed in a deep slumber, but if it gets
+    enough beans it might wake up and open its eyes
+    """
+
     track_as = {'Enemy'}
     def __init__(self, app, pos):
         super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
@@ -80,7 +85,7 @@ class Zippy(BallEnemy):
             if self.can_stop and not self.app.camera.contains(self.position, 50):
                 self.say('stopping')
                 self.going = False
-                self.cooldown = self.app.engine_time+5
+                self.cooldown = self.app.engine_time+5/(1+self.beans)
                 self.friction = -100*self.m
 
         self.apply_friction(player)
