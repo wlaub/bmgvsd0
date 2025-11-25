@@ -177,6 +177,7 @@ class Player(Entity):
             'seed': self.app.seed,
             'health': self.health,
             'time_of_death': self.app.engine_time-self.app.startup_engine_time,
+            'fleshworld_duration': str((now-self.app.startup_time)),
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
            }
