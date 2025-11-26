@@ -166,7 +166,7 @@ class PhysicsDemo:
             x = (t-0.75)*4*(l-r)+r
 
         pos = Vec2d(x,y)
-        if random.random() < 0.01 and len(self.tracker['Zippy']) == 0:
+        if len(self.tracker['Zippy']) == 0 and random.random() < 0.1*len(self.tracker['BeanPickup']):
             new_entity = self.create_entity('Zippy', pos)
         else:
             new_entity = self.create_entity('Ball', pos)

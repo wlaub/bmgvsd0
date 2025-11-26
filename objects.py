@@ -178,6 +178,7 @@ class Entity:
         self.vocal = False
         self.eid = self.app.get_eid()
         self.layer = layer
+        self.debug_log = []
 
     def get_tags(self):
         name = self.__class__.__name__
@@ -187,6 +188,7 @@ class Entity:
         return self.eid
 
     def say(self, text):
+        self.debug_log.append(text)
         if self.vocal:
             print(text)
 

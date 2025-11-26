@@ -248,7 +248,11 @@ class DebugConsole:
         if self.app.player is not None:
             health = self.app.player.health
 
+        now = datetime.datetime.now()
+        dt = now-self.app.startup_time
+
         info_text = f"""
+{self.app.engine_time:7.2f} {int(self.app.engine_time*120):07} {dt}
 {cpos.x:6.1f} {cpos.y:6.1f} {self.app.mpos.x:6.1f} {self.app.mpos.y:6.1f} {len(self.app.entities):05}
 {health:03} {self.app.lore_score:05} {self.app.beans:05}
 """
