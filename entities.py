@@ -191,6 +191,7 @@ class Zeeky(BallEnemy):
     #                    self.app.spawn_entity('Zbln', body_map)
                         return
                     else:
+                        bean.absorb(self)
                         #TODO merge with zbln some day
                         pass
                 except AssertionError: pass
@@ -245,6 +246,9 @@ class Zbln(BallEnemy):
             c = pymunk.PinJoint(a[0],b[0])
             self.joints.append(c)
 
+        self.base_speed = 100
+        self.base_friction = -0.5
+
         self.m = 0
         self.shapes = []
         for body, shapes in self.body_map.items():
@@ -252,8 +256,8 @@ class Zbln(BallEnemy):
             self.m += body.mass
 
         m = self.m
-        self.speed = 100*m
-        self.friction = -1*m
+        self.speed = self.base_speed*m
+        self.friction = self.base_friction*m
 
         self.get_position()
         self.my_velocity = Vec2d(0,0)
@@ -283,6 +287,19 @@ class Zbln(BallEnemy):
     @property
     def velocity(self):
         return self.my_velocity
+
+    def absorb(self, other):
+        self.app.remove_entity(other, preserve_physics = True)
+        body, shape = other.body, other.shape
+        self.body_map[body] = (shape,)
+        c = pymunk.PinJoint(body, self.last_hit_body)
+        self.joints.append(c)
+        self.app.space.add(c)
+
+#        self.m+=body.mass
+#        m = self.m
+#        self.speed = self.base_speed*m
+#        self.friction = self.base_friction*m
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:

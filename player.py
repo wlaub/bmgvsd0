@@ -66,8 +66,6 @@ class Player(Entity):
         self.bean_hot_potency = 1
         self.walk_rate = 1
 
-        #TODO slot active and unactive positions
-
         #physics
         self.shape = pm.Poly(self.body, [
             (-w/2, -h+w),
@@ -98,6 +96,55 @@ class Player(Entity):
 
         c = pymunk.DampedSpring(self.center_body, self.body, (0,0), (0,0), 0, m*1000,1000000)
         self.app.space.add(c)
+
+
+        #TODO slot active and unactive positions
+
+        self.slot_positions = {
+            'front_hand': (self.front_unarmed_position, self.front_hand_position),
+            'back_hand': (self.back_unarmed_position, self.back_hand_position),
+            }
+
+        self.slot_sensors = {}
+
+        for slot in self.base_slots:
+            if slot in self.slot_positions:
+                body = pm.Body(body_type = pm.Body.KINEMATIC)
+                body.position = self.get_slot_position(slot)
+                shape = pm.Circle(body, 0.5)
+                shape.sensor=True
+                shape.collision_type = COLLTYPE_DEFAULT
+            else:
+                body = self.body
+                shape = self.shape
+            self.slot_sensors[slot] = {body:(shape,)}
+
+    def get_slot_hit(self, other_shape, slots):
+        for slot in slots:
+            bmap = self.slot_sensors[slot]
+            for body, shapes in bmap.items():
+                for shape in shapes:
+                    try:
+                        hit = other_shape.shapes_collide(shape)
+                        return slot
+                    except AssertionError: pass
+        return None
+
+
+    def get_slot_position(self, slot):
+        if slot in self.slot_positions.keys():
+            inactive, active = self.slot_positions[slot]
+            if self.slots[slot] is not None:
+                return self.position + active
+            else:
+                return self.position + inactive
+
+    def update_slot_positions(self):
+        for slot, bmap in self.slot_sensors.items():
+            position = self.get_slot_position(slot)
+            for body, shapes in bmap.items():
+                if body is not self.body:
+                    body.position = position
 
     def create_slot(self, slot):
         if not slot in self.slots.keys():
@@ -160,9 +207,21 @@ class Player(Entity):
     def add_to_space(self, space):
         space.add(self.body, self.shape)
 
+        for slot, bmap in self.slot_sensors.items():
+            position = self.get_slot_position(slot)
+            for body, shapes in bmap.items():
+                if body is not self.body:
+                    space.add(body, *shapes)
+
     def on_remove(self):
         for slot, entity in self.slots.items():
             self.unequip(slot)
+
+        for slot, bmap in self.slot_sensors.items():
+            position = self.get_slot_position(slot)
+            for body, shapes in bmap.items():
+                if body is not self.body:
+                    self.app.space.remove(body, *shapes)
 
         self.app.player = None
         self.write_session_stats()
@@ -251,12 +310,24 @@ class Player(Entity):
         for leg in self.legs:
             leg.draw()
 
+#        #slots
+#        for slot, bmap in self.slot_sensors.items():
+#            position = self.get_slot_position(slot)
+#            for body, shapes in bmap.items():
+#                if body is not self.body:
+#                    p = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
+#                    p = self.app.jj(p)
+#                    pygame.draw.circle(self.app.screen, (255,0,255), p, 1, 2)
+
+
     def get_hit(self, dmg):
         if self.can_get_hurt:
             self._basic_hit_spell(dmg)
 
     def update(self):
         self.friction =-10
+
+        self.update_slot_positions()
 
         #boosts
         dt = self.bean_hot_counter - self.app.engine_time

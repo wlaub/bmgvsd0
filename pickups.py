@@ -20,8 +20,12 @@ class SordPickup(Pickup):
         self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
         body.position = Vec2d(*pos)
 
-        self.w = w = 3+2
-        self.h = h = 7+2
+#        self.w = w = 3+2
+#        self.h = h = 7+2
+
+        self.w = 3
+        self.h = 3
+
         self.shape = shape = pm.Poly.create_box(body, (self.w, self.h))
         shape.sensor = True
         shape.collision_type = COLLTYPE_DEFAULT
@@ -31,15 +35,33 @@ class SordPickup(Pickup):
         p = self.app.jj(self.body.position)
         color = (0,0,255)
 
+        if self.player_on:
+            color = (255,0,0)
+
         vertices = []
         for v in self.shape.get_vertices():
-            p = self.app.jj(v.rotated(self.body.angle)+self.body.position+Vec2d(-2,3)) #TODO fix this
+            p = self.app.jj(v.rotated(self.body.angle)+self.position)
             vertices.append(p)
         pygame.draw.polygon(self.app.screen, color, vertices, 1)
 
 
+    def update(self):
+        player = self.app.player
+        if player is None: return
+        slot = player.get_slot_hit(self.shape, {'front_hand'})
+        if slot is not None:
+            self.player_on = True
+        else:
+            self.player_on = False
+
+        if self.app.controller.equip():
+            if self.player_on:
+                if player.equip(slot, 'Sord'):
+                    self.app.start_game()
+                    super().on_player(player)
+
+
     def on_player(self, player):
-        #TODO make this collide with the player's hand instead of head
         #TODO formalize player_on for pickups
         self.player_on = True
         if self.app.controller.equip():
