@@ -65,6 +65,10 @@ class Leg(Entity):
         self.offset = Vec2d(x,y)
 
 
+    @property
+    def position(self):
+        return self.parent.center_body.position
+
     def draw(self):
 
         p0 = self.app.jj(self.parent_body.position+self.anchor)

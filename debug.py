@@ -90,7 +90,10 @@ class DebugConsole:
                 self.hovered_button = button
 
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            if self.hovered_button is not None:
+                e  = self.hovered_button.entity
+                print(f'\n{e}:')
+                print(e.inspect())
 
         mods = pygame.key.get_mods()
 

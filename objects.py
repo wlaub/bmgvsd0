@@ -160,6 +160,15 @@ class Camera:
 class Entity:
     track_as = set()
 
+    def inspect(self):
+        d = dict(self.__dict__)
+        for k in {'debug_log', 'app'}:
+            d.pop(k)
+        lines = []
+        for key, val in d.items():
+            lines.append(f'  {key}: {val}')
+        return '\n'.join(lines)
+
     def __str__(self):
         p = self.position
         name = self.__class__.__name__

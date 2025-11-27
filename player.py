@@ -310,6 +310,13 @@ class Player(Entity):
         for leg in self.legs:
             leg.draw()
 
+#        body = self.center_body
+#        p = body.position #+ self.shape.offset.cpvrotate(self.body.rotation_vector)
+#
+#        p = self.app.jj(p)
+#        pygame.draw.circle(self.app.screen, (255,0,255), p, 1, 2)
+
+
 #        #slots
 #        for slot, bmap in self.slot_sensors.items():
 #            position = self.get_slot_position(slot)

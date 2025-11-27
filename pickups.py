@@ -35,8 +35,8 @@ class SordPickup(Pickup):
         p = self.app.jj(self.body.position)
         color = (0,0,255)
 
-        if self.player_on:
-            color = (255,0,0)
+#        if self.player_on:
+#            color = (255,0,0)
 
         vertices = []
         for v in self.shape.get_vertices():

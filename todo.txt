@@ -69,7 +69,7 @@ unfuck body/shape management
         for args, kwargs in self.bodies:
             self.app.space.remove(*args, **kwargs)
 
-do hand hitboxes and equipment pickups
+~ do hand hitboxes and equipment pickups
 make equipment pickups show a controls popup when active?
     or just turn red?
     maybe the hand moves or blinks?
@@ -80,7 +80,7 @@ split ball enemies back into different enemies
 
 debug console
     get entity at cursor
-    inspect entities
+~    inspect entities
     show entity debug logs
     tab completion
     etc
