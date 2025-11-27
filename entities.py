@@ -133,7 +133,9 @@ class Zeeky(BallEnemy):
         if player is None: return
         self.hit_player(player)
 
-        beans = self.app.tracker['Zeeky']
+        beans = self.app.tracker['Zbln']
+        if len(beans) == 0:
+            beans = self.app.tracker['Zeeky']
 
         if self.target is None:
             self.target = player
@@ -173,19 +175,24 @@ class Zeeky(BallEnemy):
             for bean in beans:
                 if bean is self: continue
                 try:
-                    hit = self.shape.shapes_collide(bean.shape)
-                    self.say('blessed union')
-                    #TODO merge into new enemy
-                    #this is why body management needs unfucked
-                    self.app.remove_entity(bean, preserve_physics = True)
-                    self.app.remove_entity(self, preserve_physics = True)
-                    body_map = {
-                        bean.body: (bean.shape,),
-                        self.body: (self.shape,),
-                        }
-                    #TODO someday
-#                    self.app.spawn_entity('Zbln', body_map)
-                    return
+#                    hit = self.shape.shapes_collide(bean.shape)
+                    bean.try_hit(self.shape)
+                    if isinstance(bean, Zeeky):
+                        self.say('blessed union')
+                        #TODO merge into new enemy
+                        #this is why body management needs unfucked
+                        self.app.remove_entity(bean, preserve_physics = True)
+                        self.app.remove_entity(self, preserve_physics = True)
+                        body_map = {
+                            bean.body: (bean.shape,),
+                            self.body: (self.shape,),
+                            }
+                        #TODO someday
+    #                    self.app.spawn_entity('Zbln', body_map)
+                        return
+                    else:
+                        #TODO merge with zbln some day
+                        pass
                 except AssertionError: pass
 
             self.body.apply_force_at_local_point(self.direction)
@@ -213,6 +220,19 @@ class Zbln(BallEnemy):
     track_as = {'Enemy'}
     def __init__(self, app, body_map):
         super(BallEnemy,self).__init__(app)
+
+        if isinstance(body_map, Vec2d):
+            pos = body_map
+            a = self.app.create_entity('Zeeky', pos+Vec2d(-1.5, 0))
+            b = self.app.create_entity('Zeeky', pos+Vec2d(1.5, 0))
+
+            a.add_to_space(self.app.space)
+            b.add_to_space(self.app.space)
+
+            body_map = {
+                a.body: (a.shape,),
+                b.body: (b.shape,),
+                }
 
         self.health = 16
         self.last_hit = -10
@@ -308,6 +328,8 @@ class Zbln(BallEnemy):
     def update(self):
         self.get_position()
         self.normal_update()
+
+        #TODO spawn zeeky sometimes
 
     def draw(self):
         for body, shapes in self.body_map.items():
