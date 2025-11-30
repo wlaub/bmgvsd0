@@ -14,6 +14,7 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
 
 @register
 class SordPickup(Pickup):
+    track_as = {'EquipPckp'}
 
     def __init__(self, app, pos):
         super(Pickup, self).__init__(app)

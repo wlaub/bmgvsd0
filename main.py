@@ -213,7 +213,8 @@ class PhysicsDemo:
         self.camera.update()
 
         dt = self.engine_time-self.last_spawn
-        if self.game_start and dt > 0.2 + 0.02*len(self.tracker['Ball']):
+        if len(self.tracker['EquipPckp']) == 0 and dt > 0.2 + 0.02*len(self.tracker['Ball']):
+
             self.spawn()
 
         for entity in self.entities:
