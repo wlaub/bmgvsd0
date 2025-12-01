@@ -138,6 +138,7 @@ class PhysicsDemo:
         self.lore_score = 0
         self.beans = 0
         self.field_richness = 0.7 #TODO geography
+        #TODO dynamic? increase when spawning a bean, decrease when spawning lore ore
 
         self.running = True
 
