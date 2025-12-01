@@ -242,6 +242,7 @@ class Player(Entity):
             'fleshworld_duration': str(now-startup_time),
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
+            'field': self.app.field.current_props,
            }
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
         print(json.dumps(stats, indent=2))

@@ -382,6 +382,33 @@ class Pickup(Entity):
         self.app.remove_entity(self)
 
 
+class Geography:
+    def __init__(self, app):
+        self.app = app
+        self.current_props = {
+            'richness': 0.7,
+            'capacity': 50,
+            'austerity': 0.2,
+            }
+
+        self.prev_props = {}
+
+    def update(self, pos):
+        self.prev_props = self.current_props
+        #TODO update current props?
+
+    def get(self, name, default=None):
+        return self.current_props.get(name, default)
+
+    def make_lore_drop(self, pos):
+        if random.random() > self.get('richness'):
+            self.current_props['richness'] += 0.01
+            return self.app.create_entity('BeanPickup', pos)
+        else:
+            self.current_props['richness'] -= 0.01
+            return self.app.create_entity('LoreOrePickup', pos)
+
+
 
 class Flags:
     def __init__(self):

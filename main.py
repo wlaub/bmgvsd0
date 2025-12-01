@@ -15,7 +15,7 @@ from pymunk import Vec2d
 
 from registry import register, entity_registry
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType, Flags
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType, Flags, Geography
 
 from debug import DebugConsole
 
@@ -103,6 +103,8 @@ class PhysicsDemo:
         self.flags.setv('_startup_time', datetime.datetime.now())
         self.flags.setv('_first_spawns', {})
 
+        self.field = Geography(self)
+
         def _on_vocal(name, old_value, new_value, volatile):
             if new_value:
                 for entity in self.entities:
@@ -117,6 +119,8 @@ class PhysicsDemo:
         self.camera = Camera(self, None, (0,0), 4)
 
         self.controller = Controller(self)
+
+        self.field.update(self.camera.position)
 
         ### Init pymunk and create space
         self.run_physics = True
@@ -137,8 +141,6 @@ class PhysicsDemo:
 
         self.lore_score = 0
         self.beans = 0
-        self.field_richness = 0.7 #TODO geography
-        #TODO dynamic? increase when spawning a bean, decrease when spawning lore ore
 
         self.running = True
 
@@ -167,6 +169,7 @@ class PhysicsDemo:
     def spawn(self):
         t = random.random()
         pos = self.camera.get_boundary_point(t, 50)
+#TODO remove this if allowing corner spawning doesn't ruin everything
 #        margin = 50
 #        l,r,u,d = self.camera.lrud
 #        if t < 0.25:
@@ -228,9 +231,13 @@ class PhysicsDemo:
 
     def do_updates(self):
         self.camera.update()
+        #TODO: if camera moved
+        self.field.update(self.camera.position)
 
         dt = self.engine_time-self.last_spawn
-        if len(self.tracker['EquipPckp']) == 0 and dt > 0.2 + 0.02*len(self.tracker['Ball']):
+        c = self.field.get('capacity')
+        f = self.field.get('austerity')
+        if len(self.tracker['EquipPckp']) == 0 and dt > f + len(self.tracker['Enemy'])/c:
 
             self.spawn()
 

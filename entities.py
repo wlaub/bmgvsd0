@@ -512,10 +512,11 @@ class Ball(BallEnemy):
         if random.random() > 1-(self.r-5)/16: #heath drop
             return [self.app.create_entity('HealthPickup', self.position)]
         elif random.random() > 1-self.r/8: #lore/bean
-            if random.random() > self.app.field_richness:
-                return [self.app.create_entity('BeanPickup', self.position)]
-            else:
-                return [self.app.create_entity('LoreOrePickup', self.position)]
+            return [self.app.field.make_lore_drop(self.position)]
+#            if random.random() > self.app.field.get('richness'):
+#                return [self.app.create_entity('BeanPickup', self.position)]
+#            else:
+#                return [self.app.create_entity('LoreOrePickup', self.position)]
         elif random.random() > .75 and self.r > 7: #length pickup
             return [self.app.create_entity('LengthPickup', self.position)]
         elif random.random() > 0.97-0.03*self.app.beans:
