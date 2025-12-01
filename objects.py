@@ -158,6 +158,16 @@ class Camera:
         x,y = pos
         return x > self.left-margin and x < self.right+margin and y > self.up-margin and y < self.down+margin
 
+    def get_distance(self, pos):
+        x,y = pos
+
+        if self.contains(pos):
+            result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a < 0)
+            return result
+        else:
+            result = min(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
+            return result
+
 class Entity:
     track_as = set()
 

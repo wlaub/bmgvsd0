@@ -320,6 +320,7 @@ class DebugConsole:
         # entity indicator
         if self.hovered_button is not None:
             entity = self.hovered_button.entity
+#            dist = self.app.camera.get_distance(entity.position)
             p = self.app.camera.w2s(entity.position)
             r = 49
             x = round(min(max(p.x, -r/2), self.app.ws+r/2))
