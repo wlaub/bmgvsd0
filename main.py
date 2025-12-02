@@ -95,15 +95,32 @@ class PhysicsDemo:
 
         self.font = pygame.font.Font(None, 14)
 
+        self.queue_reset = False
+
+        self.flags = Flags()
+
+        self.reset()
+
+    def reset(self):
+
         self.engine_time = 0
+
+        loop = self.flags.getv('_loop')
+
+        self.flags.volatile_flags = {}
+
+        self.flags.setv('_startup_time', datetime.datetime.now())
+        self.flags.setv('_first_spawns', {})
+        if loop is not None:
+            self.flags.setv('_loop')
 
         self.game_start = False
 
-        self.flags = Flags()
-        self.flags.setv('_startup_time', datetime.datetime.now())
-        self.flags.setv('_first_spawns', {})
+        self.coroutines = set()
 
         self.field = Geography(self)
+
+        self.forget_range = 1
 
         def _on_vocal(name, old_value, new_value, volatile):
             if new_value:
@@ -143,6 +160,7 @@ class PhysicsDemo:
         self.beans = 0
 
         self.running = True
+        self.queue_reset = False
 
     def start_game(self):
         if not self.flags.getv('_game_start', False):
@@ -244,8 +262,34 @@ class PhysicsDemo:
         for entity in self.entities:
             entity.update()
 
+        #TODO
+        for entity in self.entities:
+            self.try_forget(entity)
+
+
+        removals = []
+        for coro in self.coroutines:
+            try:
+                next(coro)
+            except StopIteration:
+                removals.append(coro)
+
+        for coro in removals:
+            self.coroutines.remove(coro)
+
+    def try_forget(self, entity):
+        dist = self.camera.get_distance(entity.position)
+        mdist = self.camera.w*self.forget_range
+        if dist > mdist:
+            p = (dist-mdist)/abs(mdist)
+            if random.random() < p:
+                self.remove_entity(entity)
+
 
     def loop(self):
+        if self.queue_reset:
+            self.reset()
+
         tick = False
         self.keys = pygame.key.get_pressed()
         self.mpos_screen = pygame.mouse.get_pos()
