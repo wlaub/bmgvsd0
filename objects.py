@@ -387,6 +387,7 @@ class Geography:
         self.app = app
         self.current_props = {
             'richness': 0.7,
+            'fidelity': 0.5,
             'capacity': 50,
             'austerity': 0.2,
             }
@@ -401,11 +402,17 @@ class Geography:
         return self.current_props.get(name, default)
 
     def make_lore_drop(self, pos):
+        #TODO: tune deviancy coefficient
+        deviancy = self.get('richness') - self.get('fidelity')
+        #positive needs bias down
+        #negative needs bias up
         if random.random() > self.get('richness'):
-            self.current_props['richness'] += 0.01
+            self.current_props['richness'] += 0.01 * min(math.exp(-deviancy),1)
+            print(f"bean {deviancy:.2f} {self.current_props['richness']:.3f}")
             return self.app.create_entity('BeanPickup', pos)
         else:
-            self.current_props['richness'] -= 0.01
+            self.current_props['richness'] -= 0.01 * min(math.exp(deviancy),1)
+            print(f"lore {deviancy:.2f} {self.current_props['richness']:.3f}")
             return self.app.create_entity('LoreOrePickup', pos)
 
 
