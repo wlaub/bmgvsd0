@@ -352,6 +352,18 @@ class BallEnemy(Entity):
     def get_drops(self):
         return []
 
+    def basic_ball_drops(self):
+        if random.random() > 1-(self.r-5)/16: #heath drop
+            return [self.app.create_entity('HealthPickup', self.position)]
+        elif random.random() > 0.97-0.03*self.app.beans:
+            if len(self.app.tracker['CoffeePotPickup']) == 0:
+                return [self.app.create_entity('CoffeePotPickup', self.position)]
+        else:
+            return [self.app.field.make_lore_drop(self.position)]
+        return []
+
+
+
 
 class Pickup(Entity):
     def __init__(self, app, pos, r):

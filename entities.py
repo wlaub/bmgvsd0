@@ -453,13 +453,18 @@ class BallState(enum.Enum):
 class Ball(BallEnemy):
     track_as = {'Enemy'}
 
-    update_map = {
-        BallState.NORML: BallEnemy.update,
-        }
+    def __init__(self, app, pos, r = None, m = None, h = None):
+        if r is None:
+            r= 4+4*random.random()
+            m = r*r/1.8
+            h = r/4
+        super().__init__(app, pos, r, m, h)
+        self.update = self.normal_update
+        self.get_drops = self.basic_ball_drops
 
-    def __str__(self):
-        p = self.position
-        return f'{super().__str__()} {self.state.name}'
+@register
+class FgtflBall(BallEnemy):
+    track_as = {'Enemy'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -469,23 +474,8 @@ class Ball(BallEnemy):
         super().__init__(app, pos, r, m, h)
         self.last_aggro = 0
         self._going = True
-        self.lores = 0
 
-        if random.random() > 0.15:
-            self.set_state(BallState.NORML)
-        else:
-            self.set_state(BallState.FGTFL)
-
-    def set_state(self, state):
-        self.state = state
-        if state is BallState.NORML:
-            self.update = self.normal_update
-        elif state is BallState.FGTFL:
-            self.update = self.forgetful_update
-        elif state is BallState.LSTFL:
-            self.update = self.lustful_update
-
-    def forgetful_update(self):
+    def update(self):
         player = self.app.player
         if player is None: return
         self.hit_player(player)
@@ -502,7 +492,9 @@ class Ball(BallEnemy):
                     hit = self.shape.shapes_collide(lore.shape)
                     self.say("what's this?")
                     self.app.remove_entity(lore)
-                    self.set_state(BallState.LSTFL)
+                    self.app.remove_entity(self)
+                    self.app.spawn_entity('LstflBall', self.position, self.r, self.m, 1)
+#                    self.set_state(BallState.LSTFL)
                     break
                 except AssertionError: pass
 
@@ -516,7 +508,28 @@ class Ball(BallEnemy):
 
         self.apply_friction(player)
 
-    def lustful_update(self):
+    def get_drops(self):
+        #TODO random chance to inherit parent's pickup
+        if random.random() < 0.5:
+            return self.basic_ball_drops()
+        return []
+
+
+@register
+class LstflBall(BallEnemy):
+    track_as = {'Enemy'}
+
+    def __init__(self, app, pos, r = None, m = None, h = None):
+        if r is None:
+            r= 4+4*random.random()
+            m = r*r/1.8
+            h = r/4
+        super().__init__(app, pos, r, m, h)
+        self.last_aggro = 0
+        self._going = True
+        self.lores = 0
+
+    def update(self):
         player = self.app.player
         if player is None: return
         self.hit_player(player)
@@ -540,18 +553,11 @@ class Ball(BallEnemy):
         self.apply_friction(player)
 
     def get_drops(self):
-        if self.state is BallState.FGTFL and random.random() < 0.5:
-            return []
-        elif self.state is BallState.LSTFL and self.lores > 0:
+        if self.lores > 0:
             return [self.app.create_entity('LengthPickup', self.position)]
-        elif random.random() > 1-(self.r-5)/16: #heath drop
-            return [self.app.create_entity('HealthPickup', self.position)]
-        elif random.random() > 0.97-0.03*self.app.beans:
-            if len(self.app.tracker['CoffeePotPickup']) == 0:
-                return [self.app.create_entity('CoffeePotPickup', self.position)]
         else:
-            return [self.app.field.make_lore_drop(self.position)]
-        return []
+            return self.basic_ball_drops()
+
 
 @register
 class Wall(Entity):

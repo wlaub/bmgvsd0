@@ -74,9 +74,7 @@ make equipment pickups show a controls popup when active?
     or just turn red?
     maybe the hand moves or blinks?
 
-X update ball enemy pickups
-
-split ball enemies back into different enemies
+X split ball enemies back into different enemies
 
 create pickups on spawn
 

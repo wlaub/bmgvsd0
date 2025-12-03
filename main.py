@@ -196,7 +196,10 @@ class PhysicsDemo:
         if len(self.tracker['Zippy']) == 0 and random.random() < 0.2*z:
             new_entity = self.create_entity('Zippy', pos)
         else:
-            new_entity = self.create_entity('Ball', pos)
+            if random.random() < 0.15:
+                new_entity = self.create_entity('FgtflBall', pos)
+            else:
+                new_entity = self.create_entity('Ball', pos)
 
         self.add_entity(new_entity)
         self.last_spawn = self.engine_time
