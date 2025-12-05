@@ -231,11 +231,19 @@ class PhysicsDemo:
             self.screen.blit(text, ((self.camera.w-width)/2,ypos))
             ypos += text.get_height()
 
-            text = self.big_font.render(f"VLT'L STATE 0", False, (0,0,0))
-            alpha *=0.915
+            text = self.big_font.render(f"VLT'L STATE", False, (0,0,0))
+#            alpha *=0.915
+            alpha *=1.03
             text = pygame.transform.scale_by(text, alpha)
-
             self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
+            ypos += text.get_height()
+            text = self.big_font.render(f"DEMO 0", False, (0,0,0))
+            alpha *=0.84
+            text = pygame.transform.scale_by(text, alpha)
+            self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
+            ypos += text.get_height()
+
+
 
 
         ypos = self.camera.h-2
