@@ -252,7 +252,7 @@ class Player(Entity):
             'seed': self.app.seed,
             'health': self.health,
             'time_of_death': self.app.engine_time-self.app.flags.getv('_startup_engine_time'),
-            'fleshworld_duration': str(now-startup_time),
+            'fleshworld_duration': str(self.app.get_fleshtime(now)),
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
             'field': self.app.field.current_props,

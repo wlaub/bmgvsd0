@@ -44,6 +44,20 @@ class Controller:
     'rt': 5,
     }
 
+    def pause(self):
+#        if pygame.mouse.get_pressed()[0]:
+#            self.last_kind = ControlType.key
+#            return True
+        if self.get_button('start'):
+            self.last_kind = ControlType.joy
+            if not self.last_pause:
+                self.last_pause = True
+                return True
+            return False
+        else:
+            self.last_pause = False
+            return False
+
     def __init__(self, app):
         self.app = app
         self.joystick = pygame.joystick.Joystick(0)
@@ -51,6 +65,8 @@ class Controller:
 
         self.last_stick = (0,0)
         self.last_mpos = (0,0)
+
+        self.last_pause = False
 
     def update(self):
         if self.last_mpos != self.app.mpos_screen:

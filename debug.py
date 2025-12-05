@@ -77,9 +77,11 @@ class DebugConsole:
                 self.active = not self.active
                 self.app.run_physics = not self.active
                 if self.active:
+                    self.app.pause()
                     pygame.key.start_text_input()
                     self.entity_list = self.get_entity_list()
                 else:
+                    self.app.unpause()
                     pygame.key.stop_text_input()
 
         if not self.active:
@@ -233,7 +235,7 @@ class DebugConsole:
         w,h = self.app.ws, self.app.hs
         m = 11
 
-        pygame.gfxdraw.box(screen, pygame.Rect(0,0,w,h), (0,0,0,49))
+#        pygame.gfxdraw.box(screen, pygame.Rect(0,0,w,h), (0,0,0,49))
 
 
         bg_color = (0,0,0,173)
@@ -289,7 +291,8 @@ class DebugConsole:
             health = self.app.player.health
 
         now = datetime.datetime.now()
-        dt = now-self.app.flags.getv('_startup_time')
+#        dt = now-self.app.flags.getv('_startup_time')
+        dt = self.app.get_fleshtime(now)
 
         info_text = f"""
 {self.app.engine_time:7.2f} {int(self.app.engine_time*120):07} {dt}

@@ -103,6 +103,26 @@ class PhysicsDemo:
 
         self.reset()
 
+    def get_fleshtime(self, now):
+        return self.fleshtime
+
+    def update_fleshtime(self, now):
+        self.fleshtime = now-self.flags.getv('_startup_time')-datetime.timedelta(seconds=self.pause_duration)
+
+    def pause(self):
+        if self.paused:
+            return
+        self.pause_stamp = time.time()
+        self.paused = True
+        self.run_physics = False
+
+    def unpause(self):
+        if not self.paused:
+            return
+        self.pause_duration += time.time()-self.pause_stamp
+        self.paused = False
+        self.run_physics = True
+
     def reset(self):
 
         self.engine_time = 0
@@ -111,6 +131,10 @@ class PhysicsDemo:
 
         self.flags.volatile_flags = {}
 
+        self.pause_duration = 0
+        self.pause_stamp = None
+        self.paused = False
+        self.fleshtime = None
         self.flags.setv('_startup_time', datetime.datetime.now())
         self.flags.setv('_first_spawns', {})
         self.flags.setnv('_show_score', True) #TODO nv state and defaults
@@ -325,8 +349,16 @@ class PhysicsDemo:
 
         self.controller.update()
 
+        now = datetime.datetime.now()
+        if self.controller.pause():
+            if self.paused:
+                self.unpause()
+            else:
+                self.pause()
+
         if self.run_physics or tick:
             self.screen.fill((255,255,255))
+            self.update_fleshtime(now)
 
             self.do_updates()
 
@@ -337,6 +369,10 @@ class PhysicsDemo:
         self.render_game()
 
         self.camera.update_scale()
+
+        if self.paused:
+            w,h = self.ws, self.hs
+            pygame.gfxdraw.box(self.main_screen, pygame.Rect(0,0,w,h), (0,0,0,49))
 
         self.debug_console.draw(self.main_screen)
 
