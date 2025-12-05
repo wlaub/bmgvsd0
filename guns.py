@@ -116,7 +116,6 @@ class RckngBall(Equipment):
             last_joint = joint_body
             self.joints.append(joint_body)
 
-
         self.moment = pm.moment_for_circle(m, 0, r)
         self.body = body = pm.Body(m, self.moment)
         body.position = Vec2d(*pos)
@@ -128,7 +127,7 @@ class RckngBall(Equipment):
         self.app.space.add(c)
 
     def update(self):
-        self.body.apply_force_at_local_point(Vec2d(0,self.m*120))
+        self.body.apply_force_at_local_point(Vec2d(0,self.m*240))
 
 
 
@@ -138,9 +137,7 @@ class RckngBall(Equipment):
             pv = joint.position
             pv = self.app.jj(pv)
             points.append(pv)
-
 #            pygame.draw.circle(self.app.screen, (255,0,0), pv, 1, 2)
-
         pygame.draw.lines(self.app.screen, (0,0,0), False, points)
 
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
@@ -149,9 +146,6 @@ class RckngBall(Equipment):
         pygame.draw.circle(self.app.screen, (0,0,0), p, int(self.r))
         #TODO if dmg:
         pygame.draw.circle(self.app.screen, (128,128,128), p, int(self.r), 1)
-
-
-
 
 
     def add_to_space(self, space):
