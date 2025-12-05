@@ -132,6 +132,7 @@ class DebugConsole:
                     if self.history_idx == 0:
                         self.stashed = self.cmd_buffer
                     self.cmd_buffer = self.history[self.history_idx]
+                    self.cursor = len(self.cmd_buffer)
 
             elif event.key == pygame.K_DOWN:
                 if self.history_idx > 0:
@@ -140,15 +141,20 @@ class DebugConsole:
                 else:
                     self.cmd_buffer = self.stashed
                     self.history_idx = -1
+                self.cursor = len(self.cmd_buffer)
+
+    def clear_cmd(self):
+        self.history_idx = -1
+        self.cmd_buffer = ''
+        self.stashed = ''
+        self.cursor = 0
+
 
     def execute_cmd(self):
         full_cmd = self.cmd_buffer
         if len(self.history) == 0 or full_cmd != self.history[0]:
             self.history.insert(0,full_cmd)
-        self.history_idx = -1
-        self.cmd_buffer = ''
-        self.stashed = ''
-        self.cursor = 0
+        self.clear_cmd()
 
         def parse_parts(x):
             parts = []
@@ -197,7 +203,16 @@ class DebugConsole:
                     self.shows.add(name)
                 self.entity_list = self.get_entity_list()
             elif cmd == 'count':
-                print(f'{parts[1]}: {len(self.app.tracker[parts[1]])}')
+                if len(parts) > 1:
+                    for p in parts[1:]:
+                        print(f'{p}: {len(self.app.tracker[p])}')
+                else:
+                    print('count:')
+                    for k, v in self.app.tracker.items():
+                        c = len(v)
+                        if c > 0:
+                            print(f'  {k}: {c}')
+
             elif cmd == 'give':
                 what = parts[1].lower()
                 if what == 'bean':
