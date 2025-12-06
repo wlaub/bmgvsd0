@@ -226,6 +226,13 @@ class DebugConsole:
                     level = 4
                 self.app.camera.set_scale(level)
                 self.app.redraw = True
+            elif cmd == 'smite':
+                eid = int(parts[1])
+                try:
+                    dmg = int(parts[2])
+                except:
+                    dmg = 1000
+                self.app.entity_map[eid].get_hit(dmg)
             elif cmd == 'setv':
                 self.app.flags.setv(*parse_parts(parts[1:]))
             elif cmd == 'setnv':

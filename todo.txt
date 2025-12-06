@@ -74,7 +74,7 @@ make equipment pickups show a controls popup when active?
     or just turn red?
     maybe the hand moves or blinks?
 
-create pickups on spawn
+X create pickups on spawn
 
 when the camera moves, a spawnolith might spawn out-of-frame, and spawnoliths that are too far away might be forgotten
 

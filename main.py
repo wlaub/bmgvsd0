@@ -53,26 +53,6 @@ class PhysicsDemo:
                 raise
 
 
-    def add_entity(self, e, layer=0):
-        e.add_to_space(self.space)
-        self.entities.append(e)
-        e.layer=layer #TODO this is awful
-        self.draw_layers[layer].append(e)
-        class_name = e.__class__.__name__
-        for tag in entity_registry.name_tags[class_name]:
-            self.tracker[tag].append(e)
-        e.on_add()
-
-    def remove_entity(self, e, preserve_physics = False):
-        if not preserve_physics:
-            e.remove_from_space(self.space)
-        self.entities.remove(e)
-        self.draw_layers[e.layer].remove(e)
-        class_name = e.__class__.__name__
-        for tag in entity_registry.name_tags[class_name]:
-            self.tracker[tag].remove(e)
-        e.on_remove()
-
     def connect_camera(self, entity):
         self.camera.parent = entity
 
@@ -178,6 +158,7 @@ class PhysicsDemo:
 
         self.eidhwm = 0
         self.entities = []
+        self.entity_map = {}
         self.draw_layers = defaultdict(list)
         self.tracker = defaultdict(list)
 
@@ -212,13 +193,41 @@ class PhysicsDemo:
         first_spawns = self.flags.getv('_first_spawns')
         if not name in first_spawns.keys():
             first_spawns[name] = self.engine_time
-        return entity_registry.create_entity(name, self, *args, **kwargs)
+        result = entity_registry.create_entity(name, self, *args, **kwargs)
+        if self.flags.getv('_map_creation'):
+            self.entity_map[result.eid] = result
+        return result
 
     def spawn_entity(self, name, *args, **kwargs):
         layer = kwargs.pop('layer', 0) #TODO this is zoness???
         entity = self.create_entity(name, *args, **kwargs)
         self.add_entity(entity, layer=layer)
         return entity
+
+    def add_entity(self, e, layer=0):
+        e.add_to_space(self.space)
+        self.entities.append(e)
+        self.entity_map[e.eid] = e
+        e.layer=layer #TODO this is awful
+        self.draw_layers[layer].append(e)
+        class_name = e.__class__.__name__
+        for tag in entity_registry.name_tags[class_name]:
+            self.tracker[tag].append(e)
+        e.on_add()
+
+    def remove_entity(self, e, preserve_physics = False):
+        if not preserve_physics:
+            e.remove_from_space(self.space)
+        self.entities.remove(e)
+        if not self.flags.getv('_preserve_ghosts'):
+            self.entity_map.pop(e.eid)
+        self.draw_layers[e.layer].remove(e)
+        class_name = e.__class__.__name__
+        for tag in entity_registry.name_tags[class_name]:
+            self.tracker[tag].remove(e)
+        e.on_remove()
+
+
 
     def spawn(self):
         new_entities = []

@@ -324,7 +324,25 @@ class Equipment(Entity):
     valid_slots = []
     is_feets = False
 
-class BallEnemy(Entity):
+class Enemy(Entity):
+    def __init__(self, app):
+        super().__init__(app)
+        self.drops = []
+
+    def get_hit(self, dmg):
+        dead = self._basic_hit_spell(dmg)
+        if dead:
+            for drop in self.get_drops():
+                drop.set_position(self.position + drop.position)
+                self.app.add_entity(drop)
+            self.app.remove_entity(self)
+
+    def get_drops(self):
+        return self.drops
+
+
+
+class BallEnemy(Enemy):
     def __init__(self, app, pos, r, m, health, speed=150, friction =-10):
         super().__init__(app)
         self.r = r
@@ -378,27 +396,17 @@ class BallEnemy(Entity):
         self.seek_player(player)
         self.apply_friction(player)
 
-    def get_hit(self, dmg):
-        dead = self._basic_hit_spell(dmg)
-        if dead:
-            for drop in self.get_drops():
-                self.app.add_entity(drop)
-            self.app.remove_entity(self)
-
     def try_hit(self, shape):
         self.shape.shapes_collide(shape)
 
-    def get_drops(self):
-        return []
-
     def basic_ball_drops(self):
         if random.random() > 1-(self.r-5)/16: #heath drop
-            return [self.app.create_entity('HealthPickup', self.position)]
+            return [self.app.create_entity('HealthPickup', Vec2d(0,0))]
         elif random.random() > 0.97-0.03*self.app.beans:
             if len(self.app.tracker['CoffeePotPickup']) == 0:
-                return [self.app.create_entity('CoffeePotPickup', self.position)]
+                return [self.app.create_entity('CoffeePotPickup', Vec2d(0,0))]
         else:
-            return [self.app.field.make_lore_drop(self.position)]
+            return [self.app.field.make_lore_drop(Vec2d(0,0))]
         return []
 
 
@@ -414,6 +422,9 @@ class Pickup(Entity):
         self.shape = shape = pm.Circle(body, self.r)
         shape.sensor = True
         shape.collision_type = COLLTYPE_DEFAULT
+
+    def set_position(self, pos):
+        self.body.position = Vec2d(*pos)
 
     def draw(self):
         p = self.app.jj(self.body.position)
@@ -459,11 +470,11 @@ class Geography:
         #negative needs bias up
         if random.random() > self.get('richness'):
             self.current_props['richness'] += 0.01 * min(math.exp(-deviancy),1)
-            print(f"bean {deviancy:.2f} {self.current_props['richness']:.3f}")
+#            print(f"bean {deviancy:.2f} {self.current_props['richness']:.3f}")
             return self.app.create_entity('BeanPickup', pos)
         else:
             self.current_props['richness'] -= 0.01 * min(math.exp(deviancy),1)
-            print(f"lore {deviancy:.2f} {self.current_props['richness']:.3f}")
+#            print(f"lore {deviancy:.2f} {self.current_props['richness']:.3f}")
             return self.app.create_entity('LoreOrePickup', pos)
 
 

@@ -94,9 +94,9 @@ class Zippy(BallEnemy):
     def get_drops(self):
         result = []
         if random.random() < 0.1 and  len(self.app.tracker['CoffeePotPickup']) == 0:
-           result.append(self.app.create_entity('CoffeePotPickup', self.position))
+           result.append(self.app.create_entity('CoffeePotPickup', Vec2d(0,0)))
 
-        result.append(self.app.create_entity('BeanPickup', self.position))
+        result.append(self.app.create_entity('BeanPickup', Vec2d(0,0)))
         t = random.random()
         M = 7 + int(self.beans/7)*7
         N = int((M+1)*t)
@@ -107,7 +107,7 @@ class Zippy(BallEnemy):
                 dx,dy = random.random()-0.5, random.random()-0.5
                 r = 7+2*i%2
                 result.append(self.app.create_entity('LoreOrePickup',
-                    self.position + Vec2d(r*math.cos(aa)+dx, r*math.sin(aa)+dy)
+                    Vec2d(r*math.cos(aa)+dx, r*math.sin(aa)+dy)
                     ))
 
         return result
@@ -209,11 +209,6 @@ class Zeeky(BallEnemy):
                 self.friction = -100*self.m
 
         self.apply_friction(player)
-
-    def get_drops(self):
-        result = []
-        #TODO
-        return result
 
 
 @register
@@ -457,7 +452,7 @@ class Ball(BallEnemy):
             h = r/4
         super().__init__(app, pos, r, m, h)
         self.update = self.normal_update
-        self.get_drops = self.basic_ball_drops
+        self.drops = self.basic_ball_drops()
 
 @register
 class FgtflBall(BallEnemy):
@@ -471,6 +466,9 @@ class FgtflBall(BallEnemy):
         super().__init__(app, pos, r, m, h)
         self.last_aggro = 0
         self._going = True
+
+        if random.random() > 0.5:
+            self.drops = self.basic_ball_drops()
 
     def update(self):
         player = self.app.player
@@ -505,12 +503,6 @@ class FgtflBall(BallEnemy):
 
         self.apply_friction(player)
 
-    def get_drops(self):
-        #TODO random chance to inherit parent's pickup
-        if random.random() < 0.5:
-            return self.basic_ball_drops()
-        return []
-
 
 @register
 class LstflBall(BallEnemy):
@@ -525,6 +517,7 @@ class LstflBall(BallEnemy):
         self.last_aggro = 0
         self._going = True
         self.lores = 0
+        self.drops = self.basic_ball_drops()
 
     def update(self):
         player = self.app.player
@@ -551,9 +544,9 @@ class LstflBall(BallEnemy):
 
     def get_drops(self):
         if self.lores > 0:
-            return [self.app.create_entity('LengthPickup', self.position)]
+            return [self.app.create_entity('LengthPickup', Vec2d(0,0))]
         else:
-            return self.basic_ball_drops()
+            return self.drops
 
 
 @register
