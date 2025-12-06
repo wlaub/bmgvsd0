@@ -24,7 +24,7 @@ import entities
 import pickups
 import guns
 import feets
-import monoliths
+import spawnoliths
 
 IS_DEBUG = bool(os.getenv('DEBUG', False))
 
