@@ -14,7 +14,6 @@ from registry import register, entity_registry
 from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 
 class Spnlþ(Entity):
-    #TODO prevent spawning inside?
 
     def draw(self):
         color = (0,0,255)

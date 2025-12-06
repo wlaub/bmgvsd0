@@ -12,6 +12,36 @@ from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
 
+"""
+Pck'p:
+* tracks if targets ares on
+* tracks if targets haves been off
+
+hitbox is circle of variable radius
+hitbox targets player
+pick up on touch [if has been off]
+
+dren:
+what it does on touch
+how big it is
+whether player has to step off first
+
+EquipPck'p:
+* tracks if targets ares on
+* tracks if targets haves been off
+
+hitbox is 3x3 square
+hitbox targets all valid equipment slots
+equips the entity when target is on and current equipment is different and slot is valid and activates (on button?)
+? signals if any target is on
+
+dren:
+which valid slots
+which equipment entity
+
+TODO make sure that when equipment drops, it retains the original equipment entity as its entity instead of creating a new one
+"""
+
 @register
 class SordPickup(Pickup):
     track_as = {'EquipPckp'}
