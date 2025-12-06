@@ -84,7 +84,7 @@ class SordPickup(Pickup):
 
         if self.app.controller.equip():
             if self.player_on:
-                if player.equip(slot, 'Sord'):
+                if player.equip(slot, 'RbtcSord'):
                     self.app.start_game()
                     super().on_player(player)
 

@@ -47,7 +47,7 @@ class Zippy(BallEnemy):
 
 
             target = player
-            for bean in beans:
+            for bean in beans[6-self.beans:]:
                 if self.app.camera.contains(bean.position, 0):
                     self.say('bean')
                     target = bean

@@ -13,7 +13,7 @@ from registry import register, entity_registry
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 
 @register
-class Sord(Equipment):
+class RbtcSord(Equipment):
     valid_slots = ['front_hand']
     def __init__(self, app, parent):
         super().__init__(app, parent)
