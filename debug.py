@@ -219,6 +219,13 @@ class DebugConsole:
                     self.app.beans+=1
                 elif what == 'lore':
                     self.app.lore_score+=1
+            elif cmd == 'zoom':
+                try:
+                    level = int(parts[1])
+                except:
+                    level = 4
+                self.app.camera.set_scale(level)
+                self.app.redraw = True
             elif cmd == 'setv':
                 self.app.flags.setv(*parse_parts(parts[1:]))
             elif cmd == 'setnv':

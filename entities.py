@@ -12,11 +12,8 @@ from pymunk import Vec2d
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
-#from pickups import HealthPickup, LoreOrePickup, LengthPickup, BeanPickup, CoffeePotPickup
 
 """
-need a debug console that can spawn enemies and stuff
-
 and eye boss drops portable camera pickup
 """
 

@@ -24,6 +24,7 @@ import entities
 import pickups
 import guns
 import feets
+import monoliths
 
 IS_DEBUG = bool(os.getenv('DEBUG', False))
 
@@ -98,6 +99,7 @@ class PhysicsDemo:
         self.big_font = pygame.font.Font(None, 14) #lol
 
         self.queue_reset = False
+        self.redraw = False
 
         self.flags = Flags()
 
@@ -140,6 +142,7 @@ class PhysicsDemo:
         self.flags.setnv('_show_score', True) #TODO nv state and defaults
         self.flags.setnv('_show_title', True) #
         self.flags.setnv('_show_seed', True) #
+        self.flags.setnv('_render_physics', False)
 #        self.flags.setnv('_title_screen', True) #TODO
 
         if loop is not None:
@@ -170,7 +173,6 @@ class PhysicsDemo:
 
         ### Init pymunk and create space
         self.run_physics = True
-        self.render_physics = False
         self.space = pm.Space()
 #        self.space.gravity = (0.0, -900.0)
 
@@ -179,9 +181,14 @@ class PhysicsDemo:
         self.draw_layers = defaultdict(list)
         self.tracker = defaultdict(list)
 
+        #TODO
+        self.spawn_entity('BallSpnlþ', (-300, 000), layer=100)
+        self.spawn_entity('ZippySpnlþ', (300, 000), layer=100)
+
         self.player = self.spawn_entity('Player', (0,0), layer=10)
 
         self.spawn_entity('SordPickup', (16,-4))
+
 
         self.last_spawn = self.engine_time
 
@@ -214,33 +221,25 @@ class PhysicsDemo:
         return entity
 
     def spawn(self):
-        t = random.random()
+        new_entities = []
+        for entity in self.tracker['Spnlþ']:
+            new_entities.extend(entity.spawn())
 
-        pos = self.camera.get_boundary_point(t, 50)
+        for new_entity in new_entities:
+            self.add_entity(new_entity)
 
-        z = len(self.tracker['BeanPickup'])-2
-        if len(self.tracker['Zbln']) == 0:
-            z+= len(self.tracker['Zeeky'])*3
-
-        if len(self.tracker['Zippy']) == 0 and random.random() < 0.2*z:
-            new_entity = self.create_entity('Zippy', pos)
-        else:
-            if random.random() < 0.15:
-                new_entity = self.create_entity('FgtflBall', pos)
-            else:
-                new_entity = self.create_entity('Ball', pos)
-
-        self.add_entity(new_entity)
-        self.last_spawn = self.engine_time
+        if len(new_entities) > 0:
+            self.last_spawn = self.engine_time
 
     def draw(self):
-
-        if self.render_physics:
-            self.space.debug_draw(self.draw_options)
 
         for layer in sorted(self.draw_layers.keys()):
             for entity in self.draw_layers[layer]:
                 entity.draw()
+
+        if self.flags.getnv('_render_physics'):
+            self.camera.draw_physics()
+
 
         if self.flags.getnv('_show_score'):
             header = self.font.render(f'{self.lore_score}', False, (0,0,128))
@@ -298,6 +297,7 @@ class PhysicsDemo:
         self.camera.update()
         #TODO: if camera moved
         self.field.update(self.camera.position)
+        #TODO update spawnoliths?
 
         dt = self.engine_time-self.last_spawn
         c = self.field.get('capacity')
@@ -364,11 +364,19 @@ class PhysicsDemo:
 
             self.do_physics()
 
+        if self.run_physics or self.redraw:
             self.draw()
+
 
         self.render_game()
 
         self.camera.update_scale()
+
+        if self.redraw:
+            self.screen.fill((255,255,255))
+            self.draw()
+            self.render_game()
+            self.redraw = False
 
         if self.paused:
             w,h = self.ws, self.hs

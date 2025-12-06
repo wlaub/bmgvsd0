@@ -141,9 +141,10 @@ class Camera:
 
             self.half_off = Vec2d(-self.w/2, -self.h/2)
             self.screen = pygame.Surface((self.w, self.h))
+            self.physics_screen = pygame.Surface((self.w, self.h), flags=pygame.SRCALPHA)
 
             self.app.screen = self.screen
-            self.app.draw_options = pygame_util.DrawOptions(self.screen)
+            self.app.draw_options = draw_options = pygame_util.DrawOptions(self.physics_screen)
 
             self.pending_scale = None
 
@@ -166,6 +167,15 @@ class Camera:
         self.down = self.position.y+self.h
 
         self.lrud = (self.left, self.right, self.up, self.down)
+
+        draw_options = self.app.draw_options
+        draw_options.transform = pymunk.Transform.translation(*(self.reference_position-self.half_off))
+
+    def draw_physics(self):
+        self.physics_screen.fill((0,0,0,0))
+        self.app.space.debug_draw(self.app.draw_options)
+        self.physics_screen.set_alpha(128)
+        self.screen.blit(self.physics_screen, (0,0), special_flags=pygame.BLEND_ALPHA_SDL2)
 
     def update(self):
         self.update_position()
