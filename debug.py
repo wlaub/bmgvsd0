@@ -274,11 +274,17 @@ class DebugConsole:
             self.hides.add(name)
         self.entity_list = self.get_entity_list()
 
+    def _ac_hide(self, parts):
+        return self._complete(parts[-1], entity_registry.by_tag.keys())
+
     def _do_show(self, cmd, parts):
         self.shows = set()
         for name in parts:
             self.shows.add(name)
         self.entity_list = self.get_entity_list()
+
+    def _ac_show(self, parts):
+        return self._complete(parts[-1], entity_registry.by_tag.keys())
 
     def _do_count(self, cmd, parts):
         if len(parts) > 1:
@@ -290,6 +296,9 @@ class DebugConsole:
                 c = len(v)
                 if c > 0:
                     print(f'  {k}: {c}')
+
+    def _ac_count(self, parts):
+        return self._complete(parts[-1], entity_registry.by_tag.keys())
 
     def _do_give(self, cmd, parts):
         for what in parts:
@@ -323,14 +332,21 @@ class DebugConsole:
     def _do_setnv(self, cmd, parts):
         self.app.flags.setnv(*self.parse_parts(parts))
 
-    def _do_clearv(self, cmd, parts):
-        print(self.app.flags.clearv(*self.parse_parts(parts)))
-
     def _do_getv(self, cmd, parts):
         print(self.app.flags.getv(*self.parse_parts(parts)))
 
     def _do_getnv(self, cmd, parts):
         print(self.app.flags.getnv(*self.parse_parts(parts)))
+
+    def _ac_setv(self, parts):
+        return self._complete(parts[-1], self.app.flags.volatile_flags.keys())
+    def _ac_getv(self, parts):
+        return self._complete(parts[-1], self.app.flags.volatile_flags.keys())
+
+    def _ac_setnv(self, parts):
+        return self._complete(parts[-1], self.app.flags.flags.keys())
+    def _ac_getnv(self, parts):
+        return self._complete(parts[-1], self.app.flags.flags.keys())
 
     def _do_flags(self, cmd, parts):
         print('nv:')
