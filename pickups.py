@@ -85,6 +85,11 @@ class RckngBallPickup(EquipPckp):
     track_as = {'EquipPckp'}
     equipment_name = 'RckngBall'
 
+@register
+class SkltnPickup(EquipPckp):
+    track_as = {'EquipPckp'}
+    equipment_name = 'Exoskeleton'
+
 
 
 

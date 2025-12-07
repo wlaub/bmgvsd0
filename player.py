@@ -308,34 +308,38 @@ class Player(Entity):
             pygame.Rect(p+Vec2d(4, -self.h+2), (2, 2))
             )
         #body
-        pygame.draw.line(self.app.screen, (0,0,0), p, p+Vec2d(0,-6))
-        pygame.draw.line(self.app.screen, (0,0,0), p-Vec2d(-1,0), p-Vec2d(1,0))
+        body_color = (0,0,0)
+        if self.slots['legs'] is None:
+            body_color = (240,192,160)
+
+        pygame.draw.line(self.app.screen, body_color, p, p+Vec2d(0,-6))
+        pygame.draw.line(self.app.screen, body_color, p-Vec2d(-1,0), p-Vec2d(1,0))
         #arms
         if self.slots['front_hand'] is not None:
-            pygame.draw.line(self.app.screen, (0,0,0),
+            pygame.draw.line(self.app.screen, body_color,
                 p+self.shoulder_position,
                 p+self.front_hand_position,
                 )
         else:
-            pygame.draw.line(self.app.screen, (0,0,0),
+            pygame.draw.line(self.app.screen, body_color,
                 p+self.shoulder_position,
                 p+self.front_elbow_position,
                 )
-            pygame.draw.line(self.app.screen, (0,0,0),
+            pygame.draw.line(self.app.screen, body_color,
                 p+self.front_elbow_position,
                 p+self.front_unarmed_position,
                 )
         if self.slots['back_hand'] is not None:
-            pygame.draw.line(self.app.screen, (0,0,0),
+            pygame.draw.line(self.app.screen, body_color,
                 p+self.shoulder_position,
                 p+self.back_hand_position,
                 )
         else:
-            pygame.draw.line(self.app.screen, (0,0,0),
+            pygame.draw.line(self.app.screen, body_color,
                 p+self.shoulder_position,
                 p+self.back_elbow_position,
                 )
-            pygame.draw.line(self.app.screen, (0,0,0),
+            pygame.draw.line(self.app.screen, body_color,
                 p+self.back_elbow_position,
                 p+self.back_unarmed_position,
                 )

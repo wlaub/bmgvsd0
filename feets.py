@@ -74,7 +74,11 @@ class Leg(Entity):
         p0 = self.app.jj(self.parent_body.position+self.anchor)
         p1 = self.app.jj(self.foot_body.position)
 
-        pygame.draw.line(self.app.screen, (0,0,0), p0, p1)
+        body_color = (0,0,0)
+        if self.parent.slots['legs'] is None:
+            body_color = (240,192,160)
+
+        pygame.draw.line(self.app.screen, body_color, p0, p1)
 
         if self.debug_draw:
             if self.app.player.active_leg == self:
@@ -131,6 +135,8 @@ class Leg(Entity):
 class Exoskeleton(Equipment):
     valid_slots = ['legs']
     is_feets = True
+    pickup = 'SkltnPickup'
+
     def __init__(self, app):
         super().__init__(app)
 
