@@ -110,6 +110,7 @@ class PhysicsDemo:
         global SEED
         SEED = random.randrange(1000000,4207852)
         random.seed(SEED)
+        self.seed = seed
 
         self.engine_time = 0
 
