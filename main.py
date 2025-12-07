@@ -342,6 +342,7 @@ class PhysicsDemo:
         mdist = self.camera.w*self.forget_range
         if dist > mdist:
             p = (dist-mdist)/abs(mdist)
+            #TODO curve/scale this to account for framerate
             if random.random() < p:
                 self.remove_entity(entity)
 
