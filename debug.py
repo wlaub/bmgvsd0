@@ -59,15 +59,23 @@ class DebugConsole:
         self.shows = set()
 
 
-        self.cmds = {'spawn','equip', 'drop', 'hide', 'show', 'count', 'give', 'zoom', 'smite', 'setv', 'setnv', 'getv', 'getnv', 'flags'}
-
+        self.cmds = {'spawn','equip', 'drop', 'hide', 'show', 'count', 'give', 'zoom', 'smite', 'setv', 'setnv', 'getv', 'getnv', 'clearv', 'flags'}
 
         self.cmd_map = {
             x: getattr(self, f'_do_{x}', self.do_error) for x in self.cmds
             }
 
+        self.ac_map = {
+            x: getattr(self, f'_ac_{x}', self.nocomplete) for x in self.cmds
+            }
+
+
+
     def do_error(self, cmd, parts):
         print(f'command {cmd} failed to register')
+
+    def nocomplete(self, parts):
+        return parts[-1]
 
 
     def get_entity_list(self):
@@ -83,18 +91,31 @@ class DebugConsole:
                 break
         return result
 
-    def complete_entity_name(self, buffer):
+    def _complete(self, buffer, src_options):
         options = []
-        for name in entity_register.by_name.keys():
+        for name in src_options:
             if name.startswith(buffer):
                 options.append(name)
 
         if len(options) == 0:
             return buffer
         elif len(options) == 1:
-            return options[1]
+            return options[0]+' '
         else:
             return os.path.commonprefix(options)
+
+    def complete_cmd(self, buffer):
+        return self._complete(buffer, self.cmds)
+
+    def complete_entity_name(self, buffer):
+        return self._complete(buffer, entity_registry.by_name.keys())
+
+    def complete_tag_name(self, buffer, tag):
+        src_options = (x.__name__ for x in entity_registry.by_tag.get(tag, []))
+        return self._complete(buffer, src_options)
+
+    def complete_slot_name(self, buffer):
+        return self._complete(buffer, self.app.player.base_slots)
 
 
     def handle_event(self, event):
@@ -169,6 +190,17 @@ class DebugConsole:
                     self.history_idx = -1
                 self.cursor = len(self.cmd_buffer)
 
+            elif event.key == pygame.K_TAB:
+                parts = self.cmd_buffer.split(' ')
+                if len(parts) == 1:
+                    self.cmd_buffer = self.complete_cmd(self.cmd_buffer)
+                else:
+                    cmd = parts[0]
+                    parts[-1] = self.ac_map.get(cmd, self.nocomplete)(parts)
+                    self.cmd_buffer = ' '.join(parts)
+
+                self.cursor = len(self.cmd_buffer)
+
     def clear_cmd(self):
         self.history_idx = -1
         self.cmd_buffer = ''
@@ -176,27 +208,29 @@ class DebugConsole:
         self.cursor = 0
 
 
+    @staticmethod
+    def parse_parts(x):
+        parts = []
+        for p in x:
+            try:
+                parts.append(json.loads(p))
+            except: pass
+            else:
+                continue
+            try:
+                parts.append(json.loads(p.lower()))
+            except: pass
+            else:
+                continue
+            parts.append(p)
+        return parts
+
+
     def execute_cmd(self):
         full_cmd = self.cmd_buffer
         if len(self.history) == 0 or full_cmd != self.history[0]:
             self.history.insert(0,full_cmd)
         self.clear_cmd()
-
-        def parse_parts(x):
-            parts = []
-            for p in x:
-                try:
-                    parts.append(json.loads(p))
-                except: pass
-                else:
-                    continue
-                try:
-                    parts.append(json.loads(p.lower()))
-                except: pass
-                else:
-                    continue
-                parts.append(p)
-            return parts
 
 
         try:
@@ -211,133 +245,104 @@ class DebugConsole:
         self.app.spawn_entity(name, self.app.mpos)
         self.entity_list = self.get_entity_list()
 
+    def _ac_spawn(self, parts):
+        return self.complete_entity_name(parts[-1])
+
     def _do_equip(self, cmd, parts):
-        pass
+        slot = parts[0]
+        name = parts[1]
+        self.app.player.equip(slot, name)
+        self.entity_list = self.get_entity_list()
+
+    def _ac_equip(self, parts):
+        if len(parts) == 2:
+            return self.complete_slot_name(parts[-1])
+        else:
+            return self.complete_tag_name(parts[-1], 'Equipment')
 
     def _do_drop(self, cmd, parts):
-        pass
+        slot = parts[0]
+        self.app.player.drop_equipment(slot)
+        self.entity_list = self.get_entity_list()
+
+    def _ac_drop(self, parts):
+        return self.complete_slot_name(parts[-1])
 
     def _do_hide(self, cmd, parts):
-        pass
+        self.hides = set()
+        for name in parts:
+            self.hides.add(name)
+        self.entity_list = self.get_entity_list()
 
     def _do_show(self, cmd, parts):
-        pass
+        self.shows = set()
+        for name in parts:
+            self.shows.add(name)
+        self.entity_list = self.get_entity_list()
 
     def _do_count(self, cmd, parts):
-        pass
+        if len(parts) > 1:
+            for p in parts[1:]:
+                print(f'{p}: {len(self.app.tracker[p])}')
+        else:
+            print('count:')
+            for k, v in self.app.tracker.items():
+                c = len(v)
+                if c > 0:
+                    print(f'  {k}: {c}')
 
     def _do_give(self, cmd, parts):
-        pass
+        for what in parts:
+            what = what.lower()
+            if what == 'bean':
+                self.app.beans+=1
+            elif what == 'lore':
+                self.app.lore_score+=1
+            else:
+                print(f'{what}?')
 
     def _do_zoom(self, cmd, parts):
-        pass
+        try:
+            level = int(parts[0])
+        except:
+            level = 4
+        self.app.camera.set_scale(level)
+        self.app.redraw = True
 
     def _do_smite(self, cmd, parts):
-        pass
+        eid = int(parts[0])
+        try:
+            dmg = int(parts[1])
+        except:
+            dmg = 1000
+        self.app.entity_map[eid].get_hit(dmg)
 
     def _do_setv(self, cmd, parts):
-        pass
+        self.app.flags.setv(*self.parse_parts(parts))
 
     def _do_setnv(self, cmd, parts):
-        pass
+        self.app.flags.setnv(*self.parse_parts(parts))
 
     def _do_clearv(self, cmd, parts):
-        pass
+        print(self.app.flags.clearv(*self.parse_parts(parts)))
 
     def _do_getv(self, cmd, parts):
-        pass
+        print(self.app.flags.getv(*self.parse_parts(parts)))
 
     def _do_getnv(self, cmd, parts):
-        pass
+        print(self.app.flags.getnv(*self.parse_parts(parts)))
 
     def _do_flags(self, cmd, parts):
-        pass
-
+        print('nv:')
+        for key, value in self.app.flags.flags.items():
+            print(f'  {key}:\t{value}')
+        print('v:')
+        for key, value in self.app.flags.volatile_flags.items():
+            print(f'  {key}:\t{value}')
 
 
     def _do_default(self, cmd, parts):
         print('?')
-
-    def _(self):
-        try:
-            if cmd == 'spawn':
-                name = parts[1]
-                self.app.spawn_entity(name, self.app.mpos)
-                self.entity_list = self.get_entity_list()
-            elif cmd == 'equip':
-                slot = parts[1]
-                name = parts[2]
-                self.app.player.equip(slot, name)
-                self.entity_list = self.get_entity_list()
-            elif cmd == 'drop':
-                slot = parts[1]
-                self.app.player.drop_equipment(slot)
-                self.entity_list = self.get_entity_list()
-            elif cmd == 'hide':
-                self.hides = set()
-                if len(parts) > 1:
-                    name = parts[1]
-                    self.hides.add(name)
-                self.entity_list = self.get_entity_list()
-            elif cmd == 'show':
-                self.shows = set()
-                if len(parts) > 1:
-                    name = parts[1]
-                    self.shows.add(name)
-                self.entity_list = self.get_entity_list()
-            elif cmd == 'count':
-                if len(parts) > 1:
-                    for p in parts[1:]:
-                        print(f'{p}: {len(self.app.tracker[p])}')
-                else:
-                    print('count:')
-                    for k, v in self.app.tracker.items():
-                        c = len(v)
-                        if c > 0:
-                            print(f'  {k}: {c}')
-
-            elif cmd == 'give':
-                what = parts[1].lower()
-                if what == 'bean':
-                    self.app.beans+=1
-                elif what == 'lore':
-                    self.app.lore_score+=1
-            elif cmd == 'zoom':
-                try:
-                    level = int(parts[1])
-                except:
-                    level = 4
-                self.app.camera.set_scale(level)
-                self.app.redraw = True
-            elif cmd == 'smite':
-                eid = int(parts[1])
-                try:
-                    dmg = int(parts[2])
-                except:
-                    dmg = 1000
-                self.app.entity_map[eid].get_hit(dmg)
-            elif cmd == 'setv':
-                self.app.flags.setv(*parse_parts(parts[1:]))
-            elif cmd == 'setnv':
-                self.app.flags.setnv(*parse_parts(parts[1:]))
-            elif cmd == 'clearv':
-                print(self.app.flags.clearv(*parse_parts(parts[1:])))
-            elif cmd == 'getv':
-                print(self.app.flags.getv(*parse_parts(parts[1:])))
-            elif cmd == 'getnv':
-                print(self.app.flags.getnv(*parse_parts(parts[1:])))
-            elif cmd == 'flags':
-                print('nv:')
-                for key, value in self.app.flags.flags.items():
-                    print(f'  {key}:\t{value}')
-                print('v:')
-                for key, value in self.app.flags.volatile_flags.items():
-                    print(f'  {key}:\t{value}')
-            else:
-                print('?')
-        except Exception as e:
-            print(e)
-
 
     def draw(self, screen):
         if not self.active:

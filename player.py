@@ -159,10 +159,11 @@ class Player(Entity):
     def drop_equipment(self, slot):
         old = self.slots[slot]
         if old is not None:
-            pickup_name = f'{old.ename}Pickup'
+            pickup_name = old.pickup
             if pickup_name in entity_registry.by_name.keys():
-                #TODO use the slot position here
-                self.app.spawn_entity(pickup_name, self.position)
+                self.app.spawn_entity(pickup_name,
+                    self.position + self.slot_positions.get(slot, (0,Vec2d(0,0)))[1]
+                    )
             self.unequip(slot)
 
     def equip_entity(self, slot, entity):

@@ -15,6 +15,8 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 @register
 class RbtcSord(Equipment):
     valid_slots = ['front_hand']
+    pickup = 'SordPickup'
+
     def __init__(self, app, parent):
         super().__init__(app, parent)
         self.last_hit = self.app.engine_time

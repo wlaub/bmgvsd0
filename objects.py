@@ -323,6 +323,7 @@ class Entity:
 class Equipment(Entity):
     valid_slots = []
     is_feets = False
+    pickup = None
 
 class Enemy(Entity):
     def __init__(self, app):
