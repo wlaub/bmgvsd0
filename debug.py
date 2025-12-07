@@ -58,6 +58,18 @@ class DebugConsole:
         self.hides = set()
         self.shows = set()
 
+
+        self.cmds = {'spawn','equip', 'drop', 'hide', 'show', 'count', 'give', 'zoom', 'smite', 'setv', 'setnv', 'getv', 'getnv', 'flags'}
+
+
+        self.cmd_map = {
+            x: getattr(self, f'_do_{x}', self.do_error) for x in self.cmds
+            }
+
+    def do_error(self, cmd, parts):
+        print(f'command {cmd} failed to register')
+
+
     def get_entity_list(self):
         result = []
         for entity in self.app.entities:
@@ -70,6 +82,20 @@ class DebugConsole:
             if len(result) == 24:
                 break
         return result
+
+    def complete_entity_name(self, buffer):
+        options = []
+        for name in entity_register.by_name.keys():
+            if name.startswith(buffer):
+                options.append(name)
+
+        if len(options) == 0:
+            return buffer
+        elif len(options) == 1:
+            return options[1]
+        else:
+            return os.path.commonprefix(options)
+
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -176,7 +202,64 @@ class DebugConsole:
         try:
             parts = full_cmd.split()
             cmd = parts[0]
+            self.cmd_map.get(cmd, self._do_default)(cmd, parts[1:])
+        except Exception as e:
+            print(e)
 
+    def _do_spawn(self, cmd, parts):
+        name = parts[0]
+        self.app.spawn_entity(name, self.app.mpos)
+        self.entity_list = self.get_entity_list()
+
+    def _do_equip(self, cmd, parts):
+        pass
+
+    def _do_drop(self, cmd, parts):
+        pass
+
+    def _do_hide(self, cmd, parts):
+        pass
+
+    def _do_show(self, cmd, parts):
+        pass
+
+    def _do_count(self, cmd, parts):
+        pass
+
+    def _do_give(self, cmd, parts):
+        pass
+
+    def _do_zoom(self, cmd, parts):
+        pass
+
+    def _do_smite(self, cmd, parts):
+        pass
+
+    def _do_setv(self, cmd, parts):
+        pass
+
+    def _do_setnv(self, cmd, parts):
+        pass
+
+    def _do_clearv(self, cmd, parts):
+        pass
+
+    def _do_getv(self, cmd, parts):
+        pass
+
+    def _do_getnv(self, cmd, parts):
+        pass
+
+    def _do_flags(self, cmd, parts):
+        pass
+
+
+
+    def _do_default(self, cmd, parts):
+        print('?')
+
+    def _(self):
+        try:
             if cmd == 'spawn':
                 name = parts[1]
                 self.app.spawn_entity(name, self.app.mpos)
