@@ -105,6 +105,7 @@ class Player(Entity):
         self.slot_positions = {
             'front_hand': (self.front_unarmed_position, self.front_hand_position),
             'back_hand': (self.back_unarmed_position, self.back_hand_position),
+            'legs': (Vec2d(0,0), Vec2d(0,0)),
             }
 
         self.slot_sensors = {}
