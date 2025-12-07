@@ -218,7 +218,7 @@ class Player(Entity):
 
     def on_remove(self):
         for slot, entity in self.slots.items():
-            self.unequip(slot)
+            self.drop_equipment(slot)
 
         for slot, bmap in self.slot_sensors.items():
             position = self.get_slot_position(slot)

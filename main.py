@@ -107,6 +107,10 @@ class PhysicsDemo:
 
     def reset(self):
 
+        global SEED
+        SEED = random.randrange(1000000,4207852)
+        random.seed(SEED)
+
         self.engine_time = 0
 
         loop = self.flags.getv('_loop')
