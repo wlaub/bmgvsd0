@@ -131,8 +131,11 @@ class Leg(Entity):
 class Exoskeleton(Equipment):
     valid_slots = ['legs']
     is_feets = True
-    def __init__(self, app, parent):
-        super().__init__(app, parent)
+    def __init__(self, app):
+        super().__init__(app)
+
+    def attach(self, parent, slot):
+        self.parent = parent
 
         pos = self.parent.position
         hips = self.parent.hips

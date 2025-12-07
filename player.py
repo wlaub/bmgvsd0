@@ -153,7 +153,7 @@ class Player(Entity):
             self.slots[slot] = None
 
     def equip(self, slot, name):
-        entity = self.app.create_entity(name, self)
+        entity = self.app.create_entity(name)
         return self.equip_entity(slot, entity)
 
     def drop_equipment(self, slot):
@@ -162,7 +162,8 @@ class Player(Entity):
             pickup_name = old.pickup
             if pickup_name in entity_registry.by_name.keys():
                 self.app.spawn_entity(pickup_name,
-                    self.position + self.slot_positions.get(slot, (0,Vec2d(0,0)))[1]
+                    self.position + self.slot_positions.get(slot, (0,Vec2d(0,0)))[1],
+                    equipment = old
                     )
             self.unequip(slot)
 
@@ -170,6 +171,8 @@ class Player(Entity):
         if not slot in entity.valid_slots:
             print(f"can't put {entity.ename} in {slot}")
             return False
+
+        entity.attach(self, slot)
 
         if self.slots[slot] is None or self.slots[slot].ename != entity.ename:
             self.drop_equipment(slot)

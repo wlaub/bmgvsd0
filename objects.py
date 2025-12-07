@@ -325,6 +325,9 @@ class Equipment(Entity):
     is_feets = False
     pickup = None
 
+    def grow(self, amt):
+        pass
+
 class Enemy(Entity):
     def __init__(self, app):
         super().__init__(app)
@@ -413,14 +416,30 @@ class BallEnemy(Enemy):
 
 
 
-class Pickup(Entity):
-    def __init__(self, app, pos, r):
+class Pckp(Entity):
+    def __init__(self, app, pos):
         super().__init__(app)
+
         self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
         body.position = Vec2d(*pos)
+        self.prepare_shape()
 
+        self.player_on = False
+
+    def prepare_shape(self):
+        self.prepare_circle(8)
+
+    def prepare_circle(self, r):
         self.r = r
-        self.shape = shape = pm.Circle(body, self.r)
+        self.shape = shape = pm.Circle(self.body, self.r)
+        shape.sensor = True
+        shape.collision_type = COLLTYPE_DEFAULT
+
+    def prepare_box(self, w, h):
+        self.w = w
+        self.h = h
+
+        self.shape = shape = pm.Poly.create_box(self.body, (self.w, self.h))
         shape.sensor = True
         shape.collision_type = COLLTYPE_DEFAULT
 
@@ -428,18 +447,37 @@ class Pickup(Entity):
         self.body.position = Vec2d(*pos)
 
     def draw(self):
+        self.draw_circle()
+
+    def draw_circle(self):
         p = self.app.jj(self.body.position)
         color = (0,0,255)
+#        if self.player_on:
+#            color = (255,0,0)
         pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
+
+    def draw_poly(self):
+        p = self.app.jj(self.body.position)
+        color = (0,0,255)
+#        if self.player_on:
+#            color = (255,0,0)
+
+        vertices = []
+        for v in self.shape.get_vertices():
+            p = self.app.jj(v.rotated(self.body.angle)+self.position)
+            vertices.append(p)
+        pygame.draw.polygon(self.app.screen, color, vertices, 1)
 
     def update(self):
         player = self.app.player
         if player is None: return
         try:
             hit = self.shape.shapes_collide(player.shape)
+            self.player_on = True
             self.on_player(player)
 
-        except AssertionError: pass
+        except AssertionError:
+            self.player_on = False
 
     def on_player(self, player):
         self.app.remove_entity(self)

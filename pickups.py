@@ -10,7 +10,7 @@ from pymunk import Vec2d
 
 from registry import register, entity_registry
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT, Pickup
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Pckp
 
 """
 Pck'p:
@@ -42,69 +42,57 @@ which equipment entity
 TODO make sure that when equipment drops, it retains the original equipment entity as its entity instead of creating a new one
 """
 
-@register
-class SordPickup(Pickup):
-    track_as = {'EquipPckp'}
+class EquipPckp(Pckp):
+    def __init__(self, app, pos, equipment = None):
+        super().__init__(app, pos)
 
-    def __init__(self, app, pos):
-        super(Pickup, self).__init__(app)
-        self.body = body = pm.Body(body_type = pymunk.Body.STATIC)
-        body.position = Vec2d(*pos)
+        self.cooldown = self.app.engine_time + 0.5
 
-        self.w = 3
-        self.h = 3
+        if equipment is not None:
+            self.equipment = equipment
+        else:
+            self.equipment = self.app.create_entity(self.equipment_name)
 
-        self.shape = shape = pm.Poly.create_box(body, (self.w, self.h))
-        shape.sensor = True
-        shape.collision_type = COLLTYPE_DEFAULT
-        self.player_on = False
+    def prepare_shape(self):
+        self.prepare_box(3,3)
 
     def draw(self):
-        p = self.app.jj(self.body.position)
-        color = (0,0,255)
-
-#        if self.player_on:
-#            color = (255,0,0)
-
-        vertices = []
-        for v in self.shape.get_vertices():
-            p = self.app.jj(v.rotated(self.body.angle)+self.position)
-            vertices.append(p)
-        pygame.draw.polygon(self.app.screen, color, vertices, 1)
-
+        self.draw_poly()
 
     def update(self):
         player = self.app.player
+
         if player is None: return
-        slot = player.get_slot_hit(self.shape, {'front_hand'})
+        slot = player.get_slot_hit(self.shape, self.equipment.valid_slots)
         if slot is not None:
             self.player_on = True
         else:
             self.player_on = False
 
-        if self.app.controller.equip():
+        if self.app.controller.equip() and self.app.engine_time > self.cooldown:
             if self.player_on:
-                if player.equip(slot, 'RbtcSord'):
+                if player.equip_entity(slot, self.equipment):
                     self.app.start_game()
                     super().on_player(player)
 
+@register
+class SordPickup(EquipPckp):
+    track_as = {'EquipPckp'}
+    equipment_name = 'RbtcSord'
 
-    def on_player(self, player):
-        #TODO formalize player_on for pickups
-        self.player_on = True
-        if self.app.controller.equip():
+@register
+class RckngBallPickup(EquipPckp):
+    track_as = {'EquipPckp'}
+    equipment_name = 'RckngBall'
 
-#            sord = self.app.create_entity('Sord', player)
-            if player.equip('front_hand', 'Sord'):
-                self.app.start_game()
-                super().on_player(player)
+
 
 
 @register
-class HealthPickup(Pickup):
+class HealthPickup(Pckp):
 
-    def __init__(self, app, pos):
-        super().__init__(app, pos, 4)
+    def prepare_shape(self):
+        self.prepare_circle(4)
 
     def on_player(self, player):
         extra = max(0,player.health-3)
@@ -112,41 +100,44 @@ class HealthPickup(Pickup):
         super().on_player(player)
 
 @register
-class LengthPickup(Pickup):
+class LengthPickup(Pckp):
 
-    def __init__(self, app, pos):
-        super().__init__(app, pos, 4)
+    def prepare_shape(self):
+        self.prepare_circle(4)
 
     def on_player(self, player):
-        for sord in self.app.tracker['Sord']:
-            sord.offset += Vec2d(1,0)
+        for slot in {'front_hand', 'back_hand'}:
+            sord = player.slots[slot]
+            if sord is not None:
+                sord.grow(1)
+                break #TODO yes or no?
         super().on_player(player)
 
 @register
-class LoreOrePickup(Pickup):
+class LoreOrePickup(Pckp):
 
-    def __init__(self, app, pos):
-        super().__init__(app, pos, 2)
+    def prepare_shape(self):
+        self.prepare_circle(2)
 
     def on_player(self, player):
         self.app.lore_score += 1
         super().on_player(player)
 
 @register
-class BeanPickup(Pickup):
+class BeanPickup(Pckp):
 
-    def __init__(self, app, pos):
-        super().__init__(app, pos, 2)
+    def prepare_shape(self):
+        self.prepare_circle(2)
 
     def on_player(self, player):
         self.app.beans += 1
         super().on_player(player)
 
 @register
-class CoffeePotPickup(Pickup):
+class CoffeePotPickup(Pckp):
 
-    def __init__(self, app, pos):
-        super().__init__(app, pos, 16)
+    def prepare_shape(self):
+        self.prepare_circle(16)
 
     def on_player(self, player):
         if self.app.beans > 0:

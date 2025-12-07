@@ -17,11 +17,15 @@ class RbtcSord(Equipment):
     valid_slots = ['front_hand']
     pickup = 'SordPickup'
 
-    def __init__(self, app, parent):
-        super().__init__(app, parent)
+    def __init__(self, app):
+        super().__init__(app)
         self.last_hit = self.app.engine_time
+        self.length = 8 #this is off by one because of the way it is
 
-        self.offset = self.parent.front_hand_position + Vec2d(8,0)
+    def attach(self, parent, slot):
+        self.parent = parent
+
+        self.offset = self.parent.front_hand_position + Vec2d(self.length,0)
         x,y = self.offset
 
         self.body = pm.Body(body_type = pm.Body.KINEMATIC)
@@ -40,6 +44,10 @@ class RbtcSord(Equipment):
                 self.parent.front_hand_position + Vec2d(2,1)
                 ],
             ]
+
+    def grow(self, amt):
+        self.length += amt
+        self.offset += Vec2d(amt, 0)
 
     def update(self):
         controller = self.app.controller
@@ -80,9 +88,14 @@ class RbtcSord(Equipment):
 @register
 class RckngBall(Equipment):
     valid_slots = ['back_hand', 'front_hand']
-    def __init__(self, app, parent):
-        super().__init__(app, parent)
+    pickup = 'RckngBallPickup'
+
+    def __init__(self, app):
+        super().__init__(app)
         self.last_hit = self.app.engine_time
+
+    def attach(self, parent, slot):
+        self.parent=parent
 
         self.link = 7
         self.N = 7
@@ -91,22 +104,28 @@ class RckngBall(Equipment):
         self.m = m = 420
         self.r = r = 8
 
-        pos = self.parent.back_hand_position + Vec2d(0,+self.link*self.N)
+        if slot == 'back_hand': #TODO retrieve slot positions throug hplayer
+            self.slot_position = self.parent.back_hand_position
+        else:
+            self.slot_position = self.parent.front_hand_position
 
-        root_pos = parent.position + self.parent.back_hand_position
+        root_pos = parent.position + self.slot_position
+        pos = self.slot_position + Vec2d(0,+self.link*self.N)
 
         self.joints = []
+        self.jcs = []
 
         jm = 10
 
         joint_body = pm.Body(jm, math.inf)
         joint_body.position = root_pos + Vec2d(0, +self.link)
-        c = pymunk.SlideJoint(self.parent.body, joint_body, self.parent.back_hand_position, (0,0), 0, self.link)
+        c = pymunk.SlideJoint(self.parent.body, joint_body, self.slot_position, (0,0), 0, self.link)
         c.collide_bodies = False
         self.app.space.add(joint_body)
         self.app.space.add(c)
         last_joint = joint_body
         self.joints.append(joint_body)
+        self.jcs.append(c)
 
         for idx in range(2,self.N):
             joint_body = pm.Body(jm, math.inf)
@@ -117,6 +136,7 @@ class RckngBall(Equipment):
             self.app.space.add(c)
             last_joint = joint_body
             self.joints.append(joint_body)
+            self.jcs.append(c)
 
         self.moment = pm.moment_for_circle(m, 0, r)
         self.body = body = pm.Body(m, self.moment)
@@ -127,20 +147,31 @@ class RckngBall(Equipment):
 
         c = pymunk.PinJoint(last_joint, self.body)
         self.app.space.add(c)
+        self.jcs.append(c)
 
     def update(self):
         self.body.apply_force_at_local_point(Vec2d(0,self.m*240))
 
-
+    def grow(self, amt):
+        self.r += amt
+        self.app.space.remove(self.shape)
+        self.shape = pm.Circle(self.body, self.r)
+        self.shape.collision_type = COLLTYPE_DEFAULT
+        self.app.space.add(self.shape)
 
     def draw(self):
-        points = [self.app.jj(self.parent.position+self.parent.back_hand_position)]
+        points = [self.app.jj(self.parent.position+self.slot_position)]
         for joint in (*self.joints, self.body):
             pv = joint.position
             pv = self.app.jj(pv)
             points.append(pv)
 #            pygame.draw.circle(self.app.screen, (255,0,0), pv, 1, 2)
         pygame.draw.lines(self.app.screen, (0,0,0), False, points)
+
+#        for c in self.jcs:
+#            a = self.app.jj(c.a.position+c.anchor_a)
+#            b = self.app.jj(c.b.position+c.anchor_b)
+#            pygame.draw.line(self.app.screen, (0,0,0), a, b, 1)
 
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
         p = self.app.jj(p)
@@ -153,8 +184,10 @@ class RckngBall(Equipment):
     def add_to_space(self, space):
         pass
     def remove_from_space(self, space):
-        #TODO
-        pass
-#        space.remove(self.body, self.shape)
+        space.remove(self.body, self.shape)
+        for c in self.jcs:
+            space.remove(c)
+        for joint in self.joints:
+            space.remove(joint)
 
 
