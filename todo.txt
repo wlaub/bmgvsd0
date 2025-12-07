@@ -80,10 +80,10 @@ when the camera moves, a spawnolith might spawn out-of-frame, and spawnoliths th
 
 debug console
     get entity at cursor
-~    inspect entities
+X    inspect entities
     show entity debug logs
         needs timestamps
-    tab completion
+X    tab completion
     etc
 
 figure out the right way to do collision

@@ -59,20 +59,20 @@ class DebugConsole:
         self.shows = set()
 
 
-        self.cmds = {'spawn','equip', 'drop', 'hide', 'show', 'count', 'give', 'zoom', 'smite', 'setv', 'setnv', 'getv', 'getnv', 'clearv', 'flags'}
+        self.cmds = set()
+        self.cmd_map = {}
+        self.ac_map = {}
 
-        self.cmd_map = {
-            x: getattr(self, f'_do_{x}', self.do_error) for x in self.cmds
-            }
-
-        self.ac_map = {
-            x: getattr(self, f'_ac_{x}', self.nocomplete) for x in self.cmds
-            }
-
-
-
-    def do_error(self, cmd, parts):
-        print(f'command {cmd} failed to register')
+        for name in dir(self):
+            if name.startswith('_do_'):
+                cmd = name[4:]
+                self.cmds.add(cmd)
+                val = getattr(self, name)
+                self.cmd_map[cmd] = val
+                ac_name = f'_ac_{cmd}'
+                ac = getattr(self, ac_name, None)
+                if ac is not None:
+                    self.ac_map[cmd] = ac
 
     def nocomplete(self, parts):
         return parts[-1]
