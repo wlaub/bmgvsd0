@@ -62,6 +62,9 @@ class Player(Entity):
         self.back_unarmed_position = Vec2d(-2,-4)
         self.back_elbow_position = Vec2d(-2,-5)
 
+        self.eye_draw_position = Vec2d(4, -self.h+2)
+        self.eye_position = self.eye_draw_position+Vec2d(1,1)
+
         #stuff
         self.bean_hot_counter = 0
         self.bean_hot_potency = 1
@@ -87,6 +90,8 @@ class Player(Entity):
         #feets
         self.feets = []
         self.equip('legs', 'Exoskeleton')
+        self.equip('eyes', 'RbtcEyes')
+
 
         #hayunds
 
@@ -106,6 +111,7 @@ class Player(Entity):
             'front_hand': (self.front_unarmed_position, self.front_hand_position),
             'back_hand': (self.back_unarmed_position, self.back_hand_position),
             'legs': (Vec2d(0,0), Vec2d(0,0)),
+            'eyes': (self.eye_position, self.eye_position)
             }
 
         self.slot_sensors = {}
@@ -305,9 +311,11 @@ class Player(Entity):
                 )
 
         #eye
-        pygame.draw.rect(self.app.screen, (0,0,128),
-            pygame.Rect(p+Vec2d(4, -self.h+2), (2, 2))
-            )
+        if (eye := self.slots['eyes']) is not None:
+            pygame.draw.rect(self.app.screen, eye.eye_color,
+                pygame.Rect(p+self.eye_draw_position, (2, 2))
+                )
+
         #body
         body_color = (0,0,0)
         if self.slots['legs'] is None:

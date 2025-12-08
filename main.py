@@ -247,11 +247,22 @@ class PhysicsDemo:
 
     def draw(self):
 
-        for layer in sorted(self.draw_layers.keys()):
-            for entity in self.draw_layers[layer]:
-                entity.draw()
+        if self.player is not None:
+            self.current_eyes = self.player.slots['eyes']
+        if self.current_eyes is not None:
+            sees = self.current_eyes.sees
+        else:
+            sees = set()
 
-        if self.flags.getnv('_render_physics'):
+
+
+        for layer in sorted(self.draw_layers.keys()):
+            if 'hitbox' in sees:
+                for entity in self.draw_layers[layer]:
+                    entity.draw()
+            #TODO: make equipment always visible
+
+        if self.flags.getnv('_render_physics') or 'physics' in sees:
             self.camera.draw_physics()
 
 

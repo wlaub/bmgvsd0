@@ -131,14 +131,12 @@ class Leg(Entity):
         self.step_direction = (pos-self.foot_body.position)
         self.step_start_time = self.app.engine_time
 
+
 @register
 class Exoskeleton(Equipment):
     valid_slots = ['legs']
     is_feets = True
     pickup = 'SkltnPickup'
-
-    def __init__(self, app):
-        super().__init__(app)
 
     def attach(self, parent, slot):
         self.parent = parent
@@ -240,4 +238,26 @@ class Exoskeleton(Equipment):
             self.walking = False
 
 
+
+
+@register
+class RbtcEyes(Equipment):
+    valid_slots = ['eyes']
+    pickup = 'EyesPickup'
+
+    eye_color = (0,0,128)
+    sees = {'hitbox'}
+
+    def attach(self, parent, slot):
+        self.parent = parent
+
+    @property
+    def position(self):
+        return Vec2d(0,0)
+
+    def add_to_space(self, space):
+        pass
+
+    def remove_from_space(self, space):
+        pass
 

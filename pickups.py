@@ -77,18 +77,19 @@ class EquipPckp(Pckp):
 
 @register
 class SordPickup(EquipPckp):
-    track_as = {'EquipPckp'}
     equipment_name = 'RbtcSord'
 
 @register
 class RckngBallPickup(EquipPckp):
-    track_as = {'EquipPckp'}
     equipment_name = 'RckngBall'
 
 @register
 class SkltnPickup(EquipPckp):
-    track_as = {'EquipPckp'}
     equipment_name = 'Exoskeleton'
+
+@register
+class EyesPickup(EquipPckp):
+    equipment_name = 'RbtcEyes'
 
 
 
