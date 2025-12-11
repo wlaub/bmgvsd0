@@ -508,15 +508,25 @@ class Geography:
         #positive needs bias down
         #negative needs bias up
         if random.random() > self.get('richness'):
-            self.current_props['richness'] += 0.01 * min(math.exp(-deviancy),1)
+#            self.current_props['richness'] += 0.01 * min(math.exp(-deviancy),1)
 #            print(f"bean {deviancy:.2f} {self.current_props['richness']:.3f}")
             return self.app.create_entity('BeanPickup', pos)
         else:
-            self.current_props['richness'] -= 0.01 * min(math.exp(deviancy),1)
+#            self.current_props['richness'] -= 0.01 * min(math.exp(deviancy),1)
 #            print(f"lore {deviancy:.2f} {self.current_props['richness']:.3f}")
             return self.app.create_entity('LoreOrePickup', pos)
 
+    def update_bean(self):
+        deviancy = self.get('richness') - self.get('fidelity')
+        self.current_props['richness'] += 0.01 * min(math.exp(-deviancy),1)
+        return deviancy, self.current_props['richness']
+#        print(f"bean {deviancy:.2f} {self.current_props['richness']:.3f}")
 
+    def update_lore(self):
+        deviancy = self.get('richness') - self.get('fidelity')
+        self.current_props['richness'] -= 0.01 * min(math.exp(deviancy),1)
+        return deviancy, self.current_props['richness']
+#        print(f"lore {deviancy:.2f} {self.current_props['richness']:.3f}")
 
 class Flags:
     def __init__(self):

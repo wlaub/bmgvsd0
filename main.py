@@ -31,6 +31,7 @@ IS_DEBUG = bool(os.getenv('DEBUG', False))
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 SEED = random.randrange(1000000,4207852)
+SESSION_ID = random.randrange(1000000,4207852)
 random.seed(SEED)
 
 print(SEED)
@@ -43,6 +44,11 @@ class PhysicsDemo:
     def jj(self, pos):
         return pos - self.camera.position
         return pos
+
+    @property
+    def session_id(self):
+        #you can do a little fascism in python too
+        return SESSION_ID
 
     def run(self):
         while self.running:
@@ -130,6 +136,9 @@ class PhysicsDemo:
         self.flags.setnv('_render_physics', False)
 #        self.flags.setnv('_title_screen', True) #TODO
 
+        # TODO no flag defaults below this point
+        # TODO no flag callbacks above this point
+
         if loop is not None:
             self.flags.setv('_loop')
 
@@ -140,6 +149,11 @@ class PhysicsDemo:
         self.forget_range = 2
 
         def _on_vocal(name, old_value, new_value, volatile):
+            if volatile:
+                print('listening? only to existing enemies')
+            else:
+                print('listening? to all enemies')
+
             if new_value:
                 for entity in self.entities:
                     entity.vocal = True
@@ -147,6 +161,14 @@ class PhysicsDemo:
                 for entity in self.entities:
                     entity.vocal = False
         self.flags.on_flag['_vocal'].append(_on_vocal)
+
+        def _try_reset(name, old_value, new_value, volatile):
+            if not volatile:
+                print('this should be volatile but i won"t stop you')
+            if new_value and old_value is None and self.player is None:
+                self.make_it_hapen()
+
+        self.flags.on_flag['_loop'].append(_try_reset)
 
         self.debug_console = DebugConsole(self)
 
@@ -189,6 +211,20 @@ class PhysicsDemo:
             self.flags.setv('_game_start')
             self.flags.setv('_startup_time', datetime.datetime.now())
             self.flags.setv('_startup_engine_time', self.engine_time)
+
+    def make_it_hapen(self):
+        engine_time = self.engine_time
+        def _loop():
+            while len(self.entities) > 0:
+                dt = self.engine_time-engine_time
+                self.forget_range = 0.1-dt/5
+                yield
+            self.queue_reset = True
+            return
+
+        self.coroutines.add(_loop())
+
+
 
     def get_eid(self):
         self.eidhwm+=1

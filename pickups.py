@@ -125,6 +125,10 @@ class LoreOrePickup(Pckp):
     def prepare_shape(self):
         self.prepare_circle(2)
 
+    def on_add(self):
+        deviancy, richness = self.app.field.update_lore()
+        self.say(f"lore {deviancy:.2f} {richness:.3f}")
+
     def on_player(self, player):
         self.app.lore_score += 1
         super().on_player(player)
@@ -134,6 +138,10 @@ class BeanPickup(Pckp):
 
     def prepare_shape(self):
         self.prepare_circle(2)
+
+    def on_add(self):
+        deviancy, richness = self.app.field.update_bean()
+        self.say(f"bean {deviancy:.2f} {richness:.3f}")
 
     def on_player(self, player):
         self.app.beans += 1

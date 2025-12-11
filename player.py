@@ -240,23 +240,14 @@ class Player(Entity):
         self.write_session_stats()
 
         if self.app.flags.getv('_loop', False):
-            engine_time = self.app.engine_time
-            def _loop():
-                while len(self.app.entities) > 0:
-                    dt = self.app.engine_time-engine_time
-                    self.app.forget_range = 0.1-dt/5
-                    yield
-                self.app.queue_reset = True
-                return
-
-            self.app.coroutines.add(_loop())
-
+            self.app.make_it_hapen()
 
     def write_session_stats(self):
         now = datetime.datetime.now()
         filename=now.strftime('%Y%m%d_%H%M%S.json')
         startup_time =self.app.flags.getv('_startup_time')
         stats = {
+            'session_id': self.app.session_id,
             'now': now.isoformat(),
             'then': startup_time.isoformat(),
             'title': self.app.title,
