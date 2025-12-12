@@ -12,4 +12,4 @@ else
 fi
 
 
-python main.py $title
+python -u main.py $title

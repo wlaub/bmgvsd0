@@ -131,6 +131,8 @@ class LoreOrePickup(Pckp):
 
     def on_player(self, player):
         self.app.lore_score += 1
+        deviancy, richness = self.app.field.update_bean(0.25)
+        self.say(f"unlore {deviancy:.2f} {richness:.3f}")
         super().on_player(player)
 
 @register
@@ -145,6 +147,8 @@ class BeanPickup(Pckp):
 
     def on_player(self, player):
         self.app.beans += 1
+        deviancy, richness = self.app.field.update_lore(0.25)
+        self.say(f"unbean {deviancy:.2f} {richness:.3f}")
         super().on_player(player)
 
 @register

@@ -272,6 +272,7 @@ class Player(Entity):
         #TODO fixme
         stats['vflags'] = {k:v for k,v in self.app.flags.volatile_flags.items() if not isinstance(v, datetime.datetime)}
         stats['nvflags'] = self.app.flags.flags
+
         with open(os.path.join('stats/', filename) ,'w') as fp:
             json.dump(stats, fp)
 

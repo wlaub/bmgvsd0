@@ -151,9 +151,9 @@ class PhysicsDemo:
 
         def _on_vocal(name, old_value, new_value, volatile):
             if volatile:
-                print('listening? only to existing enemies')
+                print('listening? to all entities')
             else:
-                print('listening? to all enemies')
+                print('listening? only to existing entities')
 
             if new_value:
                 for entity in self.entities:
