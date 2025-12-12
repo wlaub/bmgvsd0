@@ -248,8 +248,6 @@ class Player(Entity):
         startup_time =self.app.flags.getv('_startup_time')
         stats = {
             'session_uuid': self.app.session_uuid,
-            'now': now.isoformat(),
-            'then': startup_time.isoformat(),
             'title': self.app.title,
             'seed': self.app.seed,
             'health': self.health,
@@ -258,6 +256,8 @@ class Player(Entity):
             'time_of_birth': self.app.flags.getv('_startup_engine_time'),
             'age': f"{self.app.engine_time-self.app.flags.getv('_startup_engine_time'):.2f}",
             'fleshworld_duration': str(self.app.get_fleshtime(now)),
+            'now': now.isoformat(),
+            'then': startup_time.isoformat(),
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
             'field': self.app.field.current_props,
