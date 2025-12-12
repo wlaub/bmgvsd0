@@ -256,6 +256,7 @@ class Entity:
         self.grace_time = 0.2
         self.spawn_engine_time = self.app.engine_time
         self.health = 1
+        self.damage_taken = 0
         self.vocal = self.app.flags.getv('_vocal', False)
         self.eid = self.app.get_eid()
         self.layer = layer
@@ -300,10 +301,14 @@ class Entity:
       pass
 
 
+    def _take_damage(self, dmg):
+        self.health -= dmg
+        self.damage_taken += dmg
+        self.last_hit = self.app.engine_time
+
     def _basic_hit_spell(self, dmg):
         if self.app.engine_time - self.last_hit > self.grace_time:
-            self.health -= dmg
-            self.last_hit = self.app.engine_time
+            self._take_damage(dmg)
             if self.health <= 0:
                 self.app.remove_entity(self)
                 return True
@@ -311,8 +316,7 @@ class Entity:
 
     def _advanced_hit_spell(self, dmg):
         if self.app.engine_time - self.last_hit > self.grace_time:
-            self.health -= dmg
-            self.last_hit = self.app.engine_time
+            self._take_damage(dmg)
             if self.health <= 0 and self.app.flags.getv('_death', True) is not False:
                 self.app.remove_entity(self)
                 return True

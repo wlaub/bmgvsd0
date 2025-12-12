@@ -247,13 +247,16 @@ class Player(Entity):
         filename=now.strftime('%Y%m%d_%H%M%S.json')
         startup_time =self.app.flags.getv('_startup_time')
         stats = {
-            'session_id': self.app.session_id,
+            'session_uuid': self.app.session_uuid,
             'now': now.isoformat(),
             'then': startup_time.isoformat(),
             'title': self.app.title,
             'seed': self.app.seed,
             'health': self.health,
-            'time_of_death': self.app.engine_time-self.app.flags.getv('_startup_engine_time'),
+            'damage_taken': self.damage_taken,
+            'time_of_death': self.app.engine_time,
+            'time_of_birth': self.app.flags.getv('_startup_engine_time'),
+            'age': f"{self.app.engine_time-self.app.flags.getv('_startup_engine_time'):.2f}",
             'fleshworld_duration': str(self.app.get_fleshtime(now)),
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,

@@ -3,6 +3,7 @@ import math
 import random
 import time
 import datetime
+import uuid
 
 from collections import defaultdict
 
@@ -31,7 +32,7 @@ IS_DEBUG = bool(os.getenv('DEBUG', False))
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 SEED = random.randrange(1000000,4207852)
-SESSION_ID = random.randrange(1000000,4207852)
+SESSION_UUID = str(uuid.uuid4())
 random.seed(SEED)
 
 print(SEED)
@@ -46,9 +47,9 @@ class PhysicsDemo:
         return pos
 
     @property
-    def session_id(self):
+    def session_uuid(self):
         #you can do a little fascism in python too
-        return SESSION_ID
+        return SESSION_UUID
 
     def run(self):
         while self.running:

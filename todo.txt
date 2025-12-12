@@ -124,4 +124,4 @@ keyboard controls:
 
 graphics
 
-
+an enemy that can regain health and can get more drops when it takes damage depending on how much damage it has taken
