@@ -491,7 +491,7 @@ class Geography:
     def __init__(self, app):
         self.app = app
         self.current_props = {
-            'richness': 1.0,
+            'richness': 0.9,
             'fidelity': 0.5,
             'capacity': 50,
             'austerity': 0.2,
@@ -522,13 +522,13 @@ class Geography:
 
     def update_bean(self, sf = 1):
         deviancy = self.get('richness') - self.get('fidelity')
-        self.current_props['richness'] += sf * 0.01 * min(math.exp(-deviancy),1)
+        self.current_props['richness'] += sf * 0.015 * min(math.exp(-deviancy),1)
         return deviancy, self.current_props['richness']
 #        print(f"bean {deviancy:.2f} {self.current_props['richness']:.3f}")
 
     def update_lore(self, sf = 1):
         deviancy = self.get('richness') - self.get('fidelity')
-        self.current_props['richness'] -= sf * 0.01 * min(math.exp(deviancy),1)
+        self.current_props['richness'] -= sf * 0.015 * min(math.exp(deviancy),1)
         return deviancy, self.current_props['richness']
 #        print(f"lore {deviancy:.2f} {self.current_props['richness']:.3f}")
 
