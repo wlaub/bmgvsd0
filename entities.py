@@ -518,27 +518,34 @@ class LstflBall(BallEnemy):
         self._going = True
         self.lores = 0
         self.drops = self.basic_ball_drops()
+        self.target = self.app.player
 
     def update(self):
         player = self.app.player
         if player is None: return
-        self.hit_player(player)
 
-        target = player
         lores = self.app.tracker['LoreOrePickup']
 
-        if len(lores) > 0:
-            target = lores[0]
+        if self.target != player and not self.target in lores:
+            self.target = player
+        elif self.target == player:
+            dist = 1000000
+            for lore in lores:
+                r = self.position.get_dist_sqrd(lore.position)
+                if r < dist:
+                    dist = r
+                    self.target = lore
 
+        self.hit_player(player)
+        if self.target != player:
             try:
-                hit = self.shape.shapes_collide(target.shape)
+                hit = self.shape.shapes_collide(self.target.shape)
                 self.lores+= 1
-                self.say("don't mind if i do")
-                self.app.remove_entity(target)
-                target = player
+                self.app.remove_entity(self.target)
+                self.target = player
             except AssertionError: pass
 
-        self.seek_player(target)
+        self.seek_player(self.target)
 
         self.apply_friction(player)
 

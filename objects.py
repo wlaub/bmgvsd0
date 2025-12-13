@@ -383,7 +383,9 @@ class BallEnemy(Enemy):
         try:
             hit = self.shape.shapes_collide(player.shape)
             player.get_hit(dmg)
+            return True
         except AssertionError: pass
+        return False
 
     def seek_player(self, player):
         delta = player.position-self.position
