@@ -491,7 +491,6 @@ class Pckp(Entity):
     def on_player(self, player):
         self.app.remove_entity(self)
         self.app.field.update_liquidity(-1)
-        print(self.app.field.get('liquidity'))
 
 
 class Geography:
@@ -519,6 +518,7 @@ class Geography:
 
     def update_liquidity(self, amt):
         self.current_props['liquidity'] += amt
+        #print(self.get('liquidity'))
         return self.current_props['liquidity']
 
     def make_lore_drop(self, pos):
