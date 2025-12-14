@@ -412,8 +412,8 @@ class BallEnemy(Enemy):
     def basic_ball_drops(self):
         if random.random() > 1-(self.r-5)/16: #heath drop
             return [self.app.create_entity('HealthPickup', Vec2d(0,0))]
-        elif random.random() > 0.97-0.03*self.app.beans:
-            if len(self.app.tracker['CoffeePotPickup']) == 0:
+        elif random.random() > 1-self.app.field.get('excitability')*(self.app.field.get('liquidity')-7):
+#            if len(self.app.tracker['CoffeePotPickup']) == 0:
                 return [self.app.create_entity('CoffeePotPickup', Vec2d(0,0))]
         else:
             return [self.app.field.make_lore_drop(Vec2d(0,0))]
@@ -431,6 +431,9 @@ class Pckp(Entity):
         self.prepare_shape()
 
         self.player_on = False
+
+    def on_add(self):
+        self.app.field.update_liquidity(1)
 
     def prepare_shape(self):
         self.prepare_circle(8)
@@ -487,6 +490,8 @@ class Pckp(Entity):
 
     def on_player(self, player):
         self.app.remove_entity(self)
+        self.app.field.update_liquidity(-1)
+        print(self.app.field.get('liquidity'))
 
 
 class Geography:
@@ -499,6 +504,8 @@ class Geography:
             'austerity': 0.2,
             'regression': 0.5,
             'alacrity' : 0.015,
+            'excitability': 0.03,
+            'liquidity': 0,
             }
 
         self.prev_props = {}
@@ -509,6 +516,10 @@ class Geography:
 
     def get(self, name, default=None):
         return self.current_props.get(name, default)
+
+    def update_liquidity(self, amt):
+        self.current_props['liquidity'] += amt
+        return self.current_props['liquidity']
 
     def make_lore_drop(self, pos):
         #TODO: tune deviancy coefficient

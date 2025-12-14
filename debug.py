@@ -287,8 +287,8 @@ class DebugConsole:
         return self._complete(parts[-1], entity_registry.by_tag.keys())
 
     def _do_count(self, cmd, parts):
-        if len(parts) > 1:
-            for p in parts[1:]:
+        if len(parts) > 0:
+            for p in parts:
                 print(f'{p}: {len(self.app.tracker[p])}')
         else:
             print('count:')
@@ -299,6 +299,10 @@ class DebugConsole:
 
     def _ac_count(self, parts):
         return self._complete(parts[-1], entity_registry.by_tag.keys())
+
+    def _do_field(self, cmd, parts):
+        for key, val in self.app.field.current_props.items():
+            print(f'{key}:\t{val}')
 
     def _do_give(self, cmd, parts):
         for what in parts:

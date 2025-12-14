@@ -74,6 +74,8 @@ make equipment pickups show a controls popup when active?
     or just turn red?
     maybe the hand moves or blinks?
 
+tune coffeepot spawning
+
 when the camera moves, a spawnolith might spawn out-of-frame, and spawnoliths that are too far away might be forgotten
 
 debug console

@@ -128,6 +128,7 @@ class LoreOrePickup(Pckp):
     def on_add(self):
         deviancy, richness = self.app.field.update_lore()
         self.say(f"lore {deviancy:.2f} {richness:.3f}")
+        super().on_add()
 
     def on_player(self, player):
         self.app.lore_score += 1
@@ -144,6 +145,7 @@ class BeanPickup(Pckp):
     def on_add(self):
         deviancy, richness = self.app.field.update_bean()
         self.say(f"bean {deviancy:.2f} {richness:.3f}")
+        super().on_add()
 
     def on_player(self, player):
         self.app.beans += 1
@@ -154,6 +156,10 @@ class BeanPickup(Pckp):
 @register
 class CoffeePotPickup(Pckp):
 
+    def __init__(self, app, pos):
+        super().__init__(app, pos)
+        self.app.field.update_liquidity(-6)
+
     def prepare_shape(self):
         self.prepare_circle(16)
 
@@ -162,5 +168,5 @@ class CoffeePotPickup(Pckp):
             self.app.beans -= 1
             player.boost_speed(amt=10, dur=10)
             super().on_player(player)
-
+            self.app.field.update_liquidity(+6)
 
