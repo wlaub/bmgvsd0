@@ -423,6 +423,9 @@ class BallEnemy(Enemy):
 
 
 class Pckp(Entity):
+    hype = 0
+    energy_of_instantiation = 1
+
     def __init__(self, app, pos):
         super().__init__(app)
 
@@ -430,10 +433,12 @@ class Pckp(Entity):
         body.position = Vec2d(*pos)
         self.prepare_shape()
 
+        self.app.field.update_liquidity(-self.hype)
+
         self.player_on = False
 
     def on_add(self):
-        self.app.field.update_liquidity(1)
+        self.app.field.update_liquidity(self.energy_of_instantiation+self.hype)
 
     def prepare_shape(self):
         self.prepare_circle(8)
@@ -490,7 +495,7 @@ class Pckp(Entity):
 
     def on_player(self, player):
         self.app.remove_entity(self)
-        self.app.field.update_liquidity(-1)
+        self.app.field.update_liquidity(-self.energy_of_instantiation)
 
 
 class Geography:
@@ -517,8 +522,9 @@ class Geography:
         return self.current_props.get(name, default)
 
     def update_liquidity(self, amt):
+        if amt == 0: return self.current_props['liquidity']
         self.current_props['liquidity'] += amt
-        #print(self.get('liquidity'))
+#        print(self.get('liquidity'))
         return self.current_props['liquidity']
 
     def make_lore_drop(self, pos):

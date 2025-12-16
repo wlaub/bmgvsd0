@@ -155,10 +155,8 @@ class BeanPickup(Pckp):
 
 @register
 class CoffeePotPickup(Pckp):
-
-    def __init__(self, app, pos):
-        super().__init__(app, pos)
-        self.app.field.update_liquidity(-6)
+    hype = 5
+    energy_of_instantiation = 1
 
     def prepare_shape(self):
         self.prepare_circle(16)
@@ -168,5 +166,4 @@ class CoffeePotPickup(Pckp):
             self.app.beans -= 1
             player.boost_speed(amt=10, dur=10)
             super().on_player(player)
-            self.app.field.update_liquidity(+6)
 
