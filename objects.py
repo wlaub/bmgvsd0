@@ -502,11 +502,11 @@ class Geography:
     def __init__(self, app):
         self.app = app
         self.current_props = {
-            'richness': 0.9,
+            'richness': 1,
             'fidelity': 0.5,
             'capacity': 50,
             'austerity': 0.2,
-            'regression': 0.5,
+            'regression': 1-1/7,
             'alacrity' : 0.015,
             'excitability': 0.03,
             'liquidity': 0,
