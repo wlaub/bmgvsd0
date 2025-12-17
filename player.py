@@ -242,11 +242,13 @@ class Player(Entity):
         if self.app.flags.getv('_loop', False):
             self.app.make_it_hapen()
 
-    def write_session_stats(self):
+    def write_session_stats(self, **kwextras):
         now = datetime.datetime.now()
         filename=now.strftime('%Y%m%d_%H%M%S.json')
         startup_time =self.app.flags.getv('_startup_time')
-        stats = {
+        stats = {}
+        stats.update(kwextras)
+        stats.update({
             'session_uuid': self.app.session_uuid,
             'title': self.app.title,
             'seed': self.app.seed,
@@ -261,7 +263,7 @@ class Player(Entity):
             'lore_score': self.app.lore_score,
             'beans': self.app.beans,
             'field': self.app.field.current_props,
-           }
+           })
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
         print(json.dumps(stats, indent=2))
 

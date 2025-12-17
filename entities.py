@@ -192,7 +192,7 @@ class Zeeky(BallEnemy):
                                 }
                             self.app.spawn_entity('Zbln', body_map)
                         else:
-                            raise NotImplementedError('it is not yet time')
+                            raise NotImplementedError('it is not ready yet')
                         return
                     else:
                         bean.absorb(self)

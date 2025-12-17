@@ -56,11 +56,11 @@ class PhysicsDemo:
             try:
                 self.loop()
             except NotImplementedError as e:
-                print(f'NotYetImplementedError: {e}')
                 if self.player is not None:
-                    self.player.write_session_stats()
-                print(f": stats dmp'd")
-                print(f": state clr'd")
+                    self.player.write_session_stats(NotYetImplemented = str(e))
+                print(f'NotYetImplementedError: {e}')
+                print(f"----------------------: stats dmp'd")
+                print(f"----------------------: state clr'd")
                 self.queue_reset = True
             except Exception as e:
                 print(e)
