@@ -1,5 +1,7 @@
 #!/bin/bash 
 
+unset DEBUG
+
 source venv/bin/activate
 
 checksum=`git rev-parse --short HEAD`

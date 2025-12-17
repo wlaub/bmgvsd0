@@ -55,9 +55,14 @@ class PhysicsDemo:
         while self.running:
             try:
                 self.loop()
+            except NotImplementedError as e:
+                print(f'NotYetImplementedError: {e}')
+                print(f": state clr'd")
+                self.queue_reset = True
             except Exception as e:
                 print(e)
-                raise
+                if self.flags.getnv('_crash', False):
+                    raise
 
 
     def connect_camera(self, entity):
@@ -121,6 +126,8 @@ class PhysicsDemo:
 
         self.engine_time = 0
 
+        #TODO make this an option
+#        loop = self.flags.getv('_loop', not IS_DEBUG)
         loop = self.flags.getv('_loop')
 
         self.flags.volatile_flags = {}
@@ -135,7 +142,7 @@ class PhysicsDemo:
         self.flags.setnv('_show_title', True) #
         self.flags.setnv('_show_seed', True) #
         self.flags.setnv('_render_physics', False)
-#        self.flags.setnv('_title_screen', True) #TODO
+        self.flags.setnv('_title_screen', not IS_DEBUG) #TODO
 
         # TODO no flag defaults below this point
         # TODO no flag callbacks above this point
