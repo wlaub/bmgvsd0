@@ -190,4 +190,96 @@ class RckngBall(Equipment):
         for joint in self.joints:
             space.remove(joint)
 
+@register
+class EulLntrn(Equipment):
+    valid_slots = ['back_hand', 'front_hand']
+    pickup = 'EulLntrnPickup'
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.last_hit = self.app.engine_time
+
+        self.scale = 2
+
+    def attach(self, parent, slot):
+        self.parent=parent
+
+
+        self.link = 1
+
+        self.m = m = 25
+        self.m = m = 420
+        self.r = r = 0.5
+        self.ro = ro = 3
+
+        self.friction = self.m*-10
+        self.gravity = self.m*480
+
+        if slot == 'back_hand': #TODO retrieve slot positions throug hplayer
+            self.slot_position = self.parent.back_hand_position
+        else:
+            self.slot_position = self.parent.front_hand_position
+
+        self.connect_offset = Vec2d(0,-ro)
+
+        root_pos = parent.position + self.slot_position
+        pos = self.slot_position + Vec2d(0,+self.link)-self.connect_offset
+
+        self.joints = []
+        self.jcs = []
+
+        self.moment = pm.moment_for_circle(m, 0, r)
+        self.body = body = pm.Body(m, self.moment)
+#        body.position = Vec2d(*pos)
+        body.position = Vec2d(*self.app.camera.reference_position)
+        self.shape = pm.Circle(self.body, self.r)
+        self.shape.collision_type = COLLTYPE_DEFAULT
+#        self.shape.sensor = True
+        self.app.space.add(self.body, self.shape)
+
+        c = pymunk.DampedSpring(self.parent.body, self.body, self.slot_position, (0,0), self.link, m*100, m*10)
+
+        self.app.space.add(c)
+        self.jcs.append(c)
+
+        self.old_scale = self.app.camera.scale
+        self.app.camera.parent = self
+        self.app.camera.set_scale(self.scale)
+
+    def update(self):
+        friction = self.body.velocity*self.friction
+        self.body.apply_force_at_local_point(Vec2d(0,self.gravity)+friction)
+
+
+    def grow(self, amt):
+        self.scale -= 1
+        if self.scale < 1:
+            self.scale = 1
+
+        self.app.camera.set_scale(self.scale)
+
+    def draw(self):
+
+        p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
+        p = self.app.jj(p)
+
+        points = [self.app.jj(self.parent.position+self.slot_position), p+self.connect_offset]
+        pygame.draw.lines(self.app.screen, (0,0,0), False, points)
+
+        pygame.draw.circle(self.app.screen, (255,255,0), p, int(1))
+        pygame.draw.circle(self.app.screen, (0,0,0), p, int(self.ro), 1)
+
+    def add_to_space(self, space):
+        pass
+    def remove_from_space(self, space):
+        if self.app.camera.parent is self:
+            self.app.camera.parent = None
+            self.app.camera.set_scale(self.old_scale)
+
+        space.remove(self.body, self.shape)
+        for c in self.jcs:
+            space.remove(c)
+        for joint in self.joints:
+            space.remove(joint)
+
 

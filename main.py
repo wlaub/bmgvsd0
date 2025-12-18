@@ -196,6 +196,9 @@ class PhysicsDemo:
 
         self.spawn_entity('SordPickup', (16,-4))
 
+        #TODO
+        if self.flags.geta('_test_lntrn'):
+            self.spawn_entity('EulLntrnPickup', (0,-4))
 
         self.last_spawn = self.engine_time
 

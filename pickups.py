@@ -91,6 +91,10 @@ class SkltnPickup(EquipPckp):
 class EyesPickup(EquipPckp):
     equipment_name = 'RbtcEyes'
 
+@register
+class EulLntrnPickup(EquipPckp):
+    equipment_name = 'EulLntrn'
+
 
 
 
