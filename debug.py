@@ -297,6 +297,17 @@ class DebugConsole:
                 if c > 0:
                     print(f'  {k}: {c}')
 
+    def _do_inspect(self, cmd, parts):
+        for eid in parts:
+            try:
+                eid = int(eid)
+                e = self.app.entity_map[eid]
+                print(f'\n{e}:')
+                print(e.inspect())
+            except ValueError:
+                print(eid)
+
+
     def _ac_count(self, parts):
         return self._complete(parts[-1], entity_registry.by_tag.keys())
 

@@ -259,6 +259,7 @@ class PhysicsDemo:
 
     def remove_entity(self, e, preserve_physics = False):
 #        print(f'remvoing {e}')
+#        print(sys._getframe(1).f_code.co_name)
         try:
             if not preserve_physics:
                 e.remove_from_space(self.space)
@@ -277,8 +278,8 @@ class PhysicsDemo:
             e.on_remove()
         except self.AlreadyRemoved:
             raise
-        except:
-            print(f'failed to remove {e}')
+        except Exception as exc:
+            print(f'failed to remove {e}: {exc}')
             raise
 
 

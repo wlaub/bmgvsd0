@@ -353,7 +353,7 @@ class Enemy(Entity):
             for drop in self.get_drops():
                 drop.set_position(self.position + drop.position)
                 self.app.add_entity(drop)
-            self.app.remove_entity(self)
+#            self.app.remove_entity(self)
 
     def get_drops(self):
         return self.drops
