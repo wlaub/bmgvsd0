@@ -28,8 +28,6 @@ import guns
 import feets
 import spawnoliths
 
-IS_DEBUG = bool(os.getenv('DEBUG', False))
-
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 STATS_DIR = 'stats/'
@@ -140,10 +138,6 @@ class PhysicsDemo:
 
         self.engine_time = 0
 
-        #TODO make this an option
-#        loop = self.flags.geta('_loop', not IS_DEBUG)
-#        loop = self.flags.geta('_loop')
-
         self.flags.volatile_flags = {}
 
         self.pause_duration = 0
@@ -152,17 +146,6 @@ class PhysicsDemo:
         self.fleshtime = None
         self.flags.setv('_startup_time', datetime.datetime.now())
         self.flags.setv('_first_spawns', {})
-#        self.flags.setnv('_show_score', True) #TODO nv state and defaults
-#        self.flags.setnv('_show_title', True) #
-#        self.flags.setnv('_show_seed', True) #
-#        self.flags.setnv('_render_physics', False)
-#        self.flags.setnv('_title_screen', not IS_DEBUG) #TODO
-
-        # TODO no flag defaults below this point
-        # TODO no flag callbacks above this point
-
-#        if loop is not None:
-#            self.flags.setv('_loop')
 
         self.coroutines = set()
 
@@ -414,6 +397,8 @@ class PhysicsDemo:
             p = (dist-mdist)/abs(mdist)
             #TODO curve/scale this to account for framerate
             if random.random() < p:
+                if entity is self.player:
+                    self.flags.setnv('_loop', True)
                 self.remove_entity(entity)
 
 
@@ -428,7 +413,7 @@ class PhysicsDemo:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif IS_DEBUG:
+            elif self.flags.geta('_debug_mode', False):
                 self.debug_console.handle_event(event)
 
         self.controller.update()
@@ -482,8 +467,13 @@ if __name__ == '__main__':
     os.makedirs(STATE_DIR, exist_ok = True)
 
     state_file = os.path.join(STATE_DIR, '.yaml')
+    base_file_real = os.path.join(STATE_DIR, 'base_file_real.yaml')
+
+    if not os.path.exists(base_file_real):
+        shutil.copyfile('base_state.yaml', base_file_real)
+
     if not os.path.exists(state_file):
-        shutil.copyfile('base_state.yaml', state_file)
+        shutil.copyfile(base_file_real, state_file)
 
     demo = PhysicsDemo()
     demo.run()

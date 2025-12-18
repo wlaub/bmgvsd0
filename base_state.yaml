@@ -16,4 +16,4 @@ flags:
         _zbln: False
         #debug flags
         _render_physics: False
-        _crash: True #TODO
+        _crash: False
