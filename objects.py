@@ -3,6 +3,12 @@ import math
 import enum
 from collections import defaultdict
 
+import yaml
+try: #this is so stupid
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
+
 import pygame
 
 from pygame.locals import *
@@ -561,6 +567,39 @@ class Flags:
         self.on_set = []
         self.on_flag = defaultdict(list)
 
+        self.filename = None
+
+
+    def load_it_on_up_then(self, filename):
+        try:
+            with open(filename, 'r') as fp:
+                raw = yaml.load(fp, Loader=Loader)
+
+            self.flags = raw['flags']['nvltl']
+
+            self.filename = filename
+            print(f'loaded {self.filename}')
+        except:
+            print(f'state load faild')
+            raise #TODO?
+
+    def save_ye_state(self):
+        if self.filename is None:
+            print("you cn'nt save ye state")
+            return
+
+        print('savng state')
+        with open(self.filename, 'r+') as fp:
+            raw = yaml.load(fp, Loader=Loader)
+            raw['flags']['nvltl'] = self.flags
+
+            out = yaml.dump(raw, Dumper=Dumper)
+            fp.seek(0)
+            fp.truncate()
+            fp.write(out)
+        print('state saved')
+
+
     def getnv(self, name, default = None):
         return self.flags.get(name, default)
 
@@ -574,6 +613,7 @@ class Flags:
         old_value = self.flags.get(name, None)
         self.flags[name] = value
         self.run_on_set(name, old_value, value, volatile=False)
+        self.save_ye_state()
 
     def setv(self, name, value=True):
         old_value = self.volatile_flags.get(name, None)

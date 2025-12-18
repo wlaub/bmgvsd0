@@ -9,5 +9,5 @@ else
     mkdir stats
     virtualenv $venv --python=3
     source $venv/bin/activate
-    pip install pygame pymunk
+    pip install pygame pymunk pyyaml
 fi

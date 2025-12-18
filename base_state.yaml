@@ -3,12 +3,11 @@ flags:
        - _map_creation
        - _preserve_ghosts
        - _draw_spawn_bounds
- 
     nvltl:
         _show_score: True
         _show_title: True
         _show_seed: True
-        _title_screen: False
+        _title_screen: True
         #gameplay flags
         _loop: False
         _vocal: False
@@ -17,4 +16,4 @@ flags:
         _zbln: False
         #debug flags
         _render_physics: False
-        _crash: False 
+        _crash: True #TODO

@@ -106,9 +106,7 @@ class PhysicsDemo:
         self.queue_reset = False
         self.redraw = False
 
-        self.flags = Flags()
-
-        self.reset()
+        self.reset(first_time = True)
 
     def get_fleshtime(self, now):
         return self.fleshtime
@@ -130,7 +128,10 @@ class PhysicsDemo:
         self.paused = False
         self.run_physics = True
 
-    def reset(self):
+    def reset(self, first_time = False):
+
+        self.flags = Flags()
+        self.flags.load_it_on_up_then(self.get_state_filename('.yaml'))
 
         global SEED
         SEED = random.randrange(1000000,4207852)
@@ -141,7 +142,7 @@ class PhysicsDemo:
 
         #TODO make this an option
 #        loop = self.flags.geta('_loop', not IS_DEBUG)
-        loop = self.flags.geta('_loop')
+#        loop = self.flags.geta('_loop')
 
         self.flags.volatile_flags = {}
 
@@ -151,17 +152,17 @@ class PhysicsDemo:
         self.fleshtime = None
         self.flags.setv('_startup_time', datetime.datetime.now())
         self.flags.setv('_first_spawns', {})
-        self.flags.setnv('_show_score', True) #TODO nv state and defaults
-        self.flags.setnv('_show_title', True) #
-        self.flags.setnv('_show_seed', True) #
-        self.flags.setnv('_render_physics', False)
-        self.flags.setnv('_title_screen', not IS_DEBUG) #TODO
+#        self.flags.setnv('_show_score', True) #TODO nv state and defaults
+#        self.flags.setnv('_show_title', True) #
+#        self.flags.setnv('_show_seed', True) #
+#        self.flags.setnv('_render_physics', False)
+#        self.flags.setnv('_title_screen', not IS_DEBUG) #TODO
 
         # TODO no flag defaults below this point
         # TODO no flag callbacks above this point
 
-        if loop is not None:
-            self.flags.setv('_loop')
+#        if loop is not None:
+#            self.flags.setv('_loop')
 
         self.coroutines = set()
 
@@ -480,9 +481,9 @@ if __name__ == '__main__':
     os.makedirs(STATS_DIR, exist_ok = True)
     os.makedirs(STATE_DIR, exist_ok = True)
 
-#    state_file = os.path.join(STATE_DIR, '.yaml')
-#    if not os.path.exists(state_file):
-#        shutil.copyfile('base_state.yaml', state_file)
+    state_file = os.path.join(STATE_DIR, '.yaml')
+    if not os.path.exists(state_file):
+        shutil.copyfile('base_state.yaml', state_file)
 
     demo = PhysicsDemo()
     demo.run()
