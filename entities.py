@@ -185,7 +185,7 @@ class Zeeky(BallEnemy):
                         #this is why body management needs unfucked
                         self.app.remove_entity(bean, preserve_physics = True)
                         self.app.remove_entity(self, preserve_physics = True)
-                        if self.app.flags.getv('_zbln', False):
+                        if self.app.flags.geta('_zbln', False):
                             body_map = {
                                 bean.body: (bean.shape,),
                                 self.body: (self.shape,),

@@ -1,4 +1,5 @@
 import sys, os
+import shutil
 import math
 import random
 import time
@@ -31,6 +32,9 @@ IS_DEBUG = bool(os.getenv('DEBUG', False))
 
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
+STATS_DIR = 'stats/'
+STATE_DIR = 'state/'
+
 SEED = random.randrange(1000000,4207852)
 SESSION_UUID = str(uuid.uuid4())
 random.seed(SEED)
@@ -51,6 +55,12 @@ class PhysicsDemo:
         #you can do a little fascism in python too
         return SESSION_UUID
 
+    def get_stats_filename(self, filename):
+        return os.path.join(STATS_DIR, filename)
+
+    def get_state_filename(self, filename):
+        return os.path.join(STATE_DIR, filename)
+
     def run(self):
         while self.running:
             try:
@@ -64,7 +74,7 @@ class PhysicsDemo:
                 self.queue_reset = True
             except Exception as e:
                 print(e)
-                if self.flags.getnv('_crash', False):
+                if self.flags.geta('_crash', False):
                     raise
 
 
@@ -130,8 +140,8 @@ class PhysicsDemo:
         self.engine_time = 0
 
         #TODO make this an option
-#        loop = self.flags.getv('_loop', not IS_DEBUG)
-        loop = self.flags.getv('_loop')
+#        loop = self.flags.geta('_loop', not IS_DEBUG)
+        loop = self.flags.geta('_loop')
 
         self.flags.volatile_flags = {}
 
@@ -246,7 +256,7 @@ class PhysicsDemo:
         if not name in first_spawns.keys():
             first_spawns[name] = self.engine_time
         result = entity_registry.create_entity(name, self, *args, **kwargs)
-        if self.flags.getv('_map_creation'):
+        if self.flags.geta('_map_creation'):
             self.entity_map[result.eid] = result
         return result
 
@@ -271,7 +281,7 @@ class PhysicsDemo:
         if not preserve_physics:
             e.remove_from_space(self.space)
         self.entities.remove(e)
-        if not self.flags.getv('_preserve_ghosts'):
+        if not self.flags.geta('_preserve_ghosts'):
             self.entity_map.pop(e.eid)
         self.draw_layers[e.layer].remove(e)
         class_name = e.__class__.__name__
@@ -309,15 +319,15 @@ class PhysicsDemo:
                     entity.draw()
             #TODO: make equipment always visible
 
-        if self.flags.getnv('_render_physics') or 'physics' in sees:
+        if self.flags.geta('_render_physics') or 'physics' in sees:
             self.camera.draw_physics()
 
 
-        if self.flags.getnv('_show_score'):
+        if self.flags.geta('_show_score'):
             header = self.font.render(f'{self.lore_score}', False, (0,0,128))
             self.screen.blit(header, (2,2))
 
-        if not self.flags.getv('_game_start') and self.flags.getnv('_title_screen'):
+        if not self.flags.getv('_game_start') and self.flags.geta('_title_screen'):
             ypos = 20
             text = self.big_font.render(f'BLDNG MAN: GAIDN', False, (0,0,0))
             width = self.camera.w*0.8
@@ -342,12 +352,12 @@ class PhysicsDemo:
 
 
         ypos = self.camera.h-2
-        if self.flags.getnv('_show_title'):
+        if self.flags.geta('_show_title'):
             text = self.font.render(f'{TITLE}', False, (128,128,0))
             ypos -= text.get_height()
             self.screen.blit(text, (2,ypos))
 
-        if self.flags.getnv('_show_seed'):
+        if self.flags.geta('_show_seed'):
             text = self.font.render(f'{SEED}', False, (128,128,0))
             ypos -= text.get_height()
             self.screen.blit(text, (2,ypos))
@@ -466,8 +476,16 @@ class PhysicsDemo:
 
 #        pygame.display.set_caption(f"fps: {len(self.tracker['Ball'])}, {self.clock.get_fps():.2f}")
 
-demo = PhysicsDemo()
-demo.run()
+if __name__ == '__main__':
+    os.makedirs(STATS_DIR, exist_ok = True)
+    os.makedirs(STATE_DIR, exist_ok = True)
+
+#    state_file = os.path.join(STATE_DIR, '.yaml')
+#    if not os.path.exists(state_file):
+#        shutil.copyfile('base_state.yaml', state_file)
+
+    demo = PhysicsDemo()
+    demo.run()
 
 
 

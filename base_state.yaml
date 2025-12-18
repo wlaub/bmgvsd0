@@ -1,0 +1,20 @@
+flags:
+    vltl:
+       - _map_creation
+       - _preserve_ghosts
+       - _draw_spawn_bounds
+ 
+    nvltl:
+        _show_score: True
+        _show_title: True
+        _show_seed: True
+        _title_screen: False
+        #gameplay flags
+        _loop: False
+        _vocal: False
+        _death: True
+        #feature flags
+        _zbln: False
+        #debug flags
+        _render_physics: False
+        _crash: False 

@@ -257,7 +257,7 @@ class Entity:
         self.spawn_engine_time = self.app.engine_time
         self.health = 1
         self.damage_taken = 0
-        self.vocal = self.app.flags.getv('_vocal', False)
+        self.vocal = self.app.flags.geta('_vocal', False)
         self.eid = self.app.get_eid()
         self.layer = layer
         self.debug_log = []
@@ -567,6 +567,8 @@ class Flags:
     def getv(self, name, default = None):
         return self.volatile_flags.get(name, default)
 
+    def geta(self, name, default = None):
+        return self.volatile_flags.get(name, self.flags.get(name, default))
 
     def setnv(self, name, value=True):
         old_value = self.flags.get(name, None)

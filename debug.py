@@ -342,15 +342,26 @@ class DebugConsole:
     def _do_getnv(self, cmd, parts):
         print(self.app.flags.getnv(*self.parse_parts(parts)))
 
+    def _do_clearv(self, cmd, parts):
+        self.app.flags.clearv(*self.parse_parts(parts))
+
+    def _do_clearnv(self, cmd, parts):
+        self.app.flags.clearnv(*self.parse_parts(parts))
+
     def _ac_setv(self, parts):
         return self._complete(parts[-1], self.app.flags.volatile_flags.keys())
     def _ac_getv(self, parts):
+        return self._complete(parts[-1], self.app.flags.volatile_flags.keys())
+    def _ac_clearv(self, parts):
         return self._complete(parts[-1], self.app.flags.volatile_flags.keys())
 
     def _ac_setnv(self, parts):
         return self._complete(parts[-1], self.app.flags.flags.keys())
     def _ac_getnv(self, parts):
         return self._complete(parts[-1], self.app.flags.flags.keys())
+    def _ac_clearnv(self, parts):
+        return self._complete(parts[-1], self.app.flags.flags.keys())
+
 
     def _do_flags(self, cmd, parts):
         print('nv:')

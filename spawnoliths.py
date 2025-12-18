@@ -25,7 +25,7 @@ class Spnlþ(Entity):
                     vertices.append(p)
                 pygame.draw.polygon(self.app.screen, color, vertices, 1)
 
-        if (z := self.app.flags.getv('_spawn_bounds', 0)) > 0:
+        if (z := self.app.flags.getv('_draw_spawn_bounds', 0)) > 0:
             self.app.camera.draw_boundary(z, 50)
 
 

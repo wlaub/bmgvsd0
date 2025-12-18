@@ -239,7 +239,7 @@ class Player(Entity):
         self.app.player = None
         self.write_session_stats()
 
-        if self.app.flags.getv('_loop', False):
+        if self.app.flags.geta('_loop', False):
             self.app.make_it_hapen()
 
     def write_session_stats(self, **kwextras):
@@ -275,7 +275,7 @@ class Player(Entity):
         stats['vflags'] = {k:v for k,v in self.app.flags.volatile_flags.items() if not isinstance(v, datetime.datetime)}
         stats['nvflags'] = self.app.flags.flags
 
-        with open(os.path.join('stats/', filename) ,'w') as fp:
+        with open(self.app.get_stats_filename(filename) ,'w') as fp:
             json.dump(stats, fp)
 
 
