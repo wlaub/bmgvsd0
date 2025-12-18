@@ -197,7 +197,7 @@ class Camera:
             result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a < 0)
             return result
         else:
-            result = min(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
+            result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
             return result
 
     def draw_boundary(self, zoom_level, margin=0):
@@ -244,6 +244,10 @@ class Entity:
         lines = []
         for key, val in d.items():
             lines.append(f'  {key}: {val}')
+
+        lines.append('')
+        lines.append(f'  dist: {self.app.camera.get_distance(self.position)}')
+
         return '\n'.join(lines)
 
     def __str__(self):
@@ -578,7 +582,7 @@ class Flags:
             self.flags = raw['flags']['nvltl']
 
             self.filename = filename
-            print(f'loaded {self.filename}')
+            print("state load'")
         except:
             print(f'state load faild')
             raise #TODO?

@@ -193,7 +193,10 @@ class Player(Entity):
     def unequip(self, slot):
         if self.slots[slot] is not None:
             entity = self.slots[slot]
-            self.app.remove_entity(entity)
+            try:
+                self.app.remove_entity(entity)
+            except self.app.AlreadyRemoved:
+                pass
             self.slots[slot] = None
             if entity.is_feets:
                 self.feets.remove(entity)
@@ -237,7 +240,10 @@ class Player(Entity):
                     self.app.space.remove(body, *shapes)
 
         self.app.player = None
-        self.write_session_stats()
+        try:
+            self.write_session_stats()
+        except Exception as e:
+            print(f'stats dump faild: {e}')
 
         if self.app.flags.geta('_loop', False):
             self.app.make_it_hapen()
@@ -246,6 +252,13 @@ class Player(Entity):
         now = datetime.datetime.now()
         filename=now.strftime('%Y%m%d_%H%M%S.json')
         startup_time =self.app.flags.getv('_startup_time')
+        startup_engine_time =self.app.flags.getv('_startup_engine_time')
+
+        if startup_engine_time is not None:
+            age = self.app.engine_time-startup_engine_time
+        else:
+            age = -self.app.engine_time
+
         stats = {}
         stats.update(kwextras)
         stats.update({
@@ -256,7 +269,7 @@ class Player(Entity):
             'damage_taken': self.damage_taken,
             'time_of_death': self.app.engine_time,
             'time_of_birth': self.app.flags.getv('_startup_engine_time'),
-            'age': f"{self.app.engine_time-self.app.flags.getv('_startup_engine_time'):.2f}",
+            'age': f"{age:.2f}",
             'fleshworld_duration': str(self.app.get_fleshtime(now)),
             'now': now.isoformat(),
             'then': startup_time.isoformat(),
@@ -264,6 +277,7 @@ class Player(Entity):
             'beans': self.app.beans,
             'field': self.app.field.current_props,
            })
+
         print(f'{stats["lore_score"]} {stats["title"]} {stats["seed"]}')
         print(json.dumps(stats, indent=2))
 

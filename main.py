@@ -154,22 +154,16 @@ class PhysicsDemo:
         self.forget_range = 2
 
         def _on_vocal(name, old_value, new_value, volatile):
-            if volatile:
-                print('listening? to all entities')
-            else:
-                print('listening? only to existing entities')
-
             if new_value:
                 for entity in self.entities:
                     entity.vocal = True
             else:
                 for entity in self.entities:
                     entity.vocal = False
+
         self.flags.on_flag['_vocal'].append(_on_vocal)
 
         def _try_reset(name, old_value, new_value, volatile):
-            if not volatile:
-                print('this should be volatile but i won"t stop you')
             if new_value and old_value is None and self.player is None:
                 self.make_it_hapen()
 
@@ -261,18 +255,31 @@ class PhysicsDemo:
             self.tracker[tag].append(e)
         e.on_add()
 
-    def remove_entity(self, e, preserve_physics = False):
-        if not preserve_physics:
-            e.remove_from_space(self.space)
-        self.entities.remove(e)
-        if not self.flags.geta('_preserve_ghosts'):
-            self.entity_map.pop(e.eid)
-        self.draw_layers[e.layer].remove(e)
-        class_name = e.__class__.__name__
-        for tag in entity_registry.name_tags[class_name]:
-            self.tracker[tag].remove(e)
-        e.on_remove()
+    class AlreadyRemoved(Exception): pass
 
+    def remove_entity(self, e, preserve_physics = False):
+#        print(f'remvoing {e}')
+        try:
+            if not preserve_physics:
+                e.remove_from_space(self.space)
+
+            try:
+                self.entities.remove(e)
+            except ValueError:
+                raise self.AlreadyRemoved
+
+            if not self.flags.geta('_preserve_ghosts'):
+                self.entity_map.pop(e.eid)
+            self.draw_layers[e.layer].remove(e)
+            class_name = e.__class__.__name__
+            for tag in entity_registry.name_tags[class_name]:
+                self.tracker[tag].remove(e)
+            e.on_remove()
+        except self.AlreadyRemoved:
+            raise
+        except:
+            print(f'failed to remove {e}')
+            raise
 
 
     def spawn(self):
@@ -397,7 +404,7 @@ class PhysicsDemo:
             p = (dist-mdist)/abs(mdist)
             #TODO curve/scale this to account for framerate
             if random.random() < p:
-                if entity is self.player:
+                if entity is self.player and not self.flags.getv('_game_start', False):
                     self.flags.setnv('_loop', True)
                 self.remove_entity(entity)
 
