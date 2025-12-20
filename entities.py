@@ -222,6 +222,9 @@ class Zbln(BallEnemy):
         self.health = 16
         self.last_hit = -10
 
+        self.base_speed = 25
+        self.base_friction = -0.1
+
         if isinstance(body_map, Vec2d):
             pos = body_map
             a = self.app.create_entity('Zeeky', pos+Vec2d(-1.5, 0))
@@ -246,7 +249,7 @@ class Zbln(BallEnemy):
             total_mass += body.mass
         center /= len(body_map)
 
-        self.m = m = 1000
+        self.m = m = total_mass*100
 
         self.body = body = pm.Body(m, moment=math.inf)
         body.position = Vec2d(*center)
@@ -255,18 +258,8 @@ class Zbln(BallEnemy):
 
         self.joints = []
         for body in body_map.keys():
-            c = self.get_joint(self.body, body)
-            self.joints.append(c)
-
-#        my_list = list(body_map.items())
-#        self.joints = []
-#        for a,b in zip(my_list[:-1], my_list[1:]):
-#            c = self.get_joint(a[0],b[0])
-#            self.joints.append(c)
-
-        self.base_speed = 25
-        self.base_friction = -0.1
-
+            c = self.get_joints(self.body, body)
+            self.joints.extend(c)
 
         self.shapes = []
         for body, shapes in self.body_map.items():
@@ -276,10 +269,13 @@ class Zbln(BallEnemy):
         self.friction = self.base_friction*self.m
 
         self.get_position()
-        self.my_velocity = Vec2d(0,0)
+        self.last_hit_velocity = Vec2d(0,0)
 
         self.spawn_interval = 5
         self.next_spawn = self.app.engine_time+self.spawn_interval
+
+        self.merge_interval = 0.1
+        self.next_merge = self.app.engine_time#+self.merge_interval
 
     def add_to_space(self, space):
 #        for body, shapes in self.body_map.items():
@@ -309,25 +305,21 @@ class Zbln(BallEnemy):
 
     @property
     def velocity(self):
-        return self.my_velocity
+        return self.body.velocity
 
-    def get_joint(self, a, b):
-        return pymunk.DampedSpring(a,b,(0,0),(0,0), 0,2000000, 1000)
-        return pymunk.PinJoint(a,b)
+    def get_joints(self, a, b):
+#        r = abs(a.position-b.position)
+#        return pymunk.DampedSpring(a,b,(0,0),(0,0), r,2000000, 1000)
+        return [pymunk.PinJoint(a,b)]
 
     def absorb(self, other):
         self.app.remove_entity(other, preserve_physics = True)
         body, shape = other.body, other.shape
         self.body_map[body] = (shape,)
-        c = self.get_joint(body, self.last_hit_body)
+        c = self.get_joints(body, self.last_hit_body)
 #        c = self.get_joint(body, self.body)
-        self.joints.append(c)
-        self.app.space.add(c)
-
-
-#        m = self.m
-#        self.speed = self.base_speed*m
-#        self.friction = self.base_friction*m
+        self.joints.extend(c)
+        self.app.space.add(*c)
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:
@@ -341,7 +333,7 @@ class Zbln(BallEnemy):
             for shape in shapes:
                 try:
                     hit = other_shape.shapes_collide(shape)
-                    self.my_velocity = body.velocity
+                    self.last_hit_velocity = body.velocity
                     self.last_hit_body = body
                     break
                 except AssertionError: pass
@@ -358,7 +350,6 @@ class Zbln(BallEnemy):
         if not self.app.camera.contains(self.position, 2):
             speed = self.speed*10
 
-#        for body in self.body_map.keys():
         self.body.apply_force_at_local_point(delta*speed)
 
     def apply_friction(self, player):
@@ -369,9 +360,70 @@ class Zbln(BallEnemy):
 
         friction = vel*self.friction
 
-#        for body in self.body_map.keys():
-#            body.apply_force_at_local_point(friction)
         self.body.apply_force_at_local_point(friction)
+
+    def update(self):
+        self.get_position()
+        self.normal_update()
+
+    def try_absorb_ball(self):
+        if self.app.engine_time < self.next_merge:
+            return
+
+        for other in self.app.tracker['TrueBalls']:
+            try:
+                self.try_hit(other.shape)
+                self.absorb(other)
+                self.say('blessed union')
+                self.next_merge = self.app.engine_time+self.merge_interval
+                return
+            except AssertionError: pass
+
+
+
+    def normal_update(self):
+        player = self.app.player
+        if player is None: return
+        self.hit_player(player)
+
+        self.try_absorb_ball()
+
+        #TODO
+        a = (len(self.body_map)/7 + 0.75)/2
+        ia = 1-a
+        target_position = player.position*ia + self.app.camera.reference_position*a
+        self.seek_player(target_position)
+
+#        if False and len(self.body_map) < 7:
+#            self.seek_player(player.position)
+#        else:
+#            self.seek_player(self.app.camera.reference_position)
+
+        self.apply_friction(player)
+
+#        if len(self.body_map) >= 7:
+#            self.spin(player)
+
+        if self.app.engine_time >= self.next_spawn and False: #TODO
+            self.next_spawn += self.spawn_interval
+
+            if len(self.app.tracker['Zeeky']) + len(self.body_map) < 7:
+                delta = player.position-self.position
+                delta /= (abs(delta)/20)
+
+                entity = self.app.spawn_entity('Zeeky', self.position+delta)
+
+    def draw(self):
+        for body, shapes in self.body_map.items():
+            for shape in shapes:
+                p = body.position + shape.offset.cpvrotate(body.rotation_vector)
+                p = self.app.jj(p)
+
+                color = (0,0,255)
+                if self.app.engine_time-self.last_hit < 0.08:
+                    color = (255,0,0)
+
+                pygame.draw.circle(self.app.screen, color, p, round(shape.radius), 2)
 
     def spin(self, player):
 
@@ -462,52 +514,6 @@ class Zbln(BallEnemy):
         #TODO: different pickups based on topology?
         #TODO: different zoom level based on topology?
 
-    def update(self):
-        self.get_position()
-        self.normal_update()
-
-    def normal_update(self):
-        player = self.app.player
-        if player is None: return
-        self.hit_player(player)
-
-        #TODO
-        a = (len(self.body_map)/7 + 0.75)/2
-        ia = 1-a
-        target_position = player.position*ia + self.app.camera.reference_position*a
-        self.seek_player(target_position)
-
-#        if False and len(self.body_map) < 7:
-#            self.seek_player(player.position)
-#        else:
-#            self.seek_player(self.app.camera.reference_position)
-
-        self.apply_friction(player)
-
-#        if len(self.body_map) >= 7:
-#            self.spin(player)
-
-        if self.app.engine_time >= self.next_spawn:
-            self.next_spawn += self.spawn_interval
-
-            if len(self.app.tracker['Zeeky']) + len(self.body_map) < 7:
-                delta = player.position-self.position
-                delta /= (abs(delta)/20)
-
-                entity = self.app.spawn_entity('Zeeky', self.position+delta)
-
-    def draw(self):
-        for body, shapes in self.body_map.items():
-            for shape in shapes:
-                p = body.position + shape.offset.cpvrotate(body.rotation_vector)
-                p = self.app.jj(p)
-
-                color = (0,0,255)
-                if self.app.engine_time-self.last_hit < 0.08:
-                    color = (255,0,0)
-
-                pygame.draw.circle(self.app.screen, color, p, round(shape.radius), 2)
-
 
 
 class BallState(enum.Enum):
@@ -517,7 +523,7 @@ class BallState(enum.Enum):
 
 @register
 class Ball(BallEnemy):
-    track_as = {'Enemy'}
+    track_as = {'Enemy', 'TrueBalls'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -530,7 +536,7 @@ class Ball(BallEnemy):
 
 @register
 class FgtflBall(BallEnemy):
-    track_as = {'Enemy'}
+    track_as = {'Enemy', 'TrueBalls'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -580,7 +586,7 @@ class FgtflBall(BallEnemy):
 
 @register
 class LstflBall(BallEnemy):
-    track_as = {'Enemy'}
+    track_as = {'Enemy', 'TrueBalls'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
