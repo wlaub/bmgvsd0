@@ -202,10 +202,14 @@ class PhysicsDemo:
 
         if self.flags.geta('_test_zbln'):
 
-            self.spawn_entity('Zbln', Vec2d(-50, -50))
+#            self.spawn_entity('Zbln', Vec2d(-50, -50))
 
-            for i in range(5):
-                self.spawn_entity('Zeeky', Vec2d(50+10*i, 90+10*i))
+#            for i in range(5):
+#                self.spawn_entity('Zeeky', Vec2d(50+10*i, 90+10*i))
+            self.spawn_entity('Zeeky', Vec2d(-50, 50))
+            self.spawn_entity('Zeeky', Vec2d(-150, -150))
+
+
 
             for x in range(7):
                 for y in range(7):

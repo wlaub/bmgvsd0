@@ -219,6 +219,9 @@ class Zbln(BallEnemy):
     def __init__(self, app, body_map):
         super(BallEnemy,self).__init__(app)
 
+        self.health = 16
+        self.last_hit = -10
+
         if isinstance(body_map, Vec2d):
             pos = body_map
             a = self.app.create_entity('Zeeky', pos+Vec2d(-1.5, 0))
@@ -232,31 +235,45 @@ class Zbln(BallEnemy):
                 b.body: (b.shape,),
                 }
 
-        self.health = 16
-        self.last_hit = -10
-
         self.body_map = body_map
 
-        my_list = list(body_map.items())
+        center = Vec2d(0,0)
+        avg_vel = Vec2d(0,0)
+        total_mass = 0
+        for body in body_map.keys():
+            center += body.position
+            avg_vel += body.velocity
+            total_mass += body.mass
+        center /= len(body_map)
+
+        self.m = m = 1000
+
+        self.body = body = pm.Body(m, moment=math.inf)
+        body.position = Vec2d(*center)
+        body.velocity = avg_vel
+        self.app.space.add(body)
+
         self.joints = []
-        for a,b in zip(my_list[:-1], my_list[1:]):
-            c = self.get_joint(a[0],b[0])
+        for body in body_map.keys():
+            c = self.get_joint(self.body, body)
             self.joints.append(c)
+
+#        my_list = list(body_map.items())
+#        self.joints = []
+#        for a,b in zip(my_list[:-1], my_list[1:]):
+#            c = self.get_joint(a[0],b[0])
+#            self.joints.append(c)
 
         self.base_speed = 25
         self.base_friction = -0.1
 
 
-        #TODO consider more mass
-        self.m = 0
         self.shapes = []
         for body, shapes in self.body_map.items():
             self.shapes.extend(shapes)
-            self.m += body.mass
 
-        m = self.m
-        self.speed = self.base_speed*m
-        self.friction = self.base_friction*m
+        self.speed = self.base_speed*self.m
+        self.friction = self.base_friction*self.m
 
         self.get_position()
         self.my_velocity = Vec2d(0,0)
@@ -274,8 +291,12 @@ class Zbln(BallEnemy):
     def remove_from_space(self, space):
         for body, shapes in self.body_map.items():
             space.remove(body, *shapes)
+        space.remove(self.body)
 
     def get_position(self):
+        self.my_position = self.body.position
+        return
+
         total = Vec2d(0,0)
         for body, shapes in self.body_map.items():
             total += body.position
@@ -299,48 +320,14 @@ class Zbln(BallEnemy):
         body, shape = other.body, other.shape
         self.body_map[body] = (shape,)
         c = self.get_joint(body, self.last_hit_body)
+#        c = self.get_joint(body, self.body)
         self.joints.append(c)
         self.app.space.add(c)
 
 
-        mass_boost = 1.75
-        mass_boost = 2
-        self.m+=body.mass
-        self.m*= mass_boost
-
-        for _body in self.body_map.keys():
-            body.mass = self.m/len(self.body_map)
-
-        print(self.m)
-#        mass_boost = 1.75
-##        mass_boost = 3
-#
-#        for body in self.body_map.keys():
-#            body.mass *= mass_boost
-#            print(body.mass)
-#
-#        #TODO i think that there is a need for this to be immune to foot collision
-##        self.m+=body.mass
-#        self.m*= mass_boost
-        m = self.m
-        self.speed = self.base_speed*m
-        self.friction = self.base_friction*m
-
-        if len(self.body_map) == 7:
-#            for body, shapes in self.body_map.items():
-#                new_shapes = []
-#                for shape in shapes:
-#                    self.app.space.remove(shape)
-#                    new_shape = pm.Circle(body, shape.radius/2)
-#                    new_shapes.append(new_shape)
-#                    self.app.space.add(new_shape)
-#                self.body_map[body] = new_shapes
-
-
-            for c in self.joints:
-                c.collide_self = False
-#                self.app.space.remove(c)
-#            self.joints= []
+#        m = self.m
+#        self.speed = self.base_speed*m
+#        self.friction = self.base_friction*m
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:
@@ -371,8 +358,8 @@ class Zbln(BallEnemy):
         if not self.app.camera.contains(self.position, 2):
             speed = self.speed*10
 
-        for body in self.body_map.keys():
-            body.apply_force_at_local_point(delta*speed)
+#        for body in self.body_map.keys():
+        self.body.apply_force_at_local_point(delta*speed)
 
     def apply_friction(self, player):
         vel = Vec2d(0,0)
@@ -382,8 +369,9 @@ class Zbln(BallEnemy):
 
         friction = vel*self.friction
 
-        for body in self.body_map.keys():
-            body.apply_force_at_local_point(friction)
+#        for body in self.body_map.keys():
+#            body.apply_force_at_local_point(friction)
+        self.body.apply_force_at_local_point(friction)
 
     def spin(self, player):
 
@@ -496,8 +484,8 @@ class Zbln(BallEnemy):
 
         self.apply_friction(player)
 
-        if len(self.body_map) >= 7:
-            self.spin(player)
+#        if len(self.body_map) >= 7:
+#            self.spin(player)
 
         if self.app.engine_time >= self.next_spawn:
             self.next_spawn += self.spawn_interval

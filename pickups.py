@@ -100,6 +100,9 @@ class EulLntrnPickup(EquipPckp):
 
 @register
 class HealthPickup(Pckp):
+    """
+    bls'd hair tonic
+    """
 
     def prepare_shape(self):
         self.prepare_circle(4)
@@ -111,6 +114,9 @@ class HealthPickup(Pckp):
 
 @register
 class LengthPickup(Pckp):
+    """
+    you can't quite make it out
+    """
 
     def prepare_shape(self):
         self.prepare_circle(4)
@@ -125,6 +131,9 @@ class LengthPickup(Pckp):
 
 @register
 class LoreOrePickup(Pckp):
+    """
+    its intricate crystal prism weaves light into knowledge
+    """
 
     def prepare_shape(self):
         self.prepare_circle(2)
@@ -142,6 +151,9 @@ class LoreOrePickup(Pckp):
 
 @register
 class BeanPickup(Pckp):
+    """
+    a bean
+    """
 
     def prepare_shape(self):
         self.prepare_circle(2)
@@ -159,6 +171,9 @@ class BeanPickup(Pckp):
 
 @register
 class CoffeePotPickup(Pckp):
+    """
+    a brew pot
+    """
     hype = 5
     energy_of_instantiation = 1
 
