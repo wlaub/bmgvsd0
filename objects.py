@@ -193,12 +193,16 @@ class Camera:
     def get_distance(self, pos):
         x,y = pos
 
-        if self.contains(pos):
-            result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a < 0)
-            return result
-        else:
-            result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
-            return result
+        try:
+            if self.contains(pos):
+                result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a < 0)
+                return result
+            else:
+                result = max(a for a in (self.left-x, x-self.right, self.up-y, y-self.down) if a > 0)
+                return result
+        except ValueError:
+            print('?')
+            return 0
 
     def draw_boundary(self, zoom_level, margin=0):
 

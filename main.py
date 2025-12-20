@@ -200,6 +200,20 @@ class PhysicsDemo:
         if self.flags.geta('_test_lntrn'):
             self.spawn_entity('EulLntrnPickup', (0,-4))
 
+        if self.flags.geta('_test_zbln'):
+
+            self.spawn_entity('Zbln', Vec2d(-50, -50))
+
+            for i in range(5):
+                self.spawn_entity('Zeeky', Vec2d(50+10*i, 90+10*i))
+
+            for x in range(7):
+                for y in range(7):
+                    p = Vec2d(40,40)
+                    self.spawn_entity('Ball', p+Vec2d(x*7,y*7))
+
+
+
         self.last_spawn = self.engine_time
 
         self.lore_score = 0

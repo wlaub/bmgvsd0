@@ -14,6 +14,11 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
 
 @register
 class RbtcSord(Equipment):
+    """
+    its cool, firm grip grows warm even from your meg'r wrmth.
+    there was a loss you can't recal but still rm'br.
+    it's not very good, but it can still point frwrd.
+    """
     valid_slots = ['front_hand']
     pickup = 'SordPickup'
 
@@ -192,6 +197,9 @@ class RckngBall(Equipment):
 
 @register
 class EulLntrn(Equipment):
+    """
+    its sees and knows
+    """
     valid_slots = ['back_hand', 'front_hand']
     pickup = 'EulLntrnPickup'
 

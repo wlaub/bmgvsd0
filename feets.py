@@ -134,6 +134,9 @@ class Leg(Entity):
 
 @register
 class Exoskeleton(Equipment):
+    """
+    moves on your be half
+    """
     valid_slots = ['legs']
     is_feets = True
     pickup = 'SkltnPickup'
@@ -242,11 +245,40 @@ class Exoskeleton(Equipment):
 
 @register
 class RbtcEyes(Equipment):
+    """
+    lets you see hit boxes
+    """
     valid_slots = ['eyes']
     pickup = 'EyesPickup'
 
     eye_color = (0,0,128)
     sees = {'hitbox'}
+
+    def attach(self, parent, slot):
+        self.parent = parent
+
+    @property
+    def position(self):
+        return Vec2d(0,0)
+
+    def add_to_space(self, space):
+        pass
+
+    def remove_from_space(self, space):
+        pass
+
+
+class NormlEyes(Equipment):
+    """
+    you still see your body in your mnd's eye,
+    but now you see the void just as vvdly,
+    and now you can't tell them apart.
+    """
+    valid_slots = ['eyes']
+    pickup = 'NormlEyesPickup'
+
+    eye_color = (0,0,0)
+    sees = {'sprites'}
 
     def attach(self, parent, slot):
         self.parent = parent

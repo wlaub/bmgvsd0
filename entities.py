@@ -240,7 +240,7 @@ class Zbln(BallEnemy):
         my_list = list(body_map.items())
         self.joints = []
         for a,b in zip(my_list[:-1], my_list[1:]):
-            c = pymunk.PinJoint(a[0],b[0])
+            c = self.get_joint(a[0],b[0])
             self.joints.append(c)
 
         self.base_speed = 25
@@ -290,23 +290,57 @@ class Zbln(BallEnemy):
     def velocity(self):
         return self.my_velocity
 
+    def get_joint(self, a, b):
+        return pymunk.DampedSpring(a,b,(0,0),(0,0), 0,2000000, 1000)
+        return pymunk.PinJoint(a,b)
+
     def absorb(self, other):
         self.app.remove_entity(other, preserve_physics = True)
         body, shape = other.body, other.shape
         self.body_map[body] = (shape,)
-        c = pymunk.PinJoint(body, self.last_hit_body)
+        c = self.get_joint(body, self.last_hit_body)
         self.joints.append(c)
         self.app.space.add(c)
 
-        for body in self.body_map.keys():
-            body.mass *= 1.75
 
-        #TODO i think that there is a need for this to be immune to foot collision
-#        self.m+=body.mass
-        self.m*= 1.75
+        mass_boost = 1.75
+        mass_boost = 2
+        self.m+=body.mass
+        self.m*= mass_boost
+
+        for _body in self.body_map.keys():
+            body.mass = self.m/len(self.body_map)
+
+        print(self.m)
+#        mass_boost = 1.75
+##        mass_boost = 3
+#
+#        for body in self.body_map.keys():
+#            body.mass *= mass_boost
+#            print(body.mass)
+#
+#        #TODO i think that there is a need for this to be immune to foot collision
+##        self.m+=body.mass
+#        self.m*= mass_boost
         m = self.m
         self.speed = self.base_speed*m
         self.friction = self.base_friction*m
+
+        if len(self.body_map) == 7:
+#            for body, shapes in self.body_map.items():
+#                new_shapes = []
+#                for shape in shapes:
+#                    self.app.space.remove(shape)
+#                    new_shape = pm.Circle(body, shape.radius/2)
+#                    new_shapes.append(new_shape)
+#                    self.app.space.add(new_shape)
+#                self.body_map[body] = new_shapes
+
+
+            for c in self.joints:
+                c.collide_self = False
+#                self.app.space.remove(c)
+#            self.joints= []
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:
@@ -348,50 +382,97 @@ class Zbln(BallEnemy):
 
         friction = vel*self.friction
 
-        if len(self.body_map) >= 7:
-            friction *= 10
-
         for body in self.body_map.keys():
             body.apply_force_at_local_point(friction)
 
-        if len(self.body_map) >= 7:
-            avg_speed = 0
-            for body in self.body_map.keys():
-                friction = body.velocity*(-self.friction)
-                avg_speed+=abs(body.velocity)
-                body.apply_force_at_local_point(friction)
+    def spin(self, player):
 
-            avg_speed/=len(self.body_map)
+        avg_vel = Vec2d(0,0)
+        for body in self.body_map.keys():
+            avg_vel += body.velocity
+        avg_vel /= len(self.body_map.keys())
 
-            #TODO don't give zeeky boost to spawning zippy if zbl'n
-            #TODO apply outward wind at max size
-            #TODO sometimes it doesn't really start spinning?
+        ang = 0
+        for body in self.body_map.keys():
+            bvel = body.velocity - avg_vel
+            rpos = body.position-self.position
+            tan = Vec2d(-rpos.y, rpos.x)
+
+            aspeed = bvel.dot(tan)/tan.length_squared
+
+            ang+=aspeed
+
+        print(ang)
+
+        avg_speed = 0
+        for body in self.body_map.keys():
+            bvel = body.velocity - avg_vel
+            rpos = body.position-self.position
+
+            if ang > 0:
+                tan = Vec2d(-rpos.y, rpos.x)
+            else:
+                tan = Vec2d(rpos.y, -rpos.x)
+
+            error = tan*bvel.dot(tan)/abs(tan)#.length_squared
+            error*=0.15
+
+#            bvel dot rpos / abs(rpos)
+            error -= rpos*bvel.dot(rpos)/rpos.length_squared
+#            body.apply_force_at_local_point(error*body.mass/10)
+
+#            friction = body.velocity*(-self.friction/20)
+#            avg_speed+=abs(body.velocity)
+
+            delta = self.app.camera.reference_position - body.position
+            delta = self.position-body.position
+            delta *= body.mass*200
+#                print(f'{delta=} {friction=}')
+            friction = delta
+
+            body.apply_force_at_local_point(friction)
+
+        avg_speed/=len(self.body_map)
+
+        """
+        maybe what happens is you break all the links but you also like
+        push the player away when it happens to prevent foot collisions
+        apply a backward velocity on the player's feet that scales as you get closer to the thing
+        can you just put a big ring around it that keeps everything inside?
+        can you put like slide join constraints between the balls and the center?
+        maybe make the center a kinematic object that seeks the camera
+        """
+
+        #TODO don't give zeeky boost to spawning zippy if zbl'n
+        #TODO apply outward wind at max size
+        #TODO sometimes it doesn't really start spinning?
 #            wind_force = self.speed/10
-            if avg_speed > 100:
-                wind_force = avg_speed*100
-                print(avg_speed, wind_force)
-                for entity in self.app.tracker['Enemy']:
-                    if entity is self: continue
-                    try:
-                        body = entity.body
-                        delta = body.position - self.position
-                        delta /= abs(delta)
-                        body.apply_force_at_local_point(delta*wind_force)
+        avg_speed = abs(ang)
+        if avg_speed > 100:
+            wind_force = avg_speed*100
+            print(avg_speed, wind_force)
+            for entity in self.app.tracker['Enemy']:
+                if entity is self: continue
+                try:
+                    body = entity.body
+                    delta = body.position - self.position
+                    delta /= abs(delta)
+                    body.apply_force_at_local_point(delta*wind_force)
 
-                    except Exception as e:
-                        print(e)
+                except Exception as e:
+                    print(e)
 
-                body = player.body
-                delta = body.position - self.position
-                delta /= abs(delta)
-                body.apply_force_at_local_point(delta*wind_force)
+            body = player.body
+            delta = body.position - self.position
+            delta /= abs(delta)
+            body.apply_force_at_local_point(delta*wind_force)
 
 
 
-            #TODO: when max velocity exceeds threshold, become camera pickup
-            #TODO: or just duration withing range of center?
-            #TODO: different pickups based on topology?
-            #TODO: different zoom level based on topology?
+        #TODO: when max velocity exceeds threshold, become camera pickup
+        #TODO: or just duration withing range of center?
+        #TODO: different pickups based on topology?
+        #TODO: different zoom level based on topology?
 
     def update(self):
         self.get_position()
@@ -414,6 +495,9 @@ class Zbln(BallEnemy):
 #            self.seek_player(self.app.camera.reference_position)
 
         self.apply_friction(player)
+
+        if len(self.body_map) >= 7:
+            self.spin(player)
 
         if self.app.engine_time >= self.next_spawn:
             self.next_spawn += self.spawn_interval
