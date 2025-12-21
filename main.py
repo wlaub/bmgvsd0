@@ -213,7 +213,7 @@ class PhysicsDemo:
 
             for x in range(7):
                 for y in range(7):
-                    p = Vec2d(40,40)
+                    p = Vec2d(40,-40)
                     self.spawn_entity('Ball', p+Vec2d(x*7,y*7))
 
 

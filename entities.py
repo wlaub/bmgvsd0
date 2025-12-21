@@ -288,6 +288,8 @@ class Zbln(BallEnemy):
         for c in self.joints:
             space.add(c)
 
+        self.burst(self.body.position, self.m)
+
     def remove_from_space(self, space):
         for body, shapes in self.body_map.items():
             space.remove(body, *shapes)
@@ -320,6 +322,16 @@ class Zbln(BallEnemy):
 #                pymunk.DampedSpring(a, self.camera_body,(0,0),(0,0), 0, 1000, 1000),
                 ]
 
+    def burst(self, position, force):
+        force *= 500
+        for entity in self.app.tracker['TrueBalls']:
+            delta = entity.position-position
+            delta /= (4+delta.length_squared)
+            entity.body.apply_force_at_local_point(force*delta)
+        #TODO also push back player
+        #TODO maybe it's based on center of mass and has a radius?
+        #TODO maybe it's based on speed of collision
+
     def absorb(self, other):
         self.app.remove_entity(other, preserve_physics = True)
         body, shape = other.body, other.shape
@@ -328,6 +340,8 @@ class Zbln(BallEnemy):
 #        c = self.get_joint(body, self.body)
         self.joints.extend(c)
         self.app.space.add(*c)
+
+        self.burst(body.position, self.m*(1+len(self.body_map)/7))
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:
@@ -378,9 +392,12 @@ class Zbln(BallEnemy):
         if self.app.engine_time < self.next_merge:
             return
 
+        #or maybe you require some minimum total angular speed
+
         for other in self.app.tracker['TrueBalls']:
             try:
                 self.try_hit(other.shape)
+                #TODO maybe require some relative speed thresold so it has to hit hard enough to stick
                 self.absorb(other)
                 self.say('blessed union')
                 self.next_merge = self.app.engine_time+self.merge_interval
