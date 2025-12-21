@@ -249,12 +249,16 @@ class Zbln(BallEnemy):
             total_mass += body.mass
         center /= len(body_map)
 
-        self.m = m = total_mass*100
+        self.m = m = total_mass*10
 
         self.body = body = pm.Body(m, moment=math.inf)
         body.position = Vec2d(*center)
         body.velocity = avg_vel
         self.app.space.add(body)
+
+        self.camera_body = pm.Body(body_type=pymunk.Body.KINEMATIC)
+        self.camera_body.position = self.app.camera.reference_position
+        self.app.space.add(self.camera_body)
 
         self.joints = []
         for body in body_map.keys():
@@ -288,6 +292,7 @@ class Zbln(BallEnemy):
         for body, shapes in self.body_map.items():
             space.remove(body, *shapes)
         space.remove(self.body)
+        space.remove(self.camera_body)
 
     def get_position(self):
         self.my_position = self.body.position
@@ -310,7 +315,10 @@ class Zbln(BallEnemy):
     def get_joints(self, a, b):
 #        r = abs(a.position-b.position)
 #        return pymunk.DampedSpring(a,b,(0,0),(0,0), r,2000000, 1000)
-        return [pymunk.PinJoint(a,b)]
+        return [
+                pymunk.PinJoint(a,b),
+#                pymunk.DampedSpring(a, self.camera_body,(0,0),(0,0), 0, 1000, 1000),
+                ]
 
     def absorb(self, other):
         self.app.remove_entity(other, preserve_physics = True)
@@ -389,10 +397,22 @@ class Zbln(BallEnemy):
         self.try_absorb_ball()
 
         #TODO
-        a = (len(self.body_map)/7 + 0.75)/2
-        ia = 1-a
-        target_position = player.position*ia + self.app.camera.reference_position*a
+#        a = (len(self.body_map)/7 + 0.75)/2
+#        ia = 1-a
+#        target_position = player.position*ia + self.app.camera.reference_position*a
+        target_position = player.position
         self.seek_player(target_position)
+
+        for body in self.body_map.keys():
+            delta = self.camera_body.position - body.position
+            dist = abs(delta)
+            if dist > 0:
+                dir_ = delta/dist
+                g = 1*100000*body.mass*dir_/delta.length_squared
+                body.apply_force_at_local_point(g)
+
+
+
 
 #        if False and len(self.body_map) < 7:
 #            self.seek_player(player.position)
@@ -423,7 +443,7 @@ class Zbln(BallEnemy):
                 if self.app.engine_time-self.last_hit < 0.08:
                     color = (255,0,0)
 
-                pygame.draw.circle(self.app.screen, color, p, round(shape.radius), 2)
+                pygame.draw.circle(self.app.screen, color, p, int(shape.radius), 2)
 
     def spin(self, player):
 
