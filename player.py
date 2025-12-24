@@ -24,6 +24,8 @@ class Player(Entity):
     debug_draw = False
     def __init__(self, app, pos):
         super().__init__(app)
+        self.draw_sprite = self.draw
+
         self.health = 3
         self.grace_time = 1
         self.app = app

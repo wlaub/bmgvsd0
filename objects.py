@@ -298,6 +298,8 @@ class Entity:
 
     def draw(self):
         pass
+    def draw_sprite(self):
+        pass
     def update(self):
         pass
     def add_to_space(self, space):
@@ -342,6 +344,10 @@ class Equipment(Entity):
     valid_slots = []
     is_feets = False
     pickup = None
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.draw_sprite = self.draw
 
     def grow(self, amt):
         pass

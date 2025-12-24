@@ -267,7 +267,7 @@ class RbtcEyes(Equipment):
     def remove_from_space(self, space):
         pass
 
-
+@register
 class NormlEyes(Equipment):
     """
     you still see your body in your mnd's eye,
@@ -292,4 +292,28 @@ class NormlEyes(Equipment):
 
     def remove_from_space(self, space):
         pass
+
+@register
+class CosmcEyes(Equipment):
+    """
+    these are wrong
+    """
+    valid_slots = ['eyes']
+
+    eye_color = (0,0,0)
+    sees = {'sprites', 'hitbox'}
+
+    def attach(self, parent, slot):
+        self.parent = parent
+
+    @property
+    def position(self):
+        return Vec2d(0,0)
+
+    def add_to_space(self, space):
+        pass
+
+    def remove_from_space(self, space):
+        pass
+
 

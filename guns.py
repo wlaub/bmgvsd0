@@ -402,9 +402,9 @@ class BrewPot(Equipment):
 #            vertices.append(pv)
 #        pygame.draw.polygon(self.app.screen, color, vertices, 1)
 
-        self.draw_sprite(p)
+        self._draw_sprite(p)
 
-    def draw_sprite(self, p):
+    def _draw_sprite(self, p):
         i = max(0,min(self.fill, 3))
         sprite = self.sprites[f'brewpot{i}']
         w,h = sprite.get_size()

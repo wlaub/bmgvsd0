@@ -81,9 +81,29 @@ class SordPickup(EquipPckp):
     track_as = {'SpawnStop'}
     equipment_name = 'RbtcSord'
 
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        pygame.draw.line(self.app.screen, (128,128,128),
+                p+Vec2d(0,-1),
+                p+Vec2d(0,self.equipment.length-2)
+                )
+        pygame.draw.line(self.app.screen, (128,128,128),
+                p+Vec2d(-1,0),
+                p+Vec2d(1,0),
+                )
+
+
 @register
 class RckngBallPickup(EquipPckp):
+    #TODO
+    """
+    it might persist the whole body and maybe even create the body on init
+    attach the pickup hitbox to the end of the chain
+    """
     equipment_name = 'RckngBall'
+
+    def draw_sprite(self):
+        self.equipment.draw()
 
 @register
 class SkltnPickup(EquipPckp):
@@ -161,7 +181,9 @@ class BrewPotPckp(EquipPckp):
                 vertices.append(pv)
             pygame.draw.polygon(self.app.screen, color, vertices, 1)
 
-#        self.equipment.draw_sprite(p)
+    def draw_sprite(self):
+        p = self.app.jj(self.body.position)
+        self.equipment._draw_sprite(p)
 
     def update(self):
         player = self.app.player

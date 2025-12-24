@@ -350,6 +350,10 @@ class PhysicsDemo:
             if 'hitbox' in sees:
                 for entity in self.draw_layers[layer]:
                     entity.draw()
+            if 'sprites' in sees:
+                for entity in self.draw_layers[layer]:
+                    entity.draw_sprite()
+
             #TODO: make equipment always visible
 
         if self.flags.geta('_render_physics') or 'physics' in sees:
