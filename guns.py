@@ -25,7 +25,7 @@ class RbtcSord(Equipment):
     def __init__(self, app):
         super().__init__(app)
         self.last_hit = self.app.engine_time
-        self.length = 8 #this is off by one because of the way it is
+        self.length = 9 #this is off by one because of the way it is
 
     def attach(self, parent, slot):
         self.parent = parent
@@ -41,12 +41,12 @@ class RbtcSord(Equipment):
 
         self.lines = [
                 [
-                self.parent.front_hand_position+Vec2d(1,0),
+                self.parent.front_hand_position+Vec2d(0,0),
                 self.offset,
                 ],
                 [
-                self.parent.front_hand_position + Vec2d(2,-1),
-                self.parent.front_hand_position + Vec2d(2,1)
+                self.parent.front_hand_position + Vec2d(1,-1),
+                self.parent.front_hand_position + Vec2d(1,1)
                 ],
             ]
 
