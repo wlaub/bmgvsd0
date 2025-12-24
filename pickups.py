@@ -141,8 +141,8 @@ class BrewPotPckp(EquipPckp):
         self.w = w = 2
         self.h = h = 7
 
-        xoff = 9
-        dx = -1
+        xoff = 10
+        dx = 0
         dy = 1
         self.front_hand = shape = pm.Poly(self.body, [
                     [-xoff+dx,-h/2+dy],
