@@ -553,14 +553,28 @@ class Zbln(BallEnemy):
 
 
 
-class BallState(enum.Enum):
-    NORML = 0
-    FGTFL = 1
-    LSTFL = 2
+class TrueBalls(BallEnemy):
+    def spawn_remnant(self):
+        scale = self.r/4.5
+        draw_args = {
+            'scale': scale,
+            'flip_x': self.facing.x>0,
+            }
+        self.app.spawn_entity('Remnant', self.position-scale*Vec2d(0,3), 'ball', 'die', draw_args)
+
+    def _draw_sprite(self, sprite, p):
+        scale = self.r/4.5
+        sprite = pygame.transform.scale_by(sprite, scale) #this is not the most ideal
+        if self.facing.x > 0:
+            sprite = pygame.transform.flip(sprite, True, False)
+
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p - scale*Vec2d(16, 11))
+
 
 @register
-class Ball(BallEnemy):
-    track_as = {'Enemy', 'TrueBalls'}
+class Ball(TrueBalls):
+    track_as = {'Enemy'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -570,17 +584,11 @@ class Ball(BallEnemy):
         super().__init__(app, pos, r, m, h)
         self.update = self.normal_update
         self.drops = self.basic_ball_drops()
-
         self.sprites = self.app.get_images('ball')
 
 
     def on_remove(self):
-        scale = self.r/4.5
-        draw_args = {
-            'scale': scale,
-            'flip_x': self.facing.x>0,
-            }
-        self.app.spawn_entity('Remnant', self.position-scale*Vec2d(0,3), 'ball', 'die', draw_args)
+        self.spawn_remnant()
 
     def draw_sprite(self):
         p = self.app.jj(self.position)
@@ -589,19 +597,12 @@ class Ball(BallEnemy):
         else:
             sprite = self.sprites['ball_hurt0']
 
-        scale = self.r/4.5
-        sprite = pygame.transform.scale_by(sprite, scale) #this is not the most ideal
-        if self.facing.x > 0:
-            sprite = pygame.transform.flip(sprite, True, False)
-
-        w,h = sprite.get_size()
-        self.app.screen.blit(sprite, p - scale*Vec2d(8, 11))
-
+        self._draw_sprite(sprite, p)
 
 
 @register
-class FgtflBall(BallEnemy):
-    track_as = {'Enemy', 'TrueBalls'}
+class FgtflBall(TrueBalls):
+    track_as = {'Enemy'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -614,6 +615,26 @@ class FgtflBall(BallEnemy):
 
         if random.random() > 0.5:
             self.drops = self.basic_ball_drops()
+
+        self.sprites = self.app.get_images('ball')
+
+    def on_remove(self):
+        self.spawn_remnant()
+
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        if self.damage_taken == 0:
+            if self._going:
+                sprite = self.sprites[f'ball0']
+            else:
+                sprite = self.sprites['ball_4got0']
+        else:
+            if self._going:
+                sprite = self.sprites['ball_hurt0']
+            else:
+                sprite = self.sprites['ball_4got_hurt0']
+
+        self._draw_sprite(sprite, p)
 
     def update(self):
         player = self.app.player
@@ -650,8 +671,8 @@ class FgtflBall(BallEnemy):
 
 
 @register
-class LstflBall(BallEnemy):
-    track_as = {'Enemy', 'TrueBalls'}
+class LstflBall(TrueBalls):
+    track_as = {'Enemy'}
 
     def __init__(self, app, pos, r = None, m = None, h = None):
         if r is None:
@@ -664,6 +685,22 @@ class LstflBall(BallEnemy):
         self.lores = 0
         self.drops = self.basic_ball_drops()
         self.target = self.app.player
+
+        self.sprites = self.app.get_images('ball')
+
+    def on_remove(self):
+        self.spawn_remnant()
+
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        if self.damage_taken == 0:
+            sprite = self.sprites[f'ball0']
+        else:
+            sprite = self.sprites['ball_hurt0']
+
+        self._draw_sprite(sprite, p)
+
+
 
     def update(self):
         player = self.app.player
@@ -699,6 +736,7 @@ class LstflBall(BallEnemy):
             return [self.app.create_entity('LengthPickup', Vec2d(0,0))]
         else:
             return self.drops
+
 
 
 @register
