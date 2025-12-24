@@ -223,6 +223,36 @@ class HealthPickup(Pckp):
     """
     bls'd hair tonic
     """
+    frame_duration = 0.05
+
+    def __init__(self, app, pos):
+        super().__init__(app, pos)
+        self.sprites = self.app.get_images('hair')
+
+        self.frame = 0
+        self.next_frame = self.app.engine_time + self.frame_duration
+        self.current_frame = self.sprites['tonic0']
+
+    def get_key(self, idx):
+        return f'tonic{idx}'
+
+    def draw_sprite(self):
+        if self.app.engine_time >= self.next_frame:
+            self.next_frame = self.app.engine_time + self.frame_duration
+            if (key := f'tonic{self.frame+1}') in self.sprites.keys():
+                self.frame += 1
+            else:
+                key = 'tonic0'
+                self.frame = 0
+            self.current_frame = self.sprites[key]
+
+        p = self.app.jj(self.position)
+
+        sprite = self.current_frame
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p - Vec2d(w/2, h/2))
+
+
 
     def prepare_shape(self):
         self.prepare_circle(4)
@@ -286,6 +316,11 @@ class BeanPickup(Pckp):
     """
     a bean
     """
+
+    def draw_sprite(self):
+        p = self.app.jj(self.body.position)
+        color = (128,64,0)
+        pygame.draw.circle(self.app.screen, color, p, int(self.r), 2)
 
     def prepare_shape(self):
         self.prepare_circle(2)

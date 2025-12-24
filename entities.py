@@ -24,6 +24,8 @@ class Zippy(BallEnemy):
     enough beans it might wake up and open its eyes
     """
 
+    #TODO: different remnant?
+
     track_as = {'Enemy'}
     def __init__(self, app, pos):
         super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
@@ -144,6 +146,8 @@ class Zeeky(BallEnemy):
         self.zeek_radius = 90
 
         self.sprites = self.app.get_images('zippy')
+
+    #TODO drop pupil as NormlEyesPckp
 
     def on_remove(self):
         self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
