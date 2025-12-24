@@ -5,6 +5,7 @@ import random
 import time
 import datetime
 import uuid
+import glob
 
 from collections import defaultdict
 
@@ -32,6 +33,7 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
 STATS_DIR = 'stats/'
 STATE_DIR = 'state/'
+ASSETS_DIR = 'assets/'
 
 SEED = random.randrange(1000000,4207852)
 SESSION_UUID = str(uuid.uuid4())
@@ -58,6 +60,19 @@ class PhysicsDemo:
 
     def get_state_filename(self, filename):
         return os.path.join(STATE_DIR, filename)
+
+    def get_images(self, path):
+        #TODO: caching?
+        filedir = os.path.join(ASSETS_DIR, 'images', path, '*.png')
+        files = list(filter(os.path.isfile, glob.glob(filedir)))
+#        files.sort(key = lambda x: os.path.getmtime(x), reverse=True)
+        result = {}
+        for infile in files:
+            image = pygame.image.load(infile)
+            key = os.path.split(infile)[-1][:-4]
+            result[key] = image
+        return result
+
 
     def run(self):
         while self.running:
@@ -199,6 +214,11 @@ class PhysicsDemo:
         #TODO
         if self.flags.geta('_test_lntrn'):
             self.spawn_entity('EulLntrnPickup', (0,-4))
+
+        if self.flags.geta('_test_brew_pot'):
+            self.spawn_entity('BrewPotPckp', (-16,0))
+
+
 
         if self.flags.geta('_test_zbln'):
 
@@ -397,7 +417,7 @@ class PhysicsDemo:
         dt = self.engine_time-self.last_spawn
         c = self.field.get('capacity')
         f = self.field.get('austerity')
-        if len(self.tracker['EquipPckp']) == 0 and dt > f + len(self.tracker['Enemy'])/c:
+        if len(self.tracker['SpawnStop']) == 0 and dt > f + len(self.tracker['Enemy'])/c:
 
             self.spawn()
 

@@ -290,4 +290,139 @@ class EulLntrn(Equipment):
         for joint in self.joints:
             space.remove(joint)
 
+@register
+class BrewPot(Equipment):
+    """
+    there is still some in it
+    """
+    valid_slots = ['back_hand', 'front_hand']
+#    pickup = 'BrewPotPickup'
+
+    def __init__(self, app):
+        super().__init__(app)
+        self.last_hit = self.app.engine_time
+
+        self.sprites = self.app.get_images('brewpot')
+        self.fill = 3
+
+    def attach(self, parent, slot):
+        self.parent=parent
+        self.slot = slot
+
+        self.w = w = 15
+        self.h = h = 13
+
+        self.body = None
+        self.update_mass()
+        m = self.m
+
+        self.consumed = 0
+        self.consume_interval = 0.3
+
+        self.next_consume = self.app.engine_time+self.consume_interval
+
+        xoff = 0
+        if slot == 'back_hand': #TODO retrieve slot positions throug hplayer
+            self.slot_position = self.parent.back_hand_position
+            xoff = -self.w/2-2
+        else:
+            self.slot_position = self.parent.front_hand_position
+            xoff = self.w/2+2
+
+        root_pos = parent.position + self.slot_position
+        pos = root_pos + self.slot_position + Vec2d(xoff,0)
+
+        self.joints = []
+        self.jcs = []
+
+        self.body = body = pm.Body(m, math.inf)
+        body.position = self.pckp.position
+        self.shape = shape = pm.Poly.create_box(self.body, (self.w, self.h))
+        self.app.space.add(self.body, self.shape)
+
+        c = pymunk.PinJoint(self.parent.body, self.body, self.slot_position, Vec2d(-xoff, 0))
+
+        self.app.space.add(c)
+        self.jcs.append(c)
+
+    def update_mass(self):
+        self.m = 1e4 + 1e7*self.fill
+        self.friction = -1*self.m
+        if self.body is not None:
+            self.body.mass = self.m
+
+    def on_remove(self):
+        self.parent.boost_speed(amt=self.consumed*2.5, dur=self.consumed*2.5)
+
+    def update(self):
+        if self.parent is None:
+            return
+
+        if self.app.engine_time > self.next_consume:
+
+            self.fill -= 1
+            self.consumed += 1
+
+            if self.fill == 0:
+                self.next_consume = self.app.engine_time+self.consume_interval/5
+            else:
+                self.next_consume = self.app.engine_time+self.consume_interval
+
+
+            if self.fill < 0:
+                self.parent.unequip(self.slot)
+
+            else:
+                self.update_mass()
+
+        #TODO break if feet get too far away?
+
+        friction = self.body.velocity*self.friction
+        self.body.apply_force_at_local_point(friction)
+
+    def grow(self, amt):
+        self.fill += amt
+        self.fill = min(max(self.fill, 0), 3)
+
+    def draw(self):
+        points = []
+        for j in self.jcs:
+            a = self.app.jj(j.a.position+j.anchor_a)
+            b = self.app.jj(j.b.position+j.anchor_b)
+            pygame.draw.line(self.app.screen, (0,0,0), a,b)
+
+        p = self.app.jj(self.body.position)
+#        color = (0,0,255)
+##        if self.player_on:
+##            color = (255,0,0)
+#
+#        vertices = []
+#        for v in self.shape.get_vertices():
+#            pv = self.app.jj(v.rotated(self.body.angle)+self.position)
+#            vertices.append(pv)
+#        pygame.draw.polygon(self.app.screen, color, vertices, 1)
+
+        self.draw_sprite(p)
+
+    def draw_sprite(self, p):
+        i = max(0,min(self.fill, 3))
+        sprite = self.sprites[f'brewpot{i}']
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p - Vec2d(w/2, h/2))
+
+
+
+    def add_to_space(self, space):
+        pass
+    def remove_from_space(self, space):
+        if self.app.camera.parent is self:
+            self.app.camera.parent = None
+            self.app.camera.set_scale(self.old_scale)
+
+        space.remove(self.body, self.shape)
+        for c in self.jcs:
+            space.remove(c)
+        for joint in self.joints:
+            space.remove(joint)
+
 

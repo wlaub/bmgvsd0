@@ -52,6 +52,7 @@ class EquipPckp(Pckp):
             self.equipment = equipment
         else:
             self.equipment = self.app.create_entity(self.equipment_name)
+        self.equipment.pckp = self
 
     def prepare_shape(self):
         self.prepare_box(3,3)
@@ -77,6 +78,7 @@ class EquipPckp(Pckp):
 
 @register
 class SordPickup(EquipPckp):
+    track_as = {'SpawnStop'}
     equipment_name = 'RbtcSord'
 
 @register
@@ -93,7 +95,96 @@ class EyesPickup(EquipPckp):
 
 @register
 class EulLntrnPickup(EquipPckp):
+    track_as = {'SpawnStop'}
     equipment_name = 'EulLntrn'
+
+
+@register
+class BrewPotPckp(EquipPckp):
+    """
+    a brew pot
+    """
+    equipment_name = 'BrewPot'
+    hype = 5
+    energy_of_instantiation = 1
+
+    def __init__(self, app, pos, equipment = None):
+        super().__init__(app, pos)
+
+    def prepare_shape(self):
+        self.w = w = 2
+        self.h = h = 7
+
+        xoff = 9
+        dx = -1
+        dy = 1
+        self.front_hand = shape = pm.Poly(self.body, [
+                    [-xoff+dx,-h/2+dy],
+                    [-xoff-w+dx,-h/2+dy],
+                    [-xoff-w+dx,h/2+dy],
+                    [-xoff+dx,h/2+dy],
+                    ])
+        shape.sensor = True
+        shape.collision_type = COLLTYPE_DEFAULT
+
+        self.back_hand = shape = pm.Poly(self.body, [
+                    [xoff+dx,-h/2+dy],
+                    [xoff+w+dx,-h/2+dy],
+                    [xoff+w+dx,h/2+dy],
+                    [xoff+dx,h/2+dy],
+                    ])
+
+        shape.sensor = True
+        shape.collision_type = COLLTYPE_DEFAULT
+
+        self.slot_shapes = {
+            'back_hand': self.back_hand,
+            'front_hand': self.front_hand,
+            }
+
+    def add_to_space(self, space):
+        space.add(self.body, *self.slot_shapes.values())
+
+    def remove_from_space(self, space):
+        space.remove(self.body, *self.slot_shapes.values())
+
+    def draw(self):
+        p = self.app.jj(self.body.position)
+        color = (0,0,255)
+#        if self.player_on:
+#            color = (255,0,0)
+
+        for shape in self.slot_shapes.values():
+            vertices = []
+            for v in shape.get_vertices():
+                pv = self.app.jj(v.rotated(self.body.angle)+self.position)
+                vertices.append(pv)
+            pygame.draw.polygon(self.app.screen, color, vertices, 1)
+
+#        self.equipment.draw_sprite(p)
+
+    def update(self):
+        player = self.app.player
+
+        if player is None: return
+        if self.app.beans == 0: return
+
+        self.player_on = False
+        for slot_name, shape in self.slot_shapes.items():
+            slot = player.get_slot_hit(shape, {slot_name})
+            if slot is not None:
+                self.player_on = True
+                target_slot = slot
+                break
+            else:
+                self.player_on = False
+
+        if self.app.controller.equip() and self.app.engine_time > self.cooldown:
+            if self.player_on:
+                if player.equip_entity(slot, self.equipment):
+                    self.app.beans -= 1
+                    self.app.start_game()
+                    super(EquipPckp, self).on_player(player)
 
 
 

@@ -428,7 +428,7 @@ class BallEnemy(Enemy):
             return [self.app.create_entity('HealthPickup', Vec2d(0,0))]
         elif random.random() > 1-self.app.field.get('excitability')*(self.app.field.get('liquidity')-7):
 #            if len(self.app.tracker['CoffeePotPickup']) == 0:
-                return [self.app.create_entity('CoffeePotPickup', Vec2d(0,0))]
+                return [self.app.create_entity('BrewPotPckp', Vec2d(0,0))]
         else:
             return [self.app.field.make_lore_drop(Vec2d(0,0))]
         return []

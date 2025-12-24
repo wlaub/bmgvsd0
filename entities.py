@@ -93,8 +93,8 @@ class Zippy(BallEnemy):
 
     def get_drops(self):
         result = []
-        if random.random() < 0.1 and  len(self.app.tracker['CoffeePotPickup']) == 0:
-           result.append(self.app.create_entity('CoffeePotPickup', Vec2d(0,0)))
+        if random.random() < 0.1 and  len(self.app.tracker['BrewPotPckp']) == 0:
+           result.append(self.app.create_entity('BrewPotPckp', Vec2d(0,0)))
 
         result.append(self.app.create_entity('BeanPickup', Vec2d(0,0)))
         t = random.random()
