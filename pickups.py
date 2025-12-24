@@ -255,6 +255,18 @@ class LoreOrePickup(Pckp):
     its intricate crystal prism weaves light into knowledge
     """
 
+    def __init__(self, app, pos):
+        super().__init__(app, pos)
+        self.sprites = self.app.get_images('lore_ore')
+        self.sprite = random.choice(list(self.sprites.values()))
+
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        sprite = self.sprite
+
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p-Vec2d(w/2,h/2))
+
     def prepare_shape(self):
         self.prepare_circle(2)
 

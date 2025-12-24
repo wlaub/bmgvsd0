@@ -247,6 +247,8 @@ class Zeeky(BallEnemy):
 class Zbln(BallEnemy):
     #TODO draw sprites
     #TODO ball remnants for conversion to zbln
+    #TODO take damage? show damage?
+
     track_as = {'Enemy'}
     def __init__(self, app, body_map):
         super(BallEnemy,self).__init__(app)
