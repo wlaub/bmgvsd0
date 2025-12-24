@@ -33,6 +33,21 @@ class Zippy(BallEnemy):
         self.can_stop = False
         self.beans = 0
 
+        self.sprites = self.app.get_images('zippy')
+
+    def on_remove(self):
+        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
+
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        if self.damage_taken == 0:
+            sprite = self.sprites[f'zippy0']
+        else:
+            sprite = self.sprites[f'zippy_hurt0']
+
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p-Vec2d(w/2,h/2))
+
     def update(self):
         player = self.app.player
         if player is None: return
@@ -128,6 +143,21 @@ class Zeeky(BallEnemy):
 
         self.zeek_radius = 90
 
+        self.sprites = self.app.get_images('zippy')
+
+    def on_remove(self):
+        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
+
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        if self.damage_taken == 0:
+            sprite = self.sprites[f'zeeky0']
+        else:
+            sprite = self.sprites[f'zeeky_hurt0']
+
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p-Vec2d(w/2,h/2))
+
 
     def update(self):
         player = self.app.player
@@ -215,6 +245,8 @@ class Zeeky(BallEnemy):
 
 @register
 class Zbln(BallEnemy):
+    #TODO draw sprites
+    #TODO ball remnants for conversion to zbln
     track_as = {'Enemy'}
     def __init__(self, app, body_map):
         super(BallEnemy,self).__init__(app)

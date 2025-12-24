@@ -406,7 +406,7 @@ class BrewPot(Equipment):
         self._draw_sprite(p)
 
     def _draw_sprite(self, p):
-        i = max(0,min(self.fill, 3))
+        i = max(0,min(self.fill, 4))
         sprite = self.sprites[f'brewpot{i}']
         w,h = sprite.get_size()
         self.app.screen.blit(sprite, p - Vec2d(w/2, h/2))
