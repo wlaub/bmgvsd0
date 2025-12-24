@@ -242,7 +242,7 @@ class DebugConsole:
 
     def _do_spawn(self, cmd, parts):
         name = parts[0]
-        self.app.spawn_entity(name, self.app.mpos)
+        self.app.spawn_entity(name, self.app.mpos, *parts[1:])
         self.entity_list = self.get_entity_list()
 
     def _ac_spawn(self, parts):

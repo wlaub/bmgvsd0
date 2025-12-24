@@ -392,7 +392,7 @@ class BrewPot(Equipment):
             b = self.app.jj(j.b.position+j.anchor_b)
             pygame.draw.line(self.app.screen, (0,0,0), a,b)
 
-        p = self.app.jj(self.body.position)
+        p = self.app.jj(self.position)
 #        color = (0,0,255)
 ##        if self.player_on:
 ##            color = (255,0,0)

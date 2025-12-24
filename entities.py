@@ -571,6 +571,34 @@ class Ball(BallEnemy):
         self.update = self.normal_update
         self.drops = self.basic_ball_drops()
 
+        self.sprites = self.app.get_images('ball')
+
+
+    def on_remove(self):
+        scale = self.r/4.5
+        draw_args = {
+            'scale': scale,
+            'flip_x': self.facing.x>0,
+            }
+        self.app.spawn_entity('Remnant', self.position-scale*Vec2d(0,3), 'ball', 'die', draw_args)
+
+    def draw_sprite(self):
+        p = self.app.jj(self.position)
+        if self.damage_taken == 0:
+            sprite = self.sprites[f'ball0']
+        else:
+            sprite = self.sprites['ball_hurt0']
+
+        scale = self.r/4.5
+        sprite = pygame.transform.scale_by(sprite, scale) #this is not the most ideal
+        if self.facing.x > 0:
+            sprite = pygame.transform.flip(sprite, True, False)
+
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p - scale*Vec2d(8, 11))
+
+
+
 @register
 class FgtflBall(BallEnemy):
     track_as = {'Enemy', 'TrueBalls'}

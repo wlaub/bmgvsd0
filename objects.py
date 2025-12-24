@@ -339,6 +339,64 @@ class Entity:
         return False
 
 
+#TODO
+@register
+class Remnant(Entity):
+    """
+    renders an animation and maybe disappears or fades after a while
+    """
+    def __init__(self, app, pos, path, sprite_name, draw_args=None):
+        super().__init__(app)
+        self.base_position = Vec2d(*pos)
+        self.sprites = self.app.get_images(path)
+        self.sprite_name = sprite_name
+        self.frame = 0
+        self.draw_args = {
+            'frame_duration': 0.1,
+            'scale': 1,
+            'flip_x' : False,
+            'flip_y' : False,
+            }
+        if draw_args is not None:
+            self.draw_args.update(draw_args)
+
+        self.next_frame = self.app.engine_time + self.draw_args['frame_duration']
+        self.get_frame(f'{sprite_name}0')
+
+    def get_frame(self, key):
+        sprite = self.sprites[key]
+        scale = self.draw_args['scale']
+        if scale != 1:
+            sprite = pygame.transform.scale_by(sprite, scale) #this is not the most ideal
+        flip_x, flip_y = self.draw_args['flip_x'], self.draw_args['flip_y']
+        if flip_x or flip_y:
+            sprite = pygame.transform.flip(sprite, flip_x, flip_y)
+        self.current_frame = sprite
+
+
+    def draw_sprite(self):
+        if self.app.engine_time >= self.next_frame:
+            self.next_frame = self.app.engine_time + self.draw_args['frame_duration']
+            if (key := f'{self.sprite_name}{self.frame+1}') in self.sprites.keys():
+                self.frame += 1
+                self.get_frame(key)
+
+        p = self.app.jj(self.position)
+
+        sprite = self.current_frame
+        w,h = sprite.get_size()
+        self.app.screen.blit(sprite, p - Vec2d(w/2, h/2))
+
+    def add_to_space(self, space): pass
+    def remove_from_space(self, space): pass
+
+    @property
+    def position(self):
+        return self.base_position
+
+    @property
+    def velocity(self):
+        return Vec2d(0,0)
 
 class Equipment(Entity):
     valid_slots = []
@@ -388,6 +446,8 @@ class BallEnemy(Enemy):
 
         self.health = health
 
+        self.facing = Vec2d(0,0)
+
     def draw(self):
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
         p = self.app.jj(p)
@@ -410,6 +470,7 @@ class BallEnemy(Enemy):
     def seek_player(self, player):
         delta = player.position-self.position
         delta /= abs(delta)
+        self.facing = delta
         self.body.apply_force_at_local_point(delta*self.speed)
 
     def apply_friction(self, player):

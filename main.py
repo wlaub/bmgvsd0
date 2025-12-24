@@ -62,6 +62,9 @@ class PhysicsDemo:
         return os.path.join(STATE_DIR, filename)
 
     def get_images(self, path):
+        if path in self.image_cache.keys():
+            return self.image_cache[path]
+
         #TODO: caching?
         filedir = os.path.join(ASSETS_DIR, 'images', path, '*.png')
         files = list(filter(os.path.isfile, glob.glob(filedir)))
@@ -71,6 +74,8 @@ class PhysicsDemo:
             image = pygame.image.load(infile)
             key = os.path.split(infile)[-1][:-4]
             result[key] = image
+
+        self.image_cache[path] = result
         return result
 
 
@@ -115,6 +120,8 @@ class PhysicsDemo:
         self.font = pygame.font.Font(None, 14)
 
         self.big_font = pygame.font.Font(None, 14) #lol
+
+        self.image_cache = {}
 
         self.queue_reset = False
         self.redraw = False
@@ -347,13 +354,12 @@ class PhysicsDemo:
 
 
         for layer in sorted(self.draw_layers.keys()):
-            if 'hitbox' in sees:
-                for entity in self.draw_layers[layer]:
-                    entity.draw()
             if 'sprites' in sees:
                 for entity in self.draw_layers[layer]:
                     entity.draw_sprite()
-
+            if 'hitbox' in sees:
+                for entity in self.draw_layers[layer]:
+                    entity.draw()
             #TODO: make equipment always visible
 
         if self.flags.geta('_render_physics') or 'physics' in sees:
