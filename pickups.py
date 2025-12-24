@@ -43,16 +43,21 @@ TODO make sure that when equipment drops, it retains the original equipment enti
 """
 
 class EquipPckp(Pckp):
+    cooldown_duration = 0.3
     def __init__(self, app, pos, equipment = None):
         super().__init__(app, pos)
 
-        self.cooldown = self.app.engine_time + 0.5
+        self.cooldown = self.app.engine_time + self.cooldown_duration
 
         if equipment is not None:
             self.equipment = equipment
         else:
             self.equipment = self.app.create_entity(self.equipment_name)
         self.equipment.pckp = self
+
+    def on_add(self):
+        super().on_add()
+        self.cooldown = self.app.engine_time + self.cooldown_duration
 
     def prepare_shape(self):
         self.prepare_box(3,3)
@@ -127,6 +132,7 @@ class BrewPotPckp(EquipPckp):
     equipment_name = 'BrewPot'
     hype = 5
     energy_of_instantiation = 1
+    cooldown_duration = 0.3
 
     def __init__(self, app, pos, equipment = None):
         super().__init__(app, pos)
@@ -201,7 +207,8 @@ class BrewPotPckp(EquipPckp):
             else:
                 self.player_on = False
 
-        if self.app.controller.equip() and self.app.engine_time > self.cooldown:
+#        if self.app.controller.equip() and self.app.engine_time > self.cooldown:
+        if self.app.engine_time > self.cooldown:
             if self.player_on:
                 if player.equip_entity(slot, self.equipment):
                     self.app.beans -= 1

@@ -376,6 +376,7 @@ class BrewPot(Equipment):
                 self.update_mass()
 
         #TODO break if feet get too far away?
+        #TODO something happens if you pull it too far away
 
         friction = self.body.velocity*self.friction
         self.body.apply_force_at_local_point(friction)
