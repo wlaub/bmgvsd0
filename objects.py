@@ -345,6 +345,9 @@ class Remnant(Entity):
     """
     renders an animation and maybe disappears or fades after a while
     """
+
+    #TODO: allow to load the remnant with a pickup that it spawns on a particular frame
+    # at a particular location
     def __init__(self, app, pos, path, sprite_name, draw_args=None):
         super().__init__(app)
         self.base_position = Vec2d(*pos)

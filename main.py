@@ -342,16 +342,19 @@ class PhysicsDemo:
         if len(new_entities) > 0:
             self.last_spawn = self.engine_time
 
-    def draw(self):
-
+    def get_sees(self):
         if self.player is not None:
             self.current_eyes = self.player.slots['eyes']
         if self.current_eyes is not None:
             sees = self.current_eyes.sees
         else:
             sees = set()
+        return sees
 
 
+    def draw(self):
+
+        sees = self.get_sees()
 
         for layer in sorted(self.draw_layers.keys()):
             if 'sprites' in sees:
@@ -461,6 +464,13 @@ class PhysicsDemo:
                 self.remove_entity(entity)
 
 
+    def clear_screen(self):
+        sees = self.get_sees()
+        if 'sprites' in sees:
+            self.screen.fill((0,0,0))
+        else:
+            self.screen.fill((255,255,255))
+
     def loop(self):
         if self.queue_reset:
             self.reset()
@@ -485,7 +495,7 @@ class PhysicsDemo:
                 self.pause()
 
         if self.run_physics or tick:
-            self.screen.fill((255,255,255))
+            self.clear_screen()
             self.update_fleshtime(now)
 
             self.do_updates()
@@ -501,7 +511,7 @@ class PhysicsDemo:
         self.camera.update_scale()
 
         if self.redraw:
-            self.screen.fill((255,255,255))
+            self.clear_screen()
             self.draw()
             self.render_game()
             self.redraw = False

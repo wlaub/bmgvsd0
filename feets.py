@@ -272,7 +272,7 @@ class NormlEyes(Equipment):
     """
     you still see your body in your mnd's eye,
     but now you see the void just as vvdly,
-    and now you can't tell them apart.
+    such that you can't tell them apart.
     """
     valid_slots = ['eyes']
     pickup = 'NormlEyesPickup'
@@ -300,7 +300,7 @@ class CosmcEyes(Equipment):
     """
     valid_slots = ['eyes']
 
-    eye_color = (0,0,0)
+    eye_color = (255,255,255)
     sees = {'sprites', 'hitbox'}
 
     def attach(self, parent, slot):
