@@ -91,9 +91,6 @@ class Player(Entity):
 
         #feets
         self.feets = []
-        self.equip('legs', 'Exoskeleton')
-        self.equip('eyes', 'RbtcEyes')
-
 
         #hayunds
 
@@ -129,6 +126,10 @@ class Player(Entity):
                 body = self.body
                 shape = self.shape
             self.slot_sensors[slot] = {body:(shape,)}
+
+        for slot in self.base_slots:
+            if (equipment := self.app.flags.geta(f'_equip_{slot}')) is not None:
+                self.equip(slot, equipment)
 
     def get_slot_hit(self, other_shape, slots):
         for slot in slots:

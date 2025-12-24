@@ -8,6 +8,9 @@ flags:
         _show_title: True
         _show_seed: True
         _title_screen: True
+        #equipment
+        _equip_eyes: RbtcEyes
+        _equip_legs: Exoskeleton
         #gameplay flags
         _loop: False
         _vocal: False

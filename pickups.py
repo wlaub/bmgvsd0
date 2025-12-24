@@ -233,9 +233,6 @@ class HealthPickup(Pckp):
         self.next_frame = self.app.engine_time + self.frame_duration
         self.current_frame = self.sprites['tonic0']
 
-    def get_key(self, idx):
-        return f'tonic{idx}'
-
     def draw_sprite(self):
         if self.app.engine_time >= self.next_frame:
             self.next_frame = self.app.engine_time + self.frame_duration
@@ -251,8 +248,6 @@ class HealthPickup(Pckp):
         sprite = self.current_frame
         w,h = sprite.get_size()
         self.app.screen.blit(sprite, p - Vec2d(w/2, h/2))
-
-
 
     def prepare_shape(self):
         self.prepare_circle(4)
