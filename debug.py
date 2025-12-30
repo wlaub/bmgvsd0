@@ -19,10 +19,11 @@ from registry import register, entity_registry
 
 
 class EntityButton:
-    def __init__(self, console, entity, w, h):
+    def __init__(self, console, entity, w, h, exists = True):
         self.app = console.app
         self.console = console
         self.entity = entity
+        self.exists = exists
         self.w = w
         self.h = h
 
@@ -58,6 +59,7 @@ class DebugConsole:
         self.hides = {'Remnant'}
         self.shows = set()
 
+        self.show_gone = True
 
         self.cmds = set()
         self.cmd_map = {}
@@ -80,12 +82,14 @@ class DebugConsole:
 
     def get_entity_list(self):
         result = []
-        for entity in self.app.entities:
+        for entity in self.app.entity_map.values():
             tags = entity.get_tags()
             if self.hides & tags:
                 continue
             if len(self.shows) == 0 or self.shows&tags:
-                result.append(EntityButton(self, entity, 100, 20))
+                exists = entity in self.app.entities
+                if self.show_gone or exists:
+                    result.append(EntityButton(self, entity, 100, 20, exists=exists))
 
             if len(result) == 24:
                 break
@@ -278,7 +282,9 @@ class DebugConsole:
             parts = parts[1:]
 
         for name in parts:
-            if name[0] == '-':
+            if name == 'gone':
+                self.show_gone = False
+            elif name[0] == '-':
                 try:
                     self.hides.remove(name[1:])
                 except KeyError: pass
@@ -302,7 +308,9 @@ class DebugConsole:
             parts = parts[1:]
 
         for name in parts:
-            if name[0] == '-':
+            if name == 'gone':
+                self.show_gone = True
+            elif name[0] == '-':
                 try:
                     self.shows.remove(name[1:])
                 except KeyError: pass
@@ -462,6 +470,8 @@ class DebugConsole:
             color = bg_color
             if button == self.hovered_button:
                 color = (128,128,128,bg_color[3])
+            elif not button.exists:
+                color = (0,49,0,bg_color[3])
 
             button.set_size(l,r,t,b)
 
