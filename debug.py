@@ -55,7 +55,7 @@ class DebugConsole:
         self.cursor = 0
 
         self.entity_list = []
-        self.hides = set()
+        self.hides = {'Remnant'}
         self.shows = set()
 
 
@@ -269,22 +269,52 @@ class DebugConsole:
         return self.complete_slot_name(parts[-1])
 
     def _do_hide(self, cmd, parts):
-        self.hides = set()
+        if len(parts) == 0:
+            print(self.hides)
+            return
+
+        if parts[0] == 'x':
+            self.hides = set()
+            parts = parts[1:]
+
         for name in parts:
-            self.hides.add(name)
+            if name[0] == '-':
+                try:
+                    self.hides.remove(name[1:])
+                except KeyError: pass
+            else:
+                self.hides.add(name)
         self.entity_list = self.get_entity_list()
 
     def _ac_hide(self, parts):
-        return self._complete(parts[-1], entity_registry.by_tag.keys())
+        if parts[-1][0] == '-':
+            return '-'+self._complete(parts[-1][1:], entity_registry.by_tag.keys())
+        else:
+            return self._complete(parts[-1], entity_registry.by_tag.keys())
 
     def _do_show(self, cmd, parts):
-        self.shows = set()
+        if len(parts) == 0:
+            print(self.shows)
+            return
+
+        if parts[0] == 'x':
+            self.shows = set()
+            parts = parts[1:]
+
         for name in parts:
-            self.shows.add(name)
+            if name[0] == '-':
+                try:
+                    self.shows.remove(name[1:])
+                except KeyError: pass
+            else:
+                self.shows.add(name)
         self.entity_list = self.get_entity_list()
 
     def _ac_show(self, parts):
-        return self._complete(parts[-1], entity_registry.by_tag.keys())
+        if parts[-1][0] == '-':
+            return '-'+self._complete(parts[-1][1:], entity_registry.by_tag.keys())
+        else:
+            return self._complete(parts[-1], entity_registry.by_tag.keys())
 
     def _do_count(self, cmd, parts):
         if len(parts) > 0:
