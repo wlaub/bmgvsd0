@@ -260,8 +260,10 @@ class Zbln(BallEnemy):
         self.health = 16
         self.last_hit = -10
 
-        self.base_speed = 25
+#        self.base_speed = 25
         self.base_friction = -0.1
+        self.base_speed = 50
+        self.base_friction = -0.2
 
         if isinstance(body_map, Vec2d):
             pos = body_map
@@ -287,7 +289,7 @@ class Zbln(BallEnemy):
             total_mass += body.mass
         center /= len(body_map)
 
-        self.m = m = total_mass*10
+        self.m = m = total_mass*10*7
 
         self.body = body = pm.Body(m, moment=math.inf)
         body.position = Vec2d(*center)
@@ -316,8 +318,11 @@ class Zbln(BallEnemy):
         self.spawn_interval = 5
         self.next_spawn = self.app.engine_time+self.spawn_interval
 
-        self.merge_interval = 0.1
+        self.merge_interval = 0.5
         self.next_merge = self.app.engine_time#+self.merge_interval
+
+        self.angular_speed = 0
+        self.affinity = 0
 
     def add_to_space(self, space):
 #        for body, shapes in self.body_map.items():
@@ -361,7 +366,8 @@ class Zbln(BallEnemy):
                 ]
 
     def burst(self, position, force):
-        force *= 500
+#        force *= 500
+        force *= 100
         for entity in self.app.tracker['TrueBalls']:
             delta = entity.position-position
             delta /= (4+delta.length_squared)
@@ -395,6 +401,7 @@ class Zbln(BallEnemy):
                     hit = other_shape.shapes_collide(shape)
                     self.last_hit_velocity = body.velocity
                     self.last_hit_body = body
+                    self.affinity = 0
                     break
                 except AssertionError: pass
             else: continue
@@ -430,15 +437,22 @@ class Zbln(BallEnemy):
         if self.app.engine_time < self.next_merge:
             return
 
-        #or maybe you require some minimum total angular speed
+        self.affinity += self.velocity.length_squared
+        current_affinity = self.affinity
 
+        #or maybe you require some minimum total angular speed
         for other in self.app.tracker['TrueBalls']:
             try:
                 self.try_hit(other.shape)
+#                hit_speed = abs(self.last_hit_velocity)
+#                print(hit_speed)
+#                if hit_speed > 300:
+                print(current_affinity)
+                if current_affinity > 100000:
                 #TODO maybe require some relative speed thresold so it has to hit hard enough to stick
-                self.absorb(other)
-                self.say('blessed union')
-                self.next_merge = self.app.engine_time+self.merge_interval
+                    self.absorb(other)
+                    self.say('blessed union')
+                    self.next_merge = self.app.engine_time+self.merge_interval
                 return
             except AssertionError: pass
 
@@ -460,13 +474,15 @@ class Zbln(BallEnemy):
 
         for body in self.body_map.keys():
             delta = self.camera_body.position - body.position
-            dist = abs(delta)
-            if dist > 0:
-                dir_ = delta/dist
-                g = 1*100000*body.mass*dir_/delta.length_squared
-                body.apply_force_at_local_point(g)
+            dist = abs(delta)+20
+#            if dist > 0:
+            dir_ = delta/dist
+#            g = 10*100000*body.mass*dir_/(dist*dist)
+#            g = 10*10000*body.mass*dir_/(dist)
+            g = 100*10000*body.mass*dir_/(dist)
+            body.apply_force_at_local_point(g)
 
-
+        self.spin(player)
 
 
 #        if False and len(self.body_map) < 7:
@@ -500,6 +516,7 @@ class Zbln(BallEnemy):
 
                 pygame.draw.circle(self.app.screen, color, p, int(shape.radius), 2)
 
+
     def spin(self, player):
 
         avg_vel = Vec2d(0,0)
@@ -515,9 +532,15 @@ class Zbln(BallEnemy):
 
             aspeed = bvel.dot(tan)/tan.length_squared
 
+            dist = abs(rpos)
+            aspeed *= dist*body.mass
+
             ang+=aspeed
 
-        print(ang)
+#        ang /= len(self.body_map)
+        a = 0.01
+        self.angular_speed = ang*(a) + self.angular_speed*(1-a)
+#        print(self.angular_speed)
 
         avg_speed = 0
         for body in self.body_map.keys():
@@ -529,9 +552,11 @@ class Zbln(BallEnemy):
             else:
                 tan = Vec2d(rpos.y, -rpos.x)
 
+            #tangent force around center body
             error = tan*bvel.dot(tan)/abs(tan)#.length_squared
             error*=0.15
 
+            #inward force toward center body
 #            bvel dot rpos / abs(rpos)
             error -= rpos*bvel.dot(rpos)/rpos.length_squared
 #            body.apply_force_at_local_point(error*body.mass/10)
@@ -539,9 +564,12 @@ class Zbln(BallEnemy):
 #            friction = body.velocity*(-self.friction/20)
 #            avg_speed+=abs(body.velocity)
 
-            delta = self.app.camera.reference_position - body.position
+            #inward force toward camera
+#            delta = self.app.camera.reference_position - body.position
+
+            #scaling inward force toward center body
             delta = self.position-body.position
-            delta *= body.mass*200
+            delta *= body.mass*200*0.1
 #                print(f'{delta=} {friction=}')
             friction = delta
 
@@ -562,8 +590,8 @@ class Zbln(BallEnemy):
         #TODO apply outward wind at max size
         #TODO sometimes it doesn't really start spinning?
 #            wind_force = self.speed/10
-        avg_speed = abs(ang)
-        if avg_speed > 100:
+        avg_speed = abs(self.angular_speed)
+        if avg_speed > 100 and False:
             wind_force = avg_speed*100
             print(avg_speed, wind_force)
             for entity in self.app.tracker['Enemy']:
