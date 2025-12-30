@@ -38,7 +38,7 @@ class Zippy(BallEnemy):
         self.sprites = self.app.get_images('zippy')
 
     def on_remove(self):
-        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
+        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die', layer=-100)
 
     def draw_sprite(self):
         p = self.app.jj(self.position)
@@ -150,7 +150,7 @@ class Zeeky(BallEnemy):
     #TODO drop pupil as NormlEyesPckp
 
     def on_remove(self):
-        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
+        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die', layer=-100)
 
     def draw_sprite(self):
         p = self.app.jj(self.position)
@@ -302,7 +302,7 @@ class Zbln(BallEnemy):
 
         self.joints = []
         for body in body_map.keys():
-            c = self.get_joints(self.body, body)
+            c = self.get_joints(body, self.body)
             self.joints.extend(c)
 
         self.shapes = []
@@ -323,6 +323,25 @@ class Zbln(BallEnemy):
 
         self.angular_speed = 0
         self.affinity = 0
+
+        self.sprites = self.app.get_images('zippy')
+
+#    def on_remove(self):
+#        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
+
+    def draw_sprite(self):
+        for body, shapes in self.body_map.items():
+            for shape in shapes:
+                p = body.position + shape.offset.cpvrotate(body.rotation_vector)
+                p = self.app.jj(p)
+
+                sprite = self.sprites['zbln0']
+                scale = shape.radius/4.5
+                sprite = pygame.transform.scale_by(sprite, scale) #this is not the most ideal
+
+                w,h = sprite.get_size()
+                self.app.screen.blit(sprite, p-Vec2d(w/2,h/2))
+
 
     def add_to_space(self, space):
 #        for body, shapes in self.body_map.items():
@@ -361,7 +380,8 @@ class Zbln(BallEnemy):
 #        r = abs(a.position-b.position)
 #        return pymunk.DampedSpring(a,b,(0,0),(0,0), r,2000000, 1000)
         return [
-                pymunk.PinJoint(a,b),
+#                pymunk.PinJoint(a,b),
+                pymunk.PinJoint(a,self.body),
 #                pymunk.DampedSpring(a, self.camera_body,(0,0),(0,0), 0, 1000, 1000),
                 ]
 
@@ -472,15 +492,7 @@ class Zbln(BallEnemy):
         target_position = player.position
         self.seek_player(target_position)
 
-        for body in self.body_map.keys():
-            delta = self.camera_body.position - body.position
-            dist = abs(delta)+20
-#            if dist > 0:
-            dir_ = delta/dist
-#            g = 10*100000*body.mass*dir_/(dist*dist)
-#            g = 10*10000*body.mass*dir_/(dist)
-            g = 100*10000*body.mass*dir_/(dist)
-            body.apply_force_at_local_point(g)
+        self.gravitate_bodies()
 
         self.spin(player)
 
@@ -516,13 +528,29 @@ class Zbln(BallEnemy):
 
                 pygame.draw.circle(self.app.screen, color, p, int(shape.radius), 2)
 
+    def gravitate_bodies(self):
+        total_force = Vec2d(0,0)
+        for body in self.body_map.keys():
+            delta = self.camera_body.position - body.position
+            dist = abs(delta)+20
+#            if dist > 0:
+            dir_ = delta/dist
+#            g = 10*100000*body.mass*dir_/(dist*dist)
+#            g = 10*10000*body.mass*dir_/(dist)
+            g = 10*10000*body.mass*dir_/(dist)
+            total_force += g
+#            body.apply_force_at_local_point(g)
+        self.body.apply_force_at_local_point(total_force)
 
-    def spin(self, player):
-
+    def get_average_velocity(self):
         avg_vel = Vec2d(0,0)
         for body in self.body_map.keys():
             avg_vel += body.velocity
         avg_vel /= len(self.body_map.keys())
+        return avg_vel
+
+    def get_angular_speed(self, avg_vel):
+        avg_vel = self.get_average_velocity()
 
         ang = 0
         for body in self.body_map.keys():
@@ -541,8 +569,16 @@ class Zbln(BallEnemy):
         a = 0.01
         self.angular_speed = ang*(a) + self.angular_speed*(1-a)
 #        print(self.angular_speed)
+        return ang
 
-        avg_speed = 0
+    def spin(self, player):
+
+        avg_vel = self.get_average_velocity()
+
+        self.get_angular_speed(avg_vel)
+
+        ang = self.angular_speed
+
         for body in self.body_map.keys():
             bvel = body.velocity - avg_vel
             rpos = body.position-self.position
@@ -554,7 +590,9 @@ class Zbln(BallEnemy):
 
             #tangent force around center body
             error = tan*bvel.dot(tan)/abs(tan)#.length_squared
-            error*=0.15
+#            error*=0.15
+            body.apply_force_at_local_point(error)
+
 
             #inward force toward center body
 #            bvel dot rpos / abs(rpos)
@@ -562,7 +600,6 @@ class Zbln(BallEnemy):
 #            body.apply_force_at_local_point(error*body.mass/10)
 
 #            friction = body.velocity*(-self.friction/20)
-#            avg_speed+=abs(body.velocity)
 
             #inward force toward camera
 #            delta = self.app.camera.reference_position - body.position
@@ -573,9 +610,8 @@ class Zbln(BallEnemy):
 #                print(f'{delta=} {friction=}')
             friction = delta
 
-            body.apply_force_at_local_point(friction)
+#            body.apply_force_at_local_point(friction)
 
-        avg_speed/=len(self.body_map)
 
         """
         maybe what happens is you break all the links but you also like
@@ -626,7 +662,7 @@ class TrueBalls(BallEnemy):
             'scale': scale,
             'flip_x': self.facing.x>0,
             }
-        self.app.spawn_entity('Remnant', self.position-scale*Vec2d(0,3), 'ball', 'die', draw_args)
+        self.app.spawn_entity('Remnant', self.position-scale*Vec2d(0,3), 'ball', 'die', draw_args,layer =-100)
 
     def _draw_sprite(self, sprite, p):
         scale = self.r/4.5
