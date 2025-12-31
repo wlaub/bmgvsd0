@@ -551,7 +551,7 @@ class Zbln(BallEnemy):
         delta = self.camera_body.position - self.body.position
         dist = abs(delta)+20
         dir_ = delta/dist
-        g = self.body.mass*dir_*(abs(self.angular_speed)**0.5)*1
+        g = self.body.mass*dir_*(abs(self.angular_speed)**0.5)*2
         self.body.apply_force_at_local_point(g)
 
         friction = -10*self.body.velocity*self.body.mass/(dist-18)
@@ -559,7 +559,8 @@ class Zbln(BallEnemy):
 
         #TODO !!!!!!!!!!!!!!!!!!!1
         #TODO okay so i think what you're gonna need to do is put walls around the border of the camera that only this can hit
-
+        #or maybe even just clamp the main body inside the camera area that seems easier
+        # also maybe individual healths?
 
 
     def get_average_velocity(self):
