@@ -444,8 +444,8 @@ class BallEnemy(Enemy):
         body.position = Vec2d(*pos)
 
         self.shape = shape = pm.Circle(body, r)
+        shape.filter = pm.ShapeFilter(mask = pymunk.ShapeFilter.ALL_MASKS() ^ 0b01)
 #        shape.friction = 1.5
-        shape.collision_type = COLLTYPE_DEFAULT
 
         self.health = health
 

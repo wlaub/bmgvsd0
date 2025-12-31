@@ -308,6 +308,8 @@ class Zbln(BallEnemy):
         self.shapes = []
         for body, shapes in self.body_map.items():
             self.shapes.extend(shapes)
+            for shape in shapes:
+                shape.filter=pm.ShapeFilter(categories=0b011)
 
         self.speed = self.base_speed*self.m
         self.friction = self.base_friction*self.m
@@ -404,6 +406,8 @@ class Zbln(BallEnemy):
 #        c = self.get_joint(body, self.body)
         self.joints.extend(c)
         self.app.space.add(*c)
+
+        shape.filter=pm.ShapeFilter(categories=0b011)
 
         self.burst(body.position, self.m*(1+len(self.body_map)/7))
 
@@ -502,7 +506,7 @@ class Zbln(BallEnemy):
 #        else:
 #            self.seek_player(self.app.camera.reference_position)
 
-        self.apply_friction(player)
+#        self.apply_friction(player)
 
 #        if len(self.body_map) >= 7:
 #            self.spin(player)
@@ -538,9 +542,25 @@ class Zbln(BallEnemy):
 #            g = 10*100000*body.mass*dir_/(dist*dist)
 #            g = 10*10000*body.mass*dir_/(dist)
             g = 10*10000*body.mass*dir_/(dist)
+
             total_force += g
 #            body.apply_force_at_local_point(g)
-        self.body.apply_force_at_local_point(total_force)
+
+
+
+        delta = self.camera_body.position - self.body.position
+        dist = abs(delta)+20
+        dir_ = delta/dist
+        g = self.body.mass*dir_*(abs(self.angular_speed)**0.5)*1
+        self.body.apply_force_at_local_point(g)
+
+        friction = -10*self.body.velocity*self.body.mass/(dist-18)
+        self.body.apply_force_at_local_point(friction)
+
+        #TODO !!!!!!!!!!!!!!!!!!!1
+        #TODO okay so i think what you're gonna need to do is put walls around the border of the camera that only this can hit
+
+
 
     def get_average_velocity(self):
         avg_vel = Vec2d(0,0)
@@ -605,10 +625,10 @@ class Zbln(BallEnemy):
 #            delta = self.app.camera.reference_position - body.position
 
             #scaling inward force toward center body
-            delta = self.position-body.position
-            delta *= body.mass*200*0.1
+#            delta = self.position-body.position
+#            delta *= body.mass*self.angular_speed
 #                print(f'{delta=} {friction=}')
-            friction = delta
+#            friction = delta
 
 #            body.apply_force_at_local_point(friction)
 

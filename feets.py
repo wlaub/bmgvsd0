@@ -54,6 +54,7 @@ class Leg(Entity):
         self.foot_body = foot_body = pymunk.Body(body_type=pymunk.Body.KINEMATIC)
         foot_body.position = pos+Vec2d(x, l)
         self.foot_shape = foot_shape = pymunk.Poly.create_box(foot_body, (4,2))
+        self.foot_shape.filter = pm.ShapeFilter(mask = pymunk.ShapeFilter.ALL_MASKS() ^ 0b011)
         self.app.space.add(foot_body, foot_shape)
 
         self.anchor = Vec2d(x,0)
