@@ -372,7 +372,7 @@ class Zbln(BallEnemy):
 
     @property
     def position(self):
-        return self.my_position
+        return self.body.position
 
     @property
     def velocity(self):
@@ -423,9 +423,11 @@ class Zbln(BallEnemy):
             for shape in shapes:
                 try:
                     hit = other_shape.shapes_collide(shape)
+                    a = hit.normal.dot(body.velocity)
+                    #print(a)
                     self.last_hit_velocity = body.velocity
                     self.last_hit_body = body
-                    self.affinity = 0
+                    self.affinity = a
                     break
                 except AssertionError: pass
             else: continue
@@ -438,8 +440,8 @@ class Zbln(BallEnemy):
         delta /= abs(delta)
 
         speed = self.speed
-        if not self.app.camera.contains(self.position, 2):
-            speed = self.speed*10
+#        if not self.app.camera.contains(self.position, 2):
+#            speed = self.speed*10
 
         self.body.apply_force_at_local_point(delta*speed)
 
@@ -461,7 +463,7 @@ class Zbln(BallEnemy):
         if self.app.engine_time < self.next_merge:
             return
 
-        self.affinity += self.velocity.length_squared
+#        self.affinity += self.velocity.length_squared
         current_affinity = self.affinity
 
         #or maybe you require some minimum total angular speed
@@ -471,8 +473,10 @@ class Zbln(BallEnemy):
 #                hit_speed = abs(self.last_hit_velocity)
 #                print(hit_speed)
 #                if hit_speed > 300:
-                print(current_affinity)
-                if current_affinity > 100000:
+#                print(current_affinity)
+#                if current_affinity > 100000:
+                if current_affinity < -75:
+                    print(current_affinity)
                 #TODO maybe require some relative speed thresold so it has to hit hard enough to stick
                     self.absorb(other)
                     self.say('blessed union')
@@ -532,9 +536,15 @@ class Zbln(BallEnemy):
 
                 pygame.draw.circle(self.app.screen, color, p, int(shape.radius), 2)
 
+        p = self.body.position
+        p = self.app.jj(p)
+        pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
+
     def gravitate_bodies(self):
         total_force = Vec2d(0,0)
+        total_mass = 0
         for body in self.body_map.keys():
+            total_mass += body.mass
             delta = self.camera_body.position - body.position
             dist = abs(delta)+20
 #            if dist > 0:
@@ -551,13 +561,28 @@ class Zbln(BallEnemy):
         delta = self.camera_body.position - self.body.position
         dist = abs(delta)+20
         dir_ = delta/dist
-        g = self.body.mass*dir_*(abs(self.angular_speed)**0.5)*2
+
+#        mass = self.body.mass
+        mass = 70*total_mass+self.body.mass
+        g = mass*dir_*(abs(self.angular_speed)**0.5)*.2
+        print(f'{abs(g):02.4g} {self.speed:02.4g} {abs(self.angular_speed):02.4g}')
+#        g *= self.body.mass
         self.body.apply_force_at_local_point(g)
 
         friction = -10*self.body.velocity*self.body.mass/(dist-18)
         self.body.apply_force_at_local_point(friction)
 
-        #TODO !!!!!!!!!!!!!!!!!!!1
+        l,r,u,d = self.app.camera.lrud
+        x,y = self.body.position
+
+        if x < l or x > r or y < u or y > d:
+            self.body.position = Vec2d(
+                max(min(x, r),l),
+                max(min(y, d),u),
+                )
+            self.body.velocity = Vec2d(0,0)
+
+        #TODO !!!!!!!!!!!!!!!!!!!1 xa
         #TODO okay so i think what you're gonna need to do is put walls around the border of the camera that only this can hit
         #or maybe even just clamp the main body inside the camera area that seems easier
         # also maybe individual healths?
@@ -648,10 +673,18 @@ class Zbln(BallEnemy):
         #TODO sometimes it doesn't really start spinning?
 #            wind_force = self.speed/10
         avg_speed = abs(self.angular_speed)
-        if avg_speed > 100 and False:
-            wind_force = avg_speed*100
+        thresh = 7e4
+        if avg_speed > thresh:
+            wind_force = (avg_speed-thresh)*.4 #TODO still tune this xb
             print(avg_speed, wind_force)
-            for entity in self.app.tracker['Enemy']:
+            targets = self.app.tracker['Enemy']
+
+            self.app.forget_range = min(max(1,2-avg_speed/100e4), self.app.forget_range)
+
+            if len(targets) <= 1:
+                print('!!!!!!!!!!!!!!')
+                self.app.pause()
+            for entity in targets:
                 if entity is self: continue
                 try:
                     body = entity.body

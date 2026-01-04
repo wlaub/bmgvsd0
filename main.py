@@ -263,7 +263,7 @@ class PhysicsDemo:
         def _loop():
             while len(self.entities) > 0:
                 dt = self.engine_time-engine_time
-                self.forget_range = 0.1-dt/5
+                self.forget_range = min(0.1-dt/5, self.forget_range)
                 yield
             self.queue_reset = True
             return

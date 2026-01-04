@@ -114,9 +114,12 @@ class ZippySpnlþ(Spnlþ):
         t = random.random()
         pos = self.app.camera.get_boundary_point(t, 50)
 
+        if len(self.app.tracker['Zbln']) != 0 or len(self.app.tracker['Zeeky']) > 1:
+            return []
+
         z = len(self.app.tracker['BeanPickup'])-2
-        if len(self.app.tracker['Zbln']) == 0:
-            z+= len(self.app.tracker['Zeeky'])*3
+#        if len(self.app.tracker['Zbln']) == 0:
+        z+= len(self.app.tracker['Zeeky'])*3
 
         if len(self.app.tracker['Zippy']) == 0 and random.random() < 0.2*z:
             return [self.app.create_entity('Zippy', pos)]

@@ -79,7 +79,7 @@ class Player(Entity):
             (w/2, -h),
             (w/2, -h+w),
             ])
-        self.shape.collision_type = COLLTYPE_DEFAULT
+        self.shape.filter = pm.ShapeFilter(mask = pymunk.ShapeFilter.ALL_MASKS() ^ 0b011)
 
         #layugs
         self.left_leg = self.app.create_entity('Leg', self, pos, self.leg, (-self.hips,0))
