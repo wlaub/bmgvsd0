@@ -140,6 +140,7 @@ class PhysicsDemo:
         self.pause_stamp = time.time()
         self.paused = True
         self.run_physics = False
+        self.redraw = True
 
     def unpause(self):
         if not self.paused:

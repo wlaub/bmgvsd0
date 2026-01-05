@@ -17,6 +17,8 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, BallEnemy
 and eye boss drops portable camera pickup
 """
 
+ZBLN_COLLIDE=0b011
+
 @register
 class Zippy(BallEnemy):
     """
@@ -309,7 +311,8 @@ class Zbln(BallEnemy):
         for body, shapes in self.body_map.items():
             self.shapes.extend(shapes)
             for shape in shapes:
-                shape.filter=pm.ShapeFilter(categories=0b011)
+                shape.filter=pm.ShapeFilter(categories=ZBLN_COLLIDE)
+                shape.collision_type=ZBLN_COLLIDE
 
         self.speed = self.base_speed*self.m
         self.friction = self.base_friction*self.m
@@ -320,13 +323,57 @@ class Zbln(BallEnemy):
         self.spawn_interval = 5
         self.next_spawn = self.app.engine_time+self.spawn_interval
 
-        self.merge_interval = 0.5
+        self.merge_interval = 0.05
         self.next_merge = self.app.engine_time#+self.merge_interval
 
         self.angular_speed = 0
         self.affinity = 0
 
         self.sprites = self.app.get_images('zippy')
+
+        self.app.space.on_collision(0,ZBLN_COLLIDE,post_solve=self.post_solve)
+        self.absorb_targets = []
+
+    def post_solve(self, arbiter, space, data):
+        if not arbiter.is_first_contact:
+            return
+
+        if self.app.engine_time < self.next_merge:
+            return
+
+
+
+
+
+        imp = arbiter.total_impulse.length_squared
+        print(f'>{imp:04.2g}, {arbiter.total_ke:04.2g}')
+
+        # imp >1.5e6, 3.5e6, 2.9e6
+        # imp <1.6e7, 4.2e6,
+
+        # ke > 1.1e5, 1.6e5, 2.9e5
+        # ke < 1.1e6, 4.5e6, 4.2e5
+
+        if arbiter.total_ke > 4e5:
+            self.absorb_targets.append(arbiter.bodies)
+
+            other_body = arbiter.bodies[0]
+            self.last_hit_body = arbiter.bodies[1]
+
+            for entity in self.app.tracker['TrueBalls']:
+                if entity.body is other_body:
+                    self.absorb(entity)
+                    self.app.pause()
+                    break
+            else:
+                print('not that')
+
+
+#        if imp >
+
+        pass
+
+
 
 #    def on_remove(self):
 #        self.app.spawn_entity('Remnant', self.position, 'zippy', 'die')
@@ -407,9 +454,12 @@ class Zbln(BallEnemy):
         self.joints.extend(c)
         self.app.space.add(*c)
 
-        shape.filter=pm.ShapeFilter(categories=0b011)
+        shape.filter=pm.ShapeFilter(categories=ZBLN_COLLIDE)
+        shape.collision_type=ZBLN_COLLIDE
 
         self.burst(body.position, self.m*(1+len(self.body_map)/7))
+        self.next_merge = self.app.engine_time+self.merge_interval
+
 
     def hit_player(self, player, dmg=1):
         for shape in self.shapes:
@@ -458,13 +508,22 @@ class Zbln(BallEnemy):
     def update(self):
         self.get_position()
         self.normal_update()
+        self.absorb_targets = []
 
     def try_absorb_ball(self):
         if self.app.engine_time < self.next_merge:
             return
 
+        return
+
+#        self.next_merge = self.app.engine_time+self.merge_interval
+
 #        self.affinity += self.velocity.length_squared
         current_affinity = self.affinity
+
+#        if len(self.absorb_targets) > 0:
+#            print('pausing')
+#            self.app.pause()
 
         #or maybe you require some minimum total angular speed
         for other in self.app.tracker['TrueBalls']:
@@ -475,10 +534,11 @@ class Zbln(BallEnemy):
 #                if hit_speed > 300:
 #                print(current_affinity)
 #                if current_affinity > 100000:
-                if current_affinity < -75:
-                    print(current_affinity)
+                print(self.affinity, current_affinity)
+                if self.affinity < -75:
                 #TODO maybe require some relative speed thresold so it has to hit hard enough to stick
                     self.absorb(other)
+                    print('absorb')
                     self.say('blessed union')
                     self.next_merge = self.app.engine_time+self.merge_interval
                 return
@@ -565,7 +625,7 @@ class Zbln(BallEnemy):
 #        mass = self.body.mass
         mass = 70*total_mass+self.body.mass
         g = mass*dir_*(abs(self.angular_speed)**0.5)*.2
-        print(f'{abs(g):02.4g} {self.speed:02.4g} {abs(self.angular_speed):02.4g}')
+#        print(f'{abs(g):02.4g} {self.speed:02.4g} {abs(self.angular_speed):02.4g}')
 #        g *= self.body.mass
         self.body.apply_force_at_local_point(g)
 
@@ -683,6 +743,8 @@ class Zbln(BallEnemy):
 
             if len(targets) <= 1:
                 print('!!!!!!!!!!!!!!')
+                self.app.space.remove(*self.joints)
+                self.joints = []
                 self.app.pause()
             for entity in targets:
                 if entity is self: continue
@@ -698,7 +760,7 @@ class Zbln(BallEnemy):
             body = player.body
             delta = body.position - self.position
             delta /= abs(delta)
-            body.apply_force_at_local_point(delta*wind_force)
+#            body.apply_force_at_local_point(delta*wind_force)
 
 
 
