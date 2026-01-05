@@ -333,6 +333,7 @@ class Zbln(BallEnemy):
 
         self.app.space.on_collision(0,ZBLN_COLLIDE,post_solve=self.post_solve)
         self.absorb_targets = []
+        self.target_bodies = []
 
     def post_solve(self, arbiter, space, data):
         if not arbiter.is_first_contact:
@@ -345,7 +346,7 @@ class Zbln(BallEnemy):
 
 
 
-        imp = arbiter.total_impulse.length_squared
+        imp = arbiter.total_impulse.length_squared/min(x.mass for x in arbiter.bodies)
         print(f'>{imp:04.2g}, {arbiter.total_ke:04.2g}')
 
         # imp >1.5e6, 3.5e6, 2.9e6
@@ -354,7 +355,10 @@ class Zbln(BallEnemy):
         # ke > 1.1e5, 1.6e5, 2.9e5
         # ke < 1.1e6, 4.5e6, 4.2e5
 
-        if arbiter.total_ke > 4e5:
+        self.target_bodies = list(arbiter.bodies)
+
+#        if arbiter.total_ke > 4e5:
+        if imp > 1e5:
             self.absorb_targets.append(arbiter.bodies)
 
             other_body = arbiter.bodies[0]
@@ -363,7 +367,8 @@ class Zbln(BallEnemy):
             for entity in self.app.tracker['TrueBalls']:
                 if entity.body is other_body:
                     self.absorb(entity)
-                    self.app.pause()
+
+#                    self.app.pause()
                     break
             else:
                 print('not that')
@@ -599,6 +604,12 @@ class Zbln(BallEnemy):
         p = self.body.position
         p = self.app.jj(p)
         pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
+
+        for body in self.target_bodies:
+            p = self.app.jj(body.position)
+            pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
+
+
 
     def gravitate_bodies(self):
         total_force = Vec2d(0,0)
