@@ -356,23 +356,6 @@ class PhysicsDemo:
 
         sees = self.get_sees()
 
-        for layer in sorted(self.draw_layers.keys()):
-            if 'sprites' in sees:
-                for entity in self.draw_layers[layer]:
-                    entity.draw_sprite()
-            if 'hitbox' in sees:
-                for entity in self.draw_layers[layer]:
-                    entity.draw()
-            #TODO: make equipment always visible
-
-        if self.flags.geta('_render_physics') or 'physics' in sees:
-            self.camera.draw_physics()
-
-
-        if self.flags.geta('_show_score'):
-            header = self.font.render(f'{self.lore_score}', False, (0,0,128))
-            self.screen.blit(header, (2,2))
-
         if not self.flags.getv('_game_start') and self.flags.geta('_title_screen'):
             ypos = 20
             text = self.big_font.render(f'BLDNG MAN: GAIDN', False, (0,0,0))
@@ -393,6 +376,25 @@ class PhysicsDemo:
             text = pygame.transform.scale_by(text, alpha)
             self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
             ypos += text.get_height()
+
+
+
+        for layer in sorted(self.draw_layers.keys()):
+            if 'sprites' in sees:
+                for entity in self.draw_layers[layer]:
+                    entity.draw_sprite()
+            if 'hitbox' in sees:
+                for entity in self.draw_layers[layer]:
+                    entity.draw()
+            #TODO: make equipment always visible
+
+        if self.flags.geta('_render_physics') or 'physics' in sees:
+            self.camera.draw_physics()
+
+
+        if self.flags.geta('_show_score'):
+            header = self.font.render(f'{self.lore_score}', False, (0,0,128))
+            self.screen.blit(header, (2,2))
 
 
 

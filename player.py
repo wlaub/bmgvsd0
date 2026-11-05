@@ -49,7 +49,7 @@ class Player(Entity):
 
         self.base_slots = {
             'front_hand', 'back_hand',
-            'legs', 'feets', 'eyes'
+            'legs', 'feets', 'eyes', 'ears',
             }
 
         for slot in self.base_slots:
@@ -295,6 +295,11 @@ class Player(Entity):
         with open(self.app.get_stats_filename(filename) ,'w') as fp:
             json.dump(stats, fp)
 
+
+    def play_sound(self, *args, **kwargs):
+        if (ears := self.slots['ears']) is None:
+            return
+        ears.play_sound(*args, **kwargs)
 
     def draw(self):
         body = self.body
