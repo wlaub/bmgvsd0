@@ -481,14 +481,18 @@ class BallEnemy(Enemy):
         except AssertionError: pass
         return False
 
+    def growl(self):
+        self.growl_armed = False
+        self.app.player.play_sound('growl_1')
+
+
     def seek_player(self, player):
         delta = player.position-self.position
         dist = abs(delta)
         delta /= dist
         if self.growl_armed:
             if dist < 21:
-                self.growl_armed = False
-                self.app.player.play_sound('growl_1')
+                self.growl()
 
         self.facing = delta
         self.body.apply_force_at_local_point(delta*self.speed)

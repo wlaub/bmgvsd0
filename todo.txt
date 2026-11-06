@@ -127,3 +127,5 @@ keyboard controls:
 graphics
 
 an enemy that can regain health and can get more drops when it takes damage depending on how much damage it has taken
+
+enemy that falls over and damages enemies/things behind it when it dies

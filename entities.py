@@ -156,6 +156,7 @@ class Zeeky(BallEnemy):
         self.zeek_radius = 90
 
         self.sprites = self.app.get_images('zippy')
+        self.chirp_armed = True
 
     #TODO drop pupil as NormlEyesPckp
 
@@ -172,6 +173,9 @@ class Zeeky(BallEnemy):
         w,h = sprite.get_size()
         self.app.screen.blit(sprite, p-Vec2d(w/2,h/2))
 
+    def chirp(self):
+        self.chirp_armed = False
+        self.app.player.play_sound('chirp_2')
 
     def update(self):
         player = self.app.player
@@ -190,7 +194,10 @@ class Zeeky(BallEnemy):
 
         if not self.going:
             self.say('going')
-            self.app.player.play_sound('chirp_2')
+            #TODO debounce chirp
+            #TODO might need a slight cooldown
+            self.chirp_armed = True
+
             self.going = True
             self.can_stop = False
             if not first_time:
@@ -244,6 +251,9 @@ class Zeeky(BallEnemy):
                 except AssertionError: pass
 
             self.body.apply_force_at_local_point(self.direction)
+
+            if self.chirp_armed and r < self.zeek_radius*0.75:
+                self.chirp()
 
             if not self.can_stop and min(r,r2) < self.zeek_radius-5:
                 self.say('can stop')
