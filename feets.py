@@ -132,6 +132,15 @@ class Leg(Entity):
         self.step_direction = (pos-self.foot_body.position)
         self.step_start_time = self.app.engine_time
 
+        if self.step_state == StepState.shuffle:
+            pass
+#            self.app.player.play_sound('shuffle_step',.1)
+        elif self.step_state == StepState.big_step:
+            self.app.player.play_sound('big_step')
+        else:
+            self.app.player.play_sound('small_step', 0.25)
+
+
 
 @register
 class Exoskeleton(Equipment):
@@ -241,6 +250,60 @@ class Exoskeleton(Equipment):
         if self.walking and self.parent.active_leg.step_state == StepState.idle and not stick_active:
             self.walking = False
 
+import pygame.mixer
+
+@register
+class RbtcEars(Equipment):
+    """
+    lets you hear hit boxes?
+    """
+    valid_slots = ['ears']
+#    pickup = 'EyesPickup'
+
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.sound_map = {}
+
+        self.sound_map['small_step'] = [f'sounds/small_step_{x+1}.wav' for x in range(3)]
+        self.sound_map['big_step'] = [f'sounds/big_step_{x}.wav' for x in range(5)]
+        self.sound_map['shuffle_step'] = [f'sounds/shuffle_step_{x+1}.wav' for x in range(3)]
+        self.sound_map.update({x:[f'sounds/{x}.wav'] for x in {'_equip_RbtcSord', 'chirp_1', 'chirp_2', 'player_hurt_1', 'player_dead_1'}})
+
+        #TODO fix feet sounds to play on end of step instead of start of step
+        self.sound_map['enemy_hurt'] = ['sounds/hurt_1.wav']
+        self.sound_map['enemy_killed'] = ['sounds/kill_1.wav']
+        self.sound_map['_pckp_LoreOrePickup'] = ['sounds/lore_1.wav', 'sounds/lore_2.wav']
+        self.sound_map['_pckp_BeanPickup'] = self.sound_map['_pckp_LoreOrePickup']
+        self.sound_map['_pckp_HealthPickup'] = ['sounds/health_1.wav']
+        self.sound_map['_pckp_LengthPickup'] = ['sounds/health_1.wav']
+
+
+
+
+    def play_sound(self, sound_name, volume=1):
+        try:
+            sound_source = random.choice(self.sound_map[sound_name])
+        except KeyError as e:
+            print(f'failed to play sound {e}')
+            return
+        sound = pygame.mixer.Sound(sound_source)
+        sound.set_volume(volume)
+        sound.play()
+        return sound
+
+    def attach(self, parent, slot):
+        self.parent = parent
+
+    @property
+    def position(self):
+        return Vec2d(0,0)
+
+    def add_to_space(self, space):
+        pass
+
+    def remove_from_space(self, space):
+        pass
 
 
 

@@ -100,6 +100,8 @@ class RckngBall(Equipment):
         self.last_hit = self.app.engine_time
 
     def attach(self, parent, slot):
+        self.app.player.play_sound('equip_rckngball')
+
         self.parent=parent
 
         self.link = 7

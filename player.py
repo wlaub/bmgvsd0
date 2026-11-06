@@ -184,6 +184,8 @@ class Player(Entity):
 
         entity.attach(self, slot)
 
+        self.play_sound(f'_equip_{entity.ename}')
+
         if self.slots[slot] is None or self.slots[slot].ename != entity.ename:
             self.drop_equipment(slot)
             self.slots[slot] = entity
@@ -393,6 +395,9 @@ class Player(Entity):
 #                    p = self.app.jj(p)
 #                    pygame.draw.circle(self.app.screen, (255,0,255), p, 1, 2)
 
+
+    hurt_sound='player_hurt_1'
+    dead_sound='player_dead_1'
 
     def get_hit(self, dmg):
         self._advanced_hit_spell(dmg)

@@ -60,6 +60,7 @@ class Zippy(BallEnemy):
         beans = self.app.tracker['BeanPickup']
 
         if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.position, 1)):
+            self.app.player.play_sound('chirp_1')
 #            print('going')
             self.going = True
             self.can_stop = False
@@ -76,6 +77,8 @@ class Zippy(BallEnemy):
             delta /= abs(delta)
             self.direction = delta*self.speed
             self.friction = -10*self.m
+
+
 
         if self.going:
 
@@ -182,6 +185,7 @@ class Zeeky(BallEnemy):
 
         if not self.going:
             self.say('going')
+            self.app.player.play_sound('chirp_2')
             self.going = True
             self.can_stop = False
             if not first_time:

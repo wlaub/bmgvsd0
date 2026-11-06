@@ -10,6 +10,7 @@ import glob
 from collections import defaultdict
 
 import pygame
+import pygame.mixer
 
 import pymunk as pm
 import pymunk.util
@@ -107,6 +108,8 @@ class PhysicsDemo:
         self.title = TITLE
 
         pygame.init()
+
+        pygame.mixer.init(channels=16)
 
         self.ws = 1280
         self.hs = 720
