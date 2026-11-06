@@ -94,6 +94,15 @@ class Leg(Entity):
             t = dt*self.speed*self.parent.walk_speed
 
             if t >= 1:
+                if self.step_state == StepState.shuffle:
+                    pass
+        #            self.app.player.play_sound('shuffle_step',.1)
+                elif self.step_state == StepState.big_step:
+                    self.app.player.play_sound('big_step')
+                else:
+                    self.app.player.play_sound('small_step', 0.25)
+
+
                 self.change_step_state(StepState.idle)
                 t = 1
 
@@ -131,16 +140,6 @@ class Leg(Entity):
         self.step_start_position = self.foot_body.position
         self.step_direction = (pos-self.foot_body.position)
         self.step_start_time = self.app.engine_time
-
-        if self.step_state == StepState.shuffle:
-            pass
-#            self.app.player.play_sound('shuffle_step',.1)
-        elif self.step_state == StepState.big_step:
-            self.app.player.play_sound('big_step')
-        else:
-            self.app.player.play_sound('small_step', 0.25)
-
-
 
 @register
 class Exoskeleton(Equipment):
