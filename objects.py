@@ -329,11 +329,11 @@ class Entity:
         if self.app.engine_time - self.last_hit > self.grace_time:
             self._take_damage(dmg)
             if self.health <= 0:
-                self.app.player.play_sound(self.dead_sound)
+                self.app.player.play_sound(self.dead_sound, 1, self)
                 self.app.remove_entity(self)
                 return True
             else:
-                self.app.player.play_sound(self.hurt_sound)
+                self.app.player.play_sound(self.hurt_sound, 1, self)
         return False
 
     def _advanced_hit_spell(self, dmg):
@@ -483,7 +483,7 @@ class BallEnemy(Enemy):
 
     def growl(self):
         self.growl_armed = False
-        self.app.player.play_sound('growl_1')
+        self.app.player.play_sound('growl_1',1,self)
 
 
     def seek_player(self, player):

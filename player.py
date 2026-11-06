@@ -67,6 +67,8 @@ class Player(Entity):
         self.eye_draw_position = Vec2d(4, -self.h+2)
         self.eye_position = self.eye_draw_position+Vec2d(1,1)
 
+        self.ear_position = self.eye_position+Vec2d(-7,0)
+
         #stuff
         self.bean_hot_counter = 0
         self.bean_hot_potency = 1
@@ -110,7 +112,8 @@ class Player(Entity):
             'front_hand': (self.front_unarmed_position, self.front_hand_position),
             'back_hand': (self.back_unarmed_position, self.back_hand_position),
             'legs': (Vec2d(0,0), Vec2d(0,0)),
-            'eyes': (self.eye_position, self.eye_position)
+            'eyes': (self.eye_position, self.eye_position),
+            'ears': (self.ear_position, self.ear_position),
             }
 
         self.slot_sensors = {}

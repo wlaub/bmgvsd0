@@ -98,9 +98,9 @@ class Leg(Entity):
                     pass
         #            self.app.player.play_sound('shuffle_step',.1)
                 elif self.step_state == StepState.big_step:
-                    self.app.player.play_sound('big_step')
+                    self.app.player.play_sound('big_step',1,self.position)
                 else:
-                    self.app.player.play_sound('small_step', 0.25)
+                    self.app.player.play_sound('small_step', 0.25, self.position)
 
 
                 self.change_step_state(StepState.idle)
@@ -277,10 +277,10 @@ class RbtcEars(Equipment):
         self.sound_map['_pckp_HealthPickup'] = ['sounds/health_1.wav']
         self.sound_map['_pckp_LengthPickup'] = ['sounds/health_1.wav']
 
+        self.tracked_sounds = set()
 
 
-
-    def play_sound(self, sound_name, volume=1):
+    def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
         try:
             sound_source = random.choice(self.sound_map[sound_name])
         except KeyError as e:
@@ -288,8 +288,35 @@ class RbtcEars(Equipment):
             return
         sound = pygame.mixer.Sound(sound_source)
         sound.set_volume(volume)
-        sound.play()
+        channel = sound.play(**play_kwargs)
+        if channel is not None:
+            channel.set_volume(1,1)
+            if position is not None:
+                self.tracked_sounds.add((channel, sound, position))
         return sound
+
+    def update(self):
+
+        removals = set()
+        for channel, sound, position in self.tracked_sounds:
+            if channel.get_sound() != sound:
+                removals.add((channel, sound, position))
+                continue
+
+            if isinstance(position, Entity):
+                position = position.position
+
+            delta = position - self.app.player.get_slot_position('ears')
+            dist = abs(delta)
+            S = 14
+            dx = (max(-S, min(S, max(0,delta.x-3)))/S+1) #0-2
+            a = min(1,7/(max(0,dist-21)+7))
+            r = a*min(1,dx)
+            l = a*min(1,2-dx)
+#            print(a,l,r)
+            channel.set_volume(l,r)
+
+        self.tracked_sounds -= removals
 
     def attach(self, parent, slot):
         self.parent = parent

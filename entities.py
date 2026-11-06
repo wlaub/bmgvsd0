@@ -85,7 +85,7 @@ class Zippy(BallEnemy):
 
             if self.chirp_armed and self.app.camera.contains(self.position, -21):
                 self.chirp_armed = False
-                self.app.player.play_sound('chirp_1')
+                self.app.player.play_sound('chirp_1',1,self)
 
             for bean in beans:
                 try:
@@ -175,7 +175,7 @@ class Zeeky(BallEnemy):
 
     def chirp(self):
         self.chirp_armed = False
-        self.app.player.play_sound('chirp_2')
+        self.app.player.play_sound('chirp_2',1,self)
 
     def update(self):
         player = self.app.player
@@ -194,8 +194,8 @@ class Zeeky(BallEnemy):
 
         if not self.going:
             self.say('going')
-            #TODO debounce chirp
             #TODO might need a slight cooldown
+            #TODO maybe it drops beans sometimes when it stops
             self.chirp_armed = True
 
             self.going = True
