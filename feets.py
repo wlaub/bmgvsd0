@@ -267,7 +267,7 @@ class RbtcEars(Equipment):
         self.sound_map['small_step'] = [f'sounds/small_step_{x+1}.wav' for x in range(3)]
         self.sound_map['big_step'] = [f'sounds/big_step_{x}.wav' for x in range(5)]
         self.sound_map['shuffle_step'] = [f'sounds/shuffle_step_{x+1}.wav' for x in range(3)]
-        self.sound_map.update({x:[f'sounds/{x}.wav'] for x in {'_equip_RbtcSord', 'chirp_1', 'chirp_2', 'player_hurt_1', 'player_dead_1'}})
+        self.sound_map.update({x:[f'sounds/{x}.wav'] for x in {'_equip_RbtcSord', 'chirp_1', 'chirp_2', 'player_hurt_1', 'player_dead_1', 'growl_1'}})
 
         #TODO fix feet sounds to play on end of step instead of start of step
         self.sound_map['enemy_hurt'] = ['sounds/hurt_1.wav']

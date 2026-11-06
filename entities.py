@@ -39,6 +39,8 @@ class Zippy(BallEnemy):
 
         self.sprites = self.app.get_images('zippy')
 
+        self.chirp_armed = True
+
     def on_remove(self):
         self.app.spawn_entity('Remnant', self.position, 'zippy', 'die', layer=-100)
 
@@ -60,11 +62,10 @@ class Zippy(BallEnemy):
         beans = self.app.tracker['BeanPickup']
 
         if not self.going and (self.app.engine_time-self.cooldown > 0 or self.app.camera.contains(self.position, 1)):
-            self.app.player.play_sound('chirp_1')
 #            print('going')
             self.going = True
             self.can_stop = False
-
+            self.chirp_armed = True
 
             target = player
             for bean in beans[6-self.beans:]:
@@ -81,6 +82,10 @@ class Zippy(BallEnemy):
 
 
         if self.going:
+
+            if self.chirp_armed and self.app.camera.contains(self.position, -21):
+                self.chirp_armed = False
+                self.app.player.play_sound('chirp_1')
 
             for bean in beans:
                 try:

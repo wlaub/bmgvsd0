@@ -460,6 +460,8 @@ class BallEnemy(Enemy):
 
         self.facing = Vec2d(0,0)
 
+        self.growl_armed = self.r>=7
+
     def draw(self):
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
         p = self.app.jj(p)
@@ -481,7 +483,13 @@ class BallEnemy(Enemy):
 
     def seek_player(self, player):
         delta = player.position-self.position
-        delta /= abs(delta)
+        dist = abs(delta)
+        delta /= dist
+        if self.growl_armed:
+            if dist < 21:
+                self.growl_armed = False
+                self.app.player.play_sound('growl_1')
+
         self.facing = delta
         self.body.apply_force_at_local_point(delta*self.speed)
 
