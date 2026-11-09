@@ -17,6 +17,8 @@ import pymunk.util
 from pymunk import pygame_util
 from pymunk import Vec2d
 
+import dsfxr
+
 from registry import register, entity_registry
 
 from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType, Flags, Geography
@@ -125,6 +127,12 @@ class PhysicsDemo:
         self.big_font = pygame.font.Font(None, 14) #lol
 
         self.image_cache = {}
+
+        self.sound_manager = dsfxr.SoundManager('assets/sounds')
+        self.sound_manager.get_sound('player_dead_1') #TODO temp solution to precache long sounds
+        self.sound_manager.get_sound('player_hurt_1')
+
+
 
         self.queue_reset = False
         self.redraw = False

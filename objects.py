@@ -483,7 +483,7 @@ class BallEnemy(Enemy):
 
     def growl(self):
         self.growl_armed = False
-        self.app.player.play_sound('growl_1',1,self)
+        self.app.player.play_sound('growl_1:4',1,self)
 
 
     def seek_player(self, player):
@@ -530,6 +530,7 @@ class BallEnemy(Enemy):
 class Pckp(Entity):
     hype = 0
     energy_of_instantiation = 1
+    on_pickup_sound = None
 
     def __init__(self, app, pos):
         super().__init__(app)
@@ -602,7 +603,7 @@ class Pckp(Entity):
         self.app.remove_entity(self)
         self.app.field.update_liquidity(-self.energy_of_instantiation)
 
-        player.play_sound(f'_pckp_{self.ename}')
+        player.play_sound(self.on_pickup_sound)
 
 class Geography:
     def __init__(self, app):

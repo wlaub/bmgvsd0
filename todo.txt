@@ -116,7 +116,10 @@ camera zoom mechanics
 
 lustful ball can be farmed, herded, and then harvested by some other mechanism away from the origin
 
-rooms/transitions
+after you get the lantern, pausing will sometimes include conversations. the first one is: would you like to bind the camera to the ply'r instead of the eul lntrn? y/n. the response to both is "your preference has been noted" and the response is recorded in state. if the player selected yes, then on the next pause it says "just kidding. your preference has been applied." and then the a state flag is set that binds the camera to the player instead of the lantern.
+
+#rooms/transitions
+the overaching structure is travel between nodes where you can place the eul lntrn to enable a "boss enemy" and then you have to play in a fixed camera against some unique set of enemies to figure out how to spawn and defeat the boss, which drops a powerup or other wise alters the state in a significant way.
 
 geography persistence mechanics
 

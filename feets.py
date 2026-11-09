@@ -281,12 +281,19 @@ class RbtcEars(Equipment):
 
 
     def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
+        if sound_name is None: return
+#        try:
+#            sound_source = random.choice(self.sound_map[sound_name])
+#        except KeyError as e:
+#            print(f'failed to play sound {e}')
+#            return
+#        sound = pygame.mixer.Sound(sound_source)
         try:
-            sound_source = random.choice(self.sound_map[sound_name])
+            sound = self.app.sound_manager.get_sound(sound_name)
         except KeyError as e:
             print(f'failed to play sound {e}')
             return
-        sound = pygame.mixer.Sound(sound_source)
+
         sound.set_volume(volume)
         channel = sound.play(**play_kwargs)
         if channel is not None:

@@ -47,10 +47,17 @@ class Player(Entity):
 
         self.slots = {}
 
-        self.base_slots = {
+        equip_order = [
+            'legs', 'feets', 'eyes',
             'front_hand', 'back_hand',
-            'legs', 'feets', 'eyes', 'ears',
-            }
+            'ears',
+            ]
+
+        self.base_slots = set(equip_order)
+#        self.base_slots = {
+#            'front_hand', 'back_hand',
+#            'legs', 'feets', 'eyes', 'ears',
+#            }
 
         for slot in self.base_slots:
             self.create_slot(slot)
@@ -130,7 +137,7 @@ class Player(Entity):
                 shape = self.shape
             self.slot_sensors[slot] = {body:(shape,)}
 
-        for slot in self.base_slots:
+        for slot in equip_order:
             if (equipment := self.app.flags.geta(f'_equip_{slot}')) is not None:
                 self.equip(slot, equipment)
 
@@ -187,7 +194,7 @@ class Player(Entity):
 
         entity.attach(self, slot)
 
-        self.play_sound(f'_equip_{entity.ename}')
+        self.play_sound(f'player_equip')
 
         if self.slots[slot] is None or self.slots[slot].ename != entity.ename:
             self.drop_equipment(slot)
