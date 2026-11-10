@@ -243,6 +243,7 @@ class Zeeky(BallEnemy):
                                 self.body: (self.shape,),
                                 }
                             self.app.spawn_entity('Zbln', body_map)
+                            #TODO: cold, wet egg crack sound
                         else:
                             raise NotImplementedError('it is not ready yet')
                         return
@@ -936,6 +937,8 @@ class LstflBall(TrueBalls):
 
         self.sprites = self.app.get_images('ball')
 
+        self.growl()
+
     def on_remove(self):
         self.spawn_remnant()
 
@@ -971,6 +974,7 @@ class LstflBall(TrueBalls):
             try:
                 hit = self.shape.shapes_collide(self.target.shape)
                 self.lores+= 1
+                self.growl()
                 self.app.remove_entity(self.target)
                 self.target = player
             except AssertionError: pass

@@ -461,6 +461,7 @@ class BallEnemy(Enemy):
         self.facing = Vec2d(0,0)
 
         self.growl_armed = self.r>=7
+        self.growl_channel = None
 
     def draw(self):
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
@@ -483,7 +484,7 @@ class BallEnemy(Enemy):
 
     def growl(self):
         self.growl_armed = False
-        self.app.player.play_sound('growl_1:4',1,self)
+        self.growl_channel = self.app.player.play_sound('growl_1',1,self)
 
 
     def seek_player(self, player):

@@ -252,7 +252,7 @@ class Exoskeleton(Equipment):
 import pygame.mixer
 
 @register
-class RbtcEars(Equipment):
+class WthrdEars(Equipment):
     """
     lets you hear hit boxes?
     """

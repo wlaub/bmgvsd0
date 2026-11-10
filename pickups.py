@@ -281,7 +281,7 @@ class LoreOrePickup(Pckp):
     """
     its intricate crystal prism weaves light into knowledge
     """
-    on_pickup_sound = 'lore_1'
+    on_pickup_sound = 'lore_2'
 
     def __init__(self, app, pos):
         super().__init__(app, pos)
@@ -314,7 +314,7 @@ class BeanPickup(Pckp):
     """
     a bean
     """
-    on_pickup_sound = 'lore_1'
+    on_pickup_sound = 'lore_2'
 
     def draw_sprite(self):
         p = self.app.jj(self.body.position)

@@ -11,6 +11,7 @@ flags:
         #equipment
         _equip_eyes: RbtcEyes
         _equip_legs: Exoskeleton
+        _equip_ears: WthrdEars
         #gameplay flags
         _loop: False
         _vocal: False
