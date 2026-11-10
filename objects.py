@@ -492,7 +492,7 @@ class BallEnemy(Enemy):
         dist = abs(delta)
         delta /= dist
         if self.growl_armed:
-            if dist < 21:
+            if dist < 28:
                 self.growl()
 
         self.facing = delta
