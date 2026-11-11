@@ -461,7 +461,12 @@ class BallEnemy(Enemy):
         self.facing = Vec2d(0,0)
 
         self.growl_armed = self.r>=7
-        self.growl_channel = None
+        self.growl_event = None
+
+        self.bump_next_turn_growl()
+
+    def bump_next_turn_growl(self):
+        self.next_turn_growl = self.app.engine_time + random.uniform(14,42)
 
     def draw(self):
         p = self.body.position + self.shape.offset.cpvrotate(self.body.rotation_vector)
@@ -483,9 +488,11 @@ class BallEnemy(Enemy):
         return False
 
     def growl(self):
+        if self.growl_event is not None and self.growl_event.is_playing():
+            return
         self.growl_armed = False
-        self.growl_channel = self.app.player.play_sound('growl_1',1,self)
-
+        self.growl_event = self.app.player.play_sound('growl_1',self.r/7,self)
+        self.bump_next_turn_growl()
 
     def seek_player(self, player):
         delta = player.position-self.position
@@ -495,7 +502,11 @@ class BallEnemy(Enemy):
             if dist < 28:
                 self.growl()
 
+        was_left = delta.x<0
         self.facing = delta
+        is_left = delta.x>0
+        if was_left != is_left and dist > 35 and self.app.engine_time > self.next_turn_growl:
+            self.growl()
         self.body.apply_force_at_local_point(delta*self.speed)
 
     def apply_friction(self, player):

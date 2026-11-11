@@ -251,6 +251,14 @@ class Exoskeleton(Equipment):
 
 import pygame.mixer
 
+class AudioEvent:
+    def __init__(self, sound, channel):
+        self.channel = channel
+        self.sound = sound
+
+    def is_playing(self):
+        return self.channel.get_sound() == self.sound
+
 @register
 class WthrdEars(Equipment):
     """
@@ -296,11 +304,12 @@ class WthrdEars(Equipment):
 
         sound.set_volume(volume)
         channel = sound.play(**play_kwargs)
+        event = AudioEvent(sound, channel)
         if channel is not None:
             channel.set_volume(1,1)
             if position is not None:
                 self.tracked_sounds.add((channel, sound, position))
-        return sound
+        return event
 
     def update(self):
 
