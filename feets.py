@@ -306,9 +306,12 @@ class WthrdEars(Equipment):
         channel = sound.play(**play_kwargs)
         event = AudioEvent(sound, channel)
         if channel is not None:
-            channel.set_volume(1,1)
             if position is not None:
+                l,r = self.get_2d_sound_panning(sound, position)
+                channel.set_volume(l,r)
                 self.tracked_sounds.add((channel, sound, position))
+            else:
+                channel.set_volume(1,1)
         return event
 
     def update(self):
@@ -319,20 +322,24 @@ class WthrdEars(Equipment):
                 removals.add((channel, sound, position))
                 continue
 
-            if isinstance(position, Entity):
-                position = position.position
-
-            delta = position - self.app.player.get_slot_position('ears')
-            dist = abs(delta)
-            S = 14
-            dx = (max(-S, min(S, max(0,delta.x-3)))/S+1) #0-2
-            a = min(1,7/(max(0,dist-21)+7))
-            r = a*min(1,dx)
-            l = a*min(1,2-dx)
-#            print(a,l,r)
+            l,r = self.get_2d_sound_panning(sound, position)
             channel.set_volume(l,r)
 
         self.tracked_sounds -= removals
+
+    def get_2d_sound_panning(self, sound, position):
+        if isinstance(position, Entity):
+            position = position.position
+
+        delta = position - self.app.player.get_slot_position('ears')
+        dist = abs(delta)
+        S = 14
+        dx = (max(-S, min(S, max(0,delta.x-3)))/S+1) #0-2
+        a = min(1,7/(max(0,dist-21)+7))
+        r = a*min(1,dx)
+        l = a*min(1,2-dx)
+#            print(a,l,r)
+        return l,r
 
     def attach(self, parent, slot):
         self.parent = parent
