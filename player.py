@@ -311,7 +311,7 @@ class Player(Entity):
     def play_sound(self, *args, **kwargs):
         if (ears := self.slots['ears']) is None:
             return
-        ears.play_sound(*args, **kwargs)
+        return ears.play_sound(*args, **kwargs)
 
     def draw(self):
         body = self.body

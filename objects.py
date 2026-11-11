@@ -492,6 +492,7 @@ class BallEnemy(Enemy):
             return
         self.growl_armed = False
         self.growl_event = self.app.player.play_sound('growl_1',self.r/7,self)
+        self.last_growl = self.app.engine_time
         self.bump_next_turn_growl()
 
     def seek_player(self, player):
