@@ -347,6 +347,8 @@ class BrewPot(Equipment):
         self.app.space.add(c)
         self.jcs.append(c)
 
+        self.app.player.play_sound(f'brewpot_0')
+
     def update_mass(self):
         self.m = 1e4 + 1e7*self.fill
         self.friction = -1*self.m
@@ -364,6 +366,8 @@ class BrewPot(Equipment):
 
             self.fill -= 1
             self.consumed += 1
+
+            self.app.player.play_sound(f'brewpot_{self.consumed}')
 
             if self.fill == 0:
                 self.next_consume = self.app.engine_time+self.consume_interval/5
