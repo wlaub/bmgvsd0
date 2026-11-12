@@ -149,7 +149,7 @@ class PhysicsDemo:
         self.fleshtime = now-self.flags.getv('_startup_time')-datetime.timedelta(seconds=self.pause_duration)
 
     def pause(self):
-        if self.paused or not self.flags.getv('_game_start'):
+        if self.paused:
             return
         self.pause_stamp = time.time()
         self.paused = True
@@ -271,20 +271,43 @@ class PhysicsDemo:
         self.pause_menu = None
 
 
+    def do_restart(self):
+        self.running = False
+        self.restart = True
+
     def make_pause_menu(self):
         self.pause_menu = m = menus.Menu(self)
-        options = ['DESIST', 'PERSIST', 'AGAIN']
+        options = ['PERSIST', 'DESIST']
         def _quit():
             self.running = False
         def _restart():
-            self.running = False
-            self.restart = True
+            def _restart_real():
+                self.pause_menu = m = menus.Menu(self)
+                m.make_question_menu('UNSAVED STATE\nWILL BE LOST', ['NO', 'YES'], 141,
+                                    default='NO',
+                                    callbacks = {'NO':self.make_pause_menu, 'YES':self.do_restart}
+                                    )
+
+
+            self.pause_menu = m = menus.Menu(self)
+            m.make_question_menu('ARE YOU SURE?', ['YES', 'NO'], 141,
+                                default='NO',
+                                callbacks = {'NO':self.make_pause_menu, 'YES':_restart_real}
+                                )
+
+
         callbacks = {
             'DESIST': _quit,
             'PERSIST': self.unpause,
             'AGAIN' : _restart,
             }
-        m.make_vertical_menu(options, 141, default = 'PERSIST', callbacks=callbacks)
+        offset = 1
+        if self.flags.getv('_game_start'):
+            options.insert(0,'AGAIN')
+            offset = 0
+        m.make_vertical_menu(options, 141, default = 'PERSIST', callbacks=callbacks, offset=offset)
+
+
 
     def start_game(self):
         if not self.flags.getv('_game_start', False):
