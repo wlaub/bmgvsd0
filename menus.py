@@ -56,7 +56,7 @@ class Menu:
 
         self.debounce = False
 
-    def make_vertical_menu(self, labels, font_size, default=None, callbacks = None, offset = 0):
+    def make_vertical_menu(self, labels, font_size, default=None, callbacks = None, offset = 0, looping = True):
         xpos = self.app.ws/2
         ypos = self.app.hs/2-font_size*(len(labels)+offset)/2+offset*font_size
 
@@ -72,6 +72,10 @@ class Menu:
             ypos += font_size
             if default == idx or default == label:
                 self.active = m
+
+        if looping:
+            self.options[-1].directions['down'] = self.options[0]
+            self.options[0].directions['up'] = self.options[-1]
 
         if self.active is None:
             self.active = self.options[0]
