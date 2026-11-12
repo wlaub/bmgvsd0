@@ -25,6 +25,8 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType, F
 
 from debug import DebugConsole
 
+import menus
+
 import player
 import entities
 import pickups
@@ -136,6 +138,7 @@ class PhysicsDemo:
 
         self.queue_reset = False
         self.redraw = False
+        self.restart = False
 
         self.reset(first_time = True)
 
@@ -146,12 +149,13 @@ class PhysicsDemo:
         self.fleshtime = now-self.flags.getv('_startup_time')-datetime.timedelta(seconds=self.pause_duration)
 
     def pause(self):
-        if self.paused:
+        if self.paused or not self.flags.getv('_game_start'):
             return
         self.pause_stamp = time.time()
         self.paused = True
         self.run_physics = False
         self.redraw = True
+        self.make_pause_menu()
 
     def unpause(self):
         if not self.paused:
@@ -263,6 +267,24 @@ class PhysicsDemo:
 
         self.running = True
         self.queue_reset = False
+
+        self.pause_menu = None
+
+
+    def make_pause_menu(self):
+        self.pause_menu = m = menus.Menu(self)
+        options = ['DESIST', 'PERSIST', 'AGAIN']
+        def _quit():
+            self.running = False
+        def _restart():
+            self.running = False
+            self.restart = True
+        callbacks = {
+            'DESIST': _quit,
+            'PERSIST': self.unpause,
+            'AGAIN' : _restart,
+            }
+        m.make_vertical_menu(options, 141, default = 'PERSIST', callbacks=callbacks)
 
     def start_game(self):
         if not self.flags.getv('_game_start', False):
@@ -533,6 +555,9 @@ class PhysicsDemo:
             w,h = self.ws, self.hs
             pygame.gfxdraw.box(self.main_screen, pygame.Rect(0,0,w,h), (0,0,0,49))
 
+            self.pause_menu.update()
+            self.pause_menu.render(self.main_screen)
+
         self.debug_console.draw(self.main_screen)
 
         if (not self.run_physics or self.controller.last_kind is ControlType.key) and pygame.mouse.get_focused():
@@ -557,9 +582,11 @@ if __name__ == '__main__':
     if not os.path.exists(state_file):
         shutil.copyfile(base_file_real, state_file)
 
-    demo = PhysicsDemo()
-    demo.run()
-
+    while True:
+        demo = PhysicsDemo()
+        demo.run()
+        if not demo.restart:
+            break
 
 
 
