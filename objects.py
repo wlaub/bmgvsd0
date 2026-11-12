@@ -89,7 +89,10 @@ class Controller:
         if self.last_kind == ControlType.joy:
             return self.last_stick
         else:
-            result = Vec2d(*self.app.mpos)-self.app.player.position
+            ref_pos = Vec2d(0,0)
+            if self.app.player is not None:
+                ref_pos = self.app.player.position
+            result = Vec2d(*self.app.mpos)-ref_pos
             if not self.get_right_trigger() and result.get_length_sqrd() < 64:
                 return Vec2d(0,0)
             else:
