@@ -94,9 +94,10 @@ class Zippy(BallEnemy):
                     self.beans+= 1
                     self.app.remove_entity(bean)
                     if self.beans == 7:
-                        self.app.remove_entity(self)
-                        self.app.spawn_entity('Zeeky', self.position)
-                        return
+                        if self.app.player is None or not self.app.player.has_equipped('EulLntrn'):
+                            self.app.remove_entity(self)
+                            self.app.spawn_entity('Zeeky', self.position)
+                            return
 
                 except AssertionError: pass
 

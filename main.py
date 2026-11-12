@@ -434,6 +434,14 @@ class PhysicsDemo:
             ypos += text.get_height()
 
 
+        tpos = Vec2d(0,-150)
+        text = self.big_font.render(f"THANKS FOR PLAYING!", False, (0,0,0))
+        text = pygame.transform.scale_by(text, 4)
+        tpos += Vec2d(-text.get_width()/2, 0)
+        p = self.jj(tpos)
+        self.screen.blit(text, p)
+
+
 
         for layer in sorted(self.draw_layers.keys()):
             if 'sprites' in sees:

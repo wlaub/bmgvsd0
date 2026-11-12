@@ -141,6 +141,7 @@ class Player(Entity):
             if (equipment := self.app.flags.geta(f'_equip_{slot}')) is not None:
                 self.equip(slot, equipment)
 
+
     def get_slot_hit(self, other_shape, slots):
         for slot in slots:
             bmap = self.slot_sensors[slot]
@@ -171,6 +172,16 @@ class Player(Entity):
     def create_slot(self, slot):
         if not slot in self.slots.keys():
             self.slots[slot] = None
+
+    def has_equipped(self, name):
+        for slot, entity in self.slots.items():
+            try:
+                if isinstance(entity, entity_registry.by_name[name]):
+                    return True
+            except KeyError:
+                print(f'unknown identifier {name}')
+                return False
+        return False
 
     def equip(self, slot, name):
         entity = self.app.create_entity(name)

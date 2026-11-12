@@ -268,7 +268,7 @@ class AudioEvent:
         self.sound = sound
 
     def is_playing(self):
-        return self.channel.get_sound() == self.sound
+        return self.channel is not None and self.channel.get_sound() == self.sound
 
 @register
 class WthrdEars(Equipment):
