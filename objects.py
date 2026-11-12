@@ -74,6 +74,9 @@ class Controller:
 
         self.last_pause = False
 
+        self.last_rt = 0
+        self.rt_buffered = False
+
     def update(self):
         if self.last_mpos != self.app.mpos_screen:
             self.last_mpos =  self.app.mpos_screen
@@ -101,11 +104,23 @@ class Controller:
     def get_right_trigger(self):
         if pygame.mouse.get_pressed()[0]:
             self.last_kind = ControlType.key
+            self.last_rt = self.app.engine_time
+            self.rt_buffered = True
             return True
         if self.joystick.get_axis(self.axis_map['rt']) > 0.5:
             self.last_kind = ControlType.joy
+            self.last_rt = self.app.engine_time
+            self.rt_buffered = True
             return True
         return False
+
+    def consume_right_trigger(self, duration=0.1):
+        if self.rt_buffered and self.app.engine_time - self.last_rt < duration:
+            result = True
+        else:
+            result = False
+        self.rt_buffered = False
+        return result
 
     def equip(self):
         if pygame.mouse.get_pressed()[2]:

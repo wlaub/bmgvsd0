@@ -64,6 +64,7 @@ class Leg(Entity):
 
         self.step_start_position = Vec2d(*self.foot_body.position)
         self.offset = Vec2d(x,y)
+        self.last_step = StepState.shuffle
 
 
     @property
@@ -102,6 +103,7 @@ class Leg(Entity):
                 else:
                     self.app.player.play_sound('small_step', 0.25, self.position)
 
+                self.last_step = self.step_state
 
                 self.change_step_state(StepState.idle)
                 t = 1
@@ -162,6 +164,8 @@ class Exoskeleton(Equipment):
 
         self.walking = False
 
+        self.last_step = StepState.shuffle
+
     @property
     def position(self):
         return self.parent.body.position
@@ -181,6 +185,11 @@ class Exoskeleton(Equipment):
         dx, dy = aim
 
         if stick_active and self.parent.active_leg.step_state == StepState.idle:
+
+            if(self.left_leg.last_step == self.right_leg.last_step and self.left_leg.last_step == StepState.shuffle):
+                self.last_step = StepState.shuffle
+            if self.last_step != StepState.big_step and self.app.controller.consume_right_trigger():
+                fast_walk = True
             #start the next stick-driven step
             #select the new active leg
             left = self.left_leg.foot_body.position
@@ -235,6 +244,8 @@ class Exoskeleton(Equipment):
                 self.parent.active_leg.do_step(p0, step_type)
             else:
                 self.parent.active_leg.do_step(p1, step_type)
+
+            self.last_step = step_type
 
             self.walking = True
 

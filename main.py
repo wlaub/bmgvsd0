@@ -299,11 +299,11 @@ class PhysicsDemo:
         callbacks = {
             'DESIST': _quit,
             'PERSIST': self.unpause,
-            'AGAIN' : _restart,
+            'RELOAD' : _restart,
             }
         offset = 1
         if self.flags.getv('_game_start'):
-            options.insert(0,'AGAIN')
+            options.insert(0,'RELOAD')
             offset = 0
         m.make_vertical_menu(options, 141, default = 'PERSIST', callbacks=callbacks, offset=offset)
 
