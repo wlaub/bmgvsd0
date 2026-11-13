@@ -281,16 +281,26 @@ class PhysicsDemo:
         def _quit():
             self.running = False
         def _restart():
+
             def _restart_real():
                 self.pause_menu = m = menus.Menu(self)
-                m.make_question_menu('UNSAVED STATE\nWILL BE LOST', ['NO', 'YES'], 141,
+                options = ['NO','YES']
+                random.shuffle(options)
+                yes_exits = {'NO':self.make_pause_menu, 'YES':self.do_restart}
+                no_exits = {'YES':self.make_pause_menu, 'NO':self.do_restart}
+                questions =[('UNSAVED STATE\nWILL BE LOST', yes_exits),
+                            ('SELECT NO\nTO RELOAD', no_exits),
+                            ]
+                question, callbacks = random.choice(questions)
+                m.make_question_menu(question, options, 141,
                                     default='NO',
-                                    callbacks = {'NO':self.make_pause_menu, 'YES':self.do_restart}
+                                    callbacks = callbacks
                                     )
 
-
             self.pause_menu = m = menus.Menu(self)
-            m.make_question_menu('ARE YOU SURE?', ['YES', 'NO'], 141,
+            options = ['YES','NO']
+            random.shuffle(options)
+            m.make_question_menu('ARE YOU SURE?', options, 141,
                                 default='NO',
                                 callbacks = {'NO':self.make_pause_menu, 'YES':_restart_real}
                                 )

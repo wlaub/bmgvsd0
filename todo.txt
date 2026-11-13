@@ -57,6 +57,8 @@ here be spoilers
 registry.py
         take a kwargs and pass it to the constructor with a copy of the kwargs that the entity can store for spawning children or w/e i am like 51% sure this is a good idea that i have, in the past, yearned for.
 
+audio rendering thread
+
 maybe when zbln happens, what happens is that added entities are clipped to the radius away from the central non-collidable mass entity that they attach at. so the first two are bound to the center point around them at their radius making the core 8 shape. spinning could be just a perpendicular force applied to every entity. maybe the clipping radii expand as it grows so that there's more space between entities and it sort of stretches out. then at the end you stop clipping and everything flies out an despawns instantly ideally without hitting the player (most of the time (or maybe it's fine if it's not always fatal)).
 
 unfuck render layers
