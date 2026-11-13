@@ -7,6 +7,7 @@ import time
 import json
 
 import pygame
+import pygame.mixer
 
 import pymunk as pm
 import pymunk.util
@@ -16,7 +17,7 @@ from pymunk import Vec2d
 
 from registry import register, entity_registry
 
-from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment
+from objects import Controller, Entity, COLLTYPE_DEFAULT, Equipment, AudioEvent
 
 class StepState(Enum):
     idle = 0
@@ -260,15 +261,6 @@ class Exoskeleton(Equipment):
         if self.walking and self.parent.active_leg.step_state == StepState.idle and not stick_active:
             self.walking = False
 
-import pygame.mixer
-
-class AudioEvent:
-    def __init__(self, sound, channel):
-        self.channel = channel
-        self.sound = sound
-
-    def is_playing(self):
-        return self.channel is not None and self.channel.get_sound() == self.sound
 
 @register
 class WthrdEars(Equipment):
@@ -280,21 +272,6 @@ class WthrdEars(Equipment):
 
     def __init__(self, app):
         super().__init__(app)
-
-        self.sound_map = {}
-
-        self.sound_map['small_step'] = [f'sounds/small_step_{x+1}.wav' for x in range(3)]
-        self.sound_map['big_step'] = [f'sounds/big_step_{x}.wav' for x in range(5)]
-        self.sound_map['shuffle_step'] = [f'sounds/shuffle_step_{x+1}.wav' for x in range(3)]
-        self.sound_map.update({x:[f'sounds/{x}.wav'] for x in {'_equip_RbtcSord', 'chirp_1', 'chirp_2', 'player_hurt_1', 'player_dead_1', 'growl_1'}})
-
-        #TODO fix feet sounds to play on end of step instead of start of step
-        self.sound_map['enemy_hurt'] = ['sounds/hurt_1.wav']
-        self.sound_map['enemy_killed'] = ['sounds/kill_1.wav']
-        self.sound_map['_pckp_LoreOrePickup'] = ['sounds/lore_1.wav', 'sounds/lore_2.wav']
-        self.sound_map['_pckp_BeanPickup'] = self.sound_map['_pckp_LoreOrePickup']
-        self.sound_map['_pckp_HealthPickup'] = ['sounds/health_1.wav']
-        self.sound_map['_pckp_LengthPickup'] = ['sounds/health_1.wav']
 
         self.tracked_sounds = set()
 

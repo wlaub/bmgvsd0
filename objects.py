@@ -256,6 +256,15 @@ class Camera:
         return Vec2d(x,y)
 
 
+class AudioEvent:
+    def __init__(self, sound = None, channel = None):
+        self.channel = channel
+        self.sound = sound
+
+    def is_playing(self):
+        return self.channel is not None and self.channel.get_sound() == self.sound
+
+
 class Entity:
     track_as = set()
 
@@ -479,7 +488,7 @@ class BallEnemy(Enemy):
         self.facing = Vec2d(0,0)
 
         self.growl_armed = self.r>=7
-        self.growl_event = None
+        self.growl_event = AudioEvent()
 
         self.bump_next_turn_growl()
 
@@ -506,7 +515,7 @@ class BallEnemy(Enemy):
         return False
 
     def growl(self):
-        if self.growl_event is not None and self.growl_event.is_playing():
+        if self.growl_event.is_playing():
             return
         self.growl_armed = False
         self.growl_event = self.app.player.play_sound('growl_1',self.r/7,self)

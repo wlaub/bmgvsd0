@@ -813,7 +813,7 @@ class TrueBalls(BallEnemy):
         self.app.spawn_entity('Remnant', self.position-scale*Vec2d(0,3), 'ball', 'die', draw_args,layer =-100)
 
     def _draw_sprite(self, sprite, p):
-        if self.growl_event is not None and self.growl_event.is_playing():
+        if self.growl_event.is_playing():
             idx = int((self.app.engine_time-self.last_growl)/0.1)%2
             prefix = 'ball_growl'
             if self.damage_taken != 0:
