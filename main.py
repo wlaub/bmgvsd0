@@ -276,7 +276,41 @@ class PhysicsDemo:
         self.running = False
         self.restart = True
 
+    def make_first_question(self):
+        def _reply():
+            self.flags.setnv('c_first_question', True)
+            self.pause_menu = m = menus.Menu(self)
+            options = ['OKAY','I SEE']
+            random.shuffle(options)
+            m.make_question_menu('PREFERENCE\nNOTED', options, 141,
+                            default='OKAY',
+                            callbacks = {'I SEE':self.unpause, 'OKAY':self.unpause}
+                            )
+        def _yes():
+            self.flags.setnv('c_want_bind_camera', True)
+            _reply()
+        def _no():
+            self.flags.setnv('c_want_bind_camera', False)
+            _reply()
+
+        self.pause_menu = m = menus.Menu(self)
+        options = ['YES','NO']
+        random.shuffle(options)
+        m.make_question_menu('BIND CAMERA\nTO PLAYER?', options, 141,
+                            default='NO',
+                            callbacks = {'NO':_no, 'YES':_yes}
+                            )
+
+
+
     def make_pause_menu(self):
+        if self.player is not None and self.player.has_equipped('EulLntrn'):
+            if not self.flags.getnv('c_first_question', False):
+                self.make_first_question()
+                return
+        if self.flags.getnv('c_first_question', False) and not self.flags.getnv('c_just_kidding', False):
+            pass #TODO
+
         self.pause_menu = m = menus.Menu(self)
         options = ['PERSIST', 'DESIST']
         def _quit():
@@ -426,22 +460,35 @@ class PhysicsDemo:
         if not self.flags.getv('_game_start') and self.flags.geta('_title_screen'):
             ypos = 20
             text = self.big_font.render(f'BLDNG MAN: GAIDN', False, (0,0,0))
-            width = self.camera.w*0.8
+#            width = self.camera.w*0.8 #baked in
+            width = 256
             alpha = width/text.get_width()
             text = pygame.transform.scale_by(text, alpha)
-            self.screen.blit(text, ((self.camera.w-width)/2,ypos))
+#            self.screen.blit(text, ((self.camera.w-width)/2,ypos))
+#            print(-self.camera.h/2+ypos) #baked in
+            tpos = Vec2d(-width/2,-90+ypos)
+            p = self.jj(tpos)
+            self.screen.blit(text, p)
+
             ypos += text.get_height()
 
             text = self.big_font.render(f"VLT'L STATE", False, (0,0,0))
 #            alpha *=0.915
             alpha *=1.03
             text = pygame.transform.scale_by(text, alpha)
-            self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
+#            self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
+            tpos = Vec2d(width/2-text.get_width(), -90+ypos)
+            p = self.jj(tpos)
+            self.screen.blit(text, p)
             ypos += text.get_height()
+
             text = self.big_font.render(f"DEMO 0", False, (0,0,0))
             alpha *=0.84
             text = pygame.transform.scale_by(text, alpha)
-            self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
+#            self.screen.blit(text, (self.camera.w-(self.camera.w-width)/2-text.get_width(),ypos))
+            tpos = Vec2d(width/2-text.get_width(), -90+ypos)
+            p = self.jj(tpos)
+            self.screen.blit(text, p)
             ypos += text.get_height()
 
 
