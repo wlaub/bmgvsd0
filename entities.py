@@ -20,7 +20,7 @@ and eye boss drops portable camera pickup
 ZBLN_COLLIDE=0b011
 
 @register
-class Zippy(BallEnemy):
+class Zippn(BallEnemy):
     """
     its eyes remain perpetually closed in a deep slumber, but if it gets
     enough beans it might wake up and open its eyes
@@ -96,7 +96,7 @@ class Zippy(BallEnemy):
                     if self.beans == 7:
                         if self.app.player is None or not self.app.player.has_equipped('EulLntrn'):
                             self.app.remove_entity(self)
-                            self.app.spawn_entity('Zeeky', self.position)
+                            self.app.spawn_entity('Zeekn', self.position)
                             return
 
                 except AssertionError: pass
@@ -142,7 +142,7 @@ class Zippy(BallEnemy):
 
 
 @register
-class Zeeky(BallEnemy):
+class Zeekn(BallEnemy):
     track_as = {'Enemy'}
     def __init__(self, app, pos):
         super().__init__(app, pos, 3, 32*32/1.8, 3, 1200)
@@ -185,7 +185,7 @@ class Zeeky(BallEnemy):
 
         beans = self.app.tracker['Zbln']
         if len(beans) == 0:
-            beans = self.app.tracker['Zeeky']
+            beans = self.app.tracker['Zeekn']
 
         first_time = False
         if self.target is None:
@@ -233,7 +233,7 @@ class Zeeky(BallEnemy):
                 if bean is self: continue
                 try:
                     bean.try_hit(self.shape)
-                    if isinstance(bean, Zeeky):
+                    if isinstance(bean, Zeekn):
                         self.say('blessed union')
                         #this is why body management needs unfucked
                         self.app.remove_entity(bean, preserve_physics = True)
@@ -290,8 +290,8 @@ class Zbln(BallEnemy):
 
         if isinstance(body_map, Vec2d):
             pos = body_map
-            a = self.app.create_entity('Zeeky', pos+Vec2d(-1.5, 0))
-            b = self.app.create_entity('Zeeky', pos+Vec2d(1.5, 0))
+            a = self.app.create_entity('Zeekn', pos+Vec2d(-1.5, 0))
+            b = self.app.create_entity('Zeekn', pos+Vec2d(1.5, 0))
 
             a.add_to_space(self.app.space)
             b.add_to_space(self.app.space)
@@ -604,11 +604,11 @@ class Zbln(BallEnemy):
         if self.app.engine_time >= self.next_spawn and False: #TODO
             self.next_spawn += self.spawn_interval
 
-            if len(self.app.tracker['Zeeky']) + len(self.body_map) < 7:
+            if len(self.app.tracker['Zeekn']) + len(self.body_map) < 7:
                 delta = player.position-self.position
                 delta /= (abs(delta)/20)
 
-                entity = self.app.spawn_entity('Zeeky', self.position+delta)
+                entity = self.app.spawn_entity('Zeekn', self.position+delta)
 
     def draw(self):
         for body, shapes in self.body_map.items():

@@ -114,6 +114,7 @@ class PhysicsDemo:
         pygame.init()
 
         pygame.mixer.init(channels=16)
+        self.max_volume = 0.25
 
         self.ws = 1280
         self.hs = 720
@@ -228,7 +229,7 @@ class PhysicsDemo:
 
         #TODO
         self.spawn_entity('BallSpnlþ', (-800, 000), layer=100)
-        self.spawn_entity('ZippySpnlþ', (800, 000), layer=100)
+        self.spawn_entity('ZippnSpnlþ', (800, 000), layer=100)
 
         self.player = self.spawn_entity('Player', (0,0), layer=10)
 
@@ -248,9 +249,9 @@ class PhysicsDemo:
 #            self.spawn_entity('Zbln', Vec2d(-50, -50))
 
 #            for i in range(5):
-#                self.spawn_entity('Zeeky', Vec2d(50+10*i, 90+10*i))
-            self.spawn_entity('Zeeky', Vec2d(-50, 50))
-            self.spawn_entity('Zeeky', Vec2d(-150, -150))
+#                self.spawn_entity('Zeekn', Vec2d(50+10*i, 90+10*i))
+            self.spawn_entity('Zeekn', Vec2d(-50, 50))
+            self.spawn_entity('Zeekn', Vec2d(-150, -150))
 
 
             for x in range(7):

@@ -277,6 +277,7 @@ class WthrdEars(Equipment):
 
 
     def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
+        volume *= self.app.max_volume
         if sound_name is None: return
 #        try:
 #            sound_source = random.choice(self.sound_map[sound_name])

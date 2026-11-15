@@ -79,7 +79,7 @@ class BallSpnlþ(Spnlþ):
 
 
 @register
-class ZippySpnlþ(Spnlþ):
+class ZippnSpnlþ(Spnlþ):
     def __init__(self, app, pos):
         super().__init__(app)
 
@@ -114,15 +114,15 @@ class ZippySpnlþ(Spnlþ):
         t = random.random()
         pos = self.app.camera.get_boundary_point(t, 50)
 
-        if len(self.app.tracker['Zbln']) != 0 or len(self.app.tracker['Zeeky']) > 1:
+        if len(self.app.tracker['Zbln']) != 0 or len(self.app.tracker['Zeekn']) > 1:
             return []
 
         z = len(self.app.tracker['BeanPickup'])-2
 #        if len(self.app.tracker['Zbln']) == 0:
-        z+= len(self.app.tracker['Zeeky'])*3
+        z+= len(self.app.tracker['Zeekn'])*3
 
-        if len(self.app.tracker['Zippy']) == 0 and random.random() < 0.2*z:
-            return [self.app.create_entity('Zippy', pos)]
+        if len(self.app.tracker['Zippn']) == 0 and random.random() < 0.2*z:
+            return [self.app.create_entity('Zippn', pos)]
 
         return []
 
