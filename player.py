@@ -173,6 +173,9 @@ class Player(Entity):
         if not slot in self.slots.keys():
             self.slots[slot] = None
 
+    def slot_equipped(self, slot):
+        return self.slots[slot]
+
     def has_equipped(self, name):
         for slot, entity in self.slots.items():
             try:

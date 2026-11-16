@@ -5,7 +5,7 @@ import pygame
 from pymunk import Vec2d
 
 class MenuOption:
-    def __init__(self, app, text, xpos, ypos, height, font = None, center=True):
+    def __init__(self, app, text, xpos, ypos, height, font = None, align_x='center'):
         self.app = app
         self.text = text
         self.xpos = xpos
@@ -14,9 +14,12 @@ class MenuOption:
         self.active_color = (0,0,255)
         self.norml_color = (0,0,0)
         self.font = font or self.app.big_font
-        self.center = center
+        self.align_x = align_x
+
+        self.padding = 5
 
         self.on_select = None
+        self.on_hover = None
 
         self.render_screens()
 
@@ -31,16 +34,29 @@ class MenuOption:
     def render_screens(self):
         self.active_text = self.render_text(self.active_color)
         self.normal_text = self.render_text(self.norml_color)
+        bg_text = self.render_text((255,255,255))
+        w,h = bg_text.get_size()
+        self.bg_text = pygame.Surface((w+self.padding*2, h+self.padding*2), 0, bg_text)
+        self.bg_text.set_colorkey(bg_text.get_colorkey())
+        self.bg_text.fill(self.bg_text.get_colorkey())
+        self.bg_text.blit(bg_text, (0,0))
+        self.bg_text.blit(self.bg_text, (self.padding*2,0))
+        self.bg_text.blit(self.bg_text, (0,self.padding*2))
 
-        if self.center:
+        if self.align_x == 'center':
             self.xpos -= self.normal_text.get_width()/2
+        elif self.align_x == 'right':
+            self.xpos -= self.normal_text.get_width()
 
     def render(self, screen, active):
         text = self.active_text if active else self.normal_text
         x = self.xpos
         y = self.ypos
 
+        screen.blit(self.bg_text, (x-self.padding,y-self.padding))
         screen.blit(text, (x,y))
+
+
 
 
 
@@ -80,35 +96,44 @@ class Menu:
         if self.active is None:
             self.active = self.options[0]
 
-    def make_question_menu(self, query, answers, font_size, default=None, callbacks = None, offset = 0):
+    def make_question_menu(self, query, answers, font_size, default=None, callbacks = None, offset = 0, columns=2, on_hovers = None):
         lines = query.split('\n')
         xpos = self.app.ws/2
-        ypos = self.app.hs/2-font_size*len(lines)
+        ypos = self.app.hs/2-font_size*(len(lines)+offset/2)
 
         for line in lines:
             m = MenuOption(self.app, line, xpos, ypos, font_size)
             self.options.append(m)
             ypos += font_size
 
+        width = self.app.ws*(1-1/columns)
+
         for idx, answer in enumerate(answers):
-            x = xpos - self.app.ws/4
-            if idx%2 == 1:
-                x += self.app.ws/2
+            x = xpos - width/2
+
+            col = idx%columns
+            row = int(idx/columns)
+            x+= col*width/(columns-1)
+
             m = MenuOption(self.app, answer, x,ypos,font_size)
             if callbacks is not None:
                 m.on_select = callbacks.get(idx, callbacks.get(answer, None))
+            if on_hovers is not None:
+                m.on_hover = on_hovers.get(idx, on_hovers.get(answer, None))
+
             if idx > 0:
-                if idx%2 == 0: #left side
+                if col == 0: #left side
                     pass
-                else: #right side
+                else: #not left side
                     m.directions['left'] = self.options[-1]
                     self.options[-1].directions['right'] = m
-                if idx > 1:
-                    m.directions['up'] = self.options[-2]
-                    self.options[-2].directions['down'] = m
+                if row > 0:
+                    other = self.options[-columns]
+                    m.directions['up'] = self.options[-columns]
+                    self.options[-columns].directions['down'] = m
 
             self.options.append(m)
-            if idx%2 == 1:
+            if col == columns-1:
                 ypos += font_size
             if default == idx or default == answer:
                 self.active = m
@@ -116,7 +141,34 @@ class Menu:
         if self.active is None:
             self.active = self.options[0]
 
+    _reverse = {
+        'left': 'right',
+        'right':'left',
+        'up':'down',
+        'down':'up',
+        }
 
+    def add_option(self, text, xpos, ypos, font_size, on_select=None, links=None, **m_kwargs):
+        m = MenuOption(self.app, text, xpos, ypos, font_size, **m_kwargs)
+        m.on_select = on_select
+        if links:
+            for direction, destination in links:
+                reverse = self._reverse[direction]
+                for entry in self.options:
+                    if entry.text == destination:
+                        break
+                else:
+                    continue
+                m.directions[direction] = entry
+                if entry.directions.get(reverse) is None:
+                    entry.directions[reverse] = m
+                break
+            else:
+                print(f'not found {direction} {destination}')
+                pass
+
+        self.options.append(m)
+        return m
 
     def render(self, screen):
         for option in self.options:
@@ -154,7 +206,8 @@ class Menu:
 
             if d in self.active.directions.keys():
                 self.active = self.active.directions[d]
-
+                if self.active.on_hover:
+                    self.active.on_hover()
 
 
 

@@ -107,6 +107,26 @@ class PhysicsDemo:
     def disconnect_camera(self):
         self.camera.parent = None
 
+    def set_max_volume(self, new_value, save = True):
+        ms = 8
+        self.max_volume_setting = new_value
+        if save:
+            self.flags.setnv('max_volume', new_value)
+
+        volume_map = {
+            0:0,    1:0.025, 2: 0.05,
+            3: 0.1, 4:0.25,  5: 0.40,
+            6: 0.5, 7:0.75, 8:1
+            }
+
+        if new_value == 0:
+            self.max_volume = 0
+        elif new_value in volume_map.keys():
+            self.max_volume = volume_map[new_value]
+        else:
+            a = (new_value-1)/(ms-1)
+            self.max_volume = (21**a)/21
+
     def __init__(self):
         self.seed = SEED
         self.title = TITLE
@@ -216,6 +236,8 @@ class PhysicsDemo:
 
         self.field.update(self.camera.position)
 
+        self.set_max_volume(self.flags.getnv('max_volume', 4), save=False)
+
         ### Init pymunk and create space
         self.run_physics = True
         self.space = pm.Space()
@@ -276,13 +298,15 @@ class PhysicsDemo:
         self.running = False
         self.restart = True
 
+    m_size = 129
+
     def make_first_question(self):
         def _reply():
             self.flags.setnv('c_first_question', True)
             self.pause_menu = m = menus.Menu(self)
             options = ['OKAY','I SEE']
             random.shuffle(options)
-            m.make_question_menu('PREFERENCE\nNOTED', options, 141,
+            m.make_question_menu('PREFERENCE\nNOTED', options, self.m_size,
                             default='OKAY',
                             callbacks = {'I SEE':self.unpause, 'OKAY':self.unpause}
                             )
@@ -296,7 +320,7 @@ class PhysicsDemo:
         self.pause_menu = m = menus.Menu(self)
         options = ['YES','NO']
         random.shuffle(options)
-        m.make_question_menu('BIND CAMERA\nTO PLAYER?', options, 141,
+        m.make_question_menu('BIND CAMERA\nTO PLAYER?', options, self.m_size,
                             default='NO',
                             callbacks = {'NO':_no, 'YES':_yes}
                             )
@@ -312,7 +336,7 @@ class PhysicsDemo:
             pass #TODO
 
         self.pause_menu = m = menus.Menu(self)
-        options = ['PERSIST', 'DESIST']
+
         def _quit():
             self.running = False
         def _restart():
@@ -327,7 +351,7 @@ class PhysicsDemo:
                             ('SELECT NO\nTO RELOAD', no_exits),
                             ]
                 question, callbacks = random.choice(questions)
-                m.make_question_menu(question, options, 141,
+                m.make_question_menu(question, options, self.m_size,
                                     default='NO',
                                     callbacks = callbacks
                                     )
@@ -335,24 +359,52 @@ class PhysicsDemo:
             self.pause_menu = m = menus.Menu(self)
             options = ['YES','NO']
             random.shuffle(options)
-            m.make_question_menu('ARE YOU SURE?', options, 141,
+            m.make_question_menu('ARE YOU SURE?', options, self.m_size,
                                 default='NO',
                                 callbacks = {'NO':self.make_pause_menu, 'YES':_restart_real}
                                 )
 
-
+        options = ['PSIST', 'DSIST']
         callbacks = {
-            'DESIST': _quit,
-            'PERSIST': self.unpause,
-            'RELOAD' : _restart,
+            'DSIST': _quit,
+            'PSIST': self.unpause,
+            'RLOAD' : _restart,
             }
         offset = 1
         if self.flags.getv('_game_start'):
-            options.insert(0,'RELOAD')
+            options.insert(0,'RLOAD')
             offset = 0
-        m.make_vertical_menu(options, 141, default = 'PERSIST', callbacks=callbacks, offset=offset)
+        m.make_vertical_menu(options, self.m_size, default = 'PSIST', callbacks=callbacks, offset=offset)
+        if self.player is not None and self.player.slot_equipped('ears'):
+            m.add_option("VL'UM", self.ws-21, self.hs/2-self.m_size/2, self.m_size, on_select=self.volume_menu, links=[('left','PSIST')], align_x = 'right')
+        #TODO asist menu on left
+
+    def volume_menu(self):
+        self.pause_menu = m = menus.Menu(self)
+        options = []
+        callbacks = {}
+        on_hovers = {}
+        for i in range(9):
+            label = str(i)
+            options.append(label)
+            def _cb(x):
+                self.set_max_volume(x)
+                if self.player is not None:
+                    self.player.play_sound('big_step')
+            __cb = lambda i=i: _cb(i)
+            def _done():
+                self.make_pause_menu()
+            callbacks[label] = _done
+            on_hovers[label] = __cb
+
+        m.make_question_menu('VOLUME?', options, self.m_size,
+                            default=str(self.max_volume_setting),
+                            callbacks = callbacks, on_hovers=on_hovers,
+                            offset = 2, columns=3
+                            )
 
 
+        pass
 
     def start_game(self):
         if not self.flags.getv('_game_start', False):
