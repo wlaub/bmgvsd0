@@ -354,6 +354,8 @@ class PhysicsDemo:
                 no_exits = {'YES':self.make_pause_menu, 'NO':self.do_restart}
                 questions =[('UNSAVED STATE\nWILL BE LOST', yes_exits),
                             ('SELECT NO\nTO RELOAD', no_exits),
+                            ('RESUME\nINSTEAD?', no_exits),
+                            ('SELECT NO\nTO RESUME', yes_exits),
                             ]
                 question, callbacks = random.choice(questions)
                 m.make_question_menu(question, options, self.m_size,
