@@ -20,6 +20,8 @@ from pymunk import Vec2d
 
 from registry import register, entity_registry
 
+from audio import AudioEvent
+
 COLLTYPE_DEFAULT = 0
 
 class ControlType(enum.Enum):
@@ -254,16 +256,6 @@ class Camera:
             y = d
             x = (t-0.75)*4*(l-r)+r
         return Vec2d(x,y)
-
-
-class AudioEvent:
-    def __init__(self, sound = None, channel = None):
-        self.channel = channel
-        self.sound = sound
-
-    def is_playing(self):
-        return self.channel is not None and self.channel.get_sound() == self.sound
-
 
 class Entity:
     track_as = set()

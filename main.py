@@ -26,6 +26,7 @@ from objects import Controller, Entity, COLLTYPE_DEFAULT, Camera, ControlType, F
 from debug import DebugConsole
 
 import menus
+import audio
 
 import player
 import entities
@@ -152,9 +153,11 @@ class PhysicsDemo:
 
         self.image_cache = {}
 
-        self.sound_manager = dsfxr.SoundManager('assets/sounds')
-        self.sound_manager.get_sound('player_dead_1') #TODO temp solution to precache long sounds
-        self.sound_manager.get_sound('player_hurt_1')
+        self.audio_manager = audio.AudioManager(self, 'assets/sounds')
+
+#        self.sound_manager = dsfxr.SoundManager('assets/sounds')
+        self.audio_manager.sound_manager.get_sound('player_dead_1') #TODO temp solution to precache long sounds
+        self.audio_manager.sound_manager.get_sound('player_hurt_1')
 
 
 
@@ -624,6 +627,7 @@ class PhysicsDemo:
         for entity in self.entities:
             self.try_forget(entity)
 
+        self.audio_manager.update()
 
         removals = []
         for coro in self.coroutines:
