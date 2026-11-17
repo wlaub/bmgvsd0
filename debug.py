@@ -126,7 +126,6 @@ class DebugConsole:
         if event.type == pygame.KEYDOWN:
             if event.key == ord('`'):
                 self.active = not self.active
-#                self.app.run_physics = not self.active
                 if self.active:
                     self.app.pause(make_menu=False)
                     pygame.key.start_text_input()

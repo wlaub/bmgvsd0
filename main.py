@@ -702,10 +702,10 @@ class PhysicsDemo:
             pygame.gfxdraw.box(self.main_screen, pygame.Rect(0,0,w,h), (0,0,0,49))
 
             if self.pause_menu is not None:
+                pause_menu = self.pause_menu
                 if not self.debug_console.active:
-                    self.pause_menu.update()
-            if self.pause_menu is not None:
-                self.pause_menu.render(self.main_screen)
+                    pause_menu.update()
+                pause_menu.render(self.main_screen)
 
         self.debug_console.draw(self.main_screen)
 
