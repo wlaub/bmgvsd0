@@ -319,7 +319,7 @@ class DebugConsole:
         self.entity_list = self.get_entity_list()
 
     def _ac_show(self, parts):
-        if parts[-1][0] == '-':
+        if parts[-1] != '' and parts[-1][0] == '-':
             return '-'+self._complete(parts[-1][1:], entity_registry.by_tag.keys())
         else:
             return self._complete(parts[-1], entity_registry.by_tag.keys())
