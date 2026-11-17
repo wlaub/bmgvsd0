@@ -368,15 +368,15 @@ class PhysicsDemo:
         callbacks = {
             'DSIST': _quit,
             'PSIST': self.unpause,
-            'RLOAD' : _restart,
+            'RSTRT' : _restart,
             }
         offset = 1
         if self.flags.getv('_game_start'):
-            options.insert(0,'RLOAD')
+            options.insert(0,'RSTRT')
             offset = 0
         m.make_vertical_menu(options, self.m_size, default = 'PSIST', callbacks=callbacks, offset=offset)
         if self.player is not None and self.player.slot_equipped('ears'):
-            m.add_option("VL'UM", self.ws-21, self.hs/2-self.m_size/2, self.m_size, on_select=self.volume_menu, links=[('left','PSIST')], align_x = 'right')
+            m.add_option("V'LME", self.ws-21, self.hs/2-self.m_size/2, self.m_size, on_select=self.volume_menu, links=[('left','PSIST')], align_x = 'right')
         #TODO asist menu on left
 
     def volume_menu(self):
