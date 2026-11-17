@@ -156,8 +156,8 @@ class PhysicsDemo:
         self.audio_manager = audio.AudioManager(self, 'assets/sounds')
 
 #        self.sound_manager = dsfxr.SoundManager('assets/sounds')
-        self.audio_manager.sound_manager.get_sound('player_dead_1') #TODO temp solution to precache long sounds
-        self.audio_manager.sound_manager.get_sound('player_hurt_1')
+        self.audio_manager.sound_manager.get_sound('wthrd_ears/player_dead_1') #TODO temp solution to precache long sounds
+        self.audio_manager.sound_manager.get_sound('wthrd_ears/player_hurt_1')
 
 
 

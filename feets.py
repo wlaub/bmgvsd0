@@ -274,9 +274,11 @@ class WthrdEars(Equipment):
 
     def __init__(self, app):
         super().__init__(app)
-
+        self.prefix = 'wthrd_ears/'
 
     def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
+        if sound_name is None: return
+        sound_name = self.prefix+sound_name
         return self.app.audio_manager.play_sound(sound_name, volume, position, **play_kwargs)
 
     def attach(self, parent, slot):

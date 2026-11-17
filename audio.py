@@ -1,8 +1,10 @@
 
 
+import pygame
+import pygame.mixer
+
 import dsfxr
 
-#from objects import Entity
 import objects
 
 class AudioEvent:
@@ -56,8 +58,10 @@ class AudioManager:
                 removals.add((channel, sound, position))
                 continue
 
-            l,r = self.get_2d_sound_panning(sound, position)
-            channel.set_volume(l,r)
+            vols = self.get_2d_sound_panning(sound, position)
+            if vols is not None:
+                l,r = vols
+                channel.set_volume(l,r)
 
         self.tracked_sounds -= removals
 
