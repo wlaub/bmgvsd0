@@ -61,7 +61,7 @@ class MenuOption:
 
 
 class Menu:
-    def __init__(self, app):
+    def __init__(self, app, capture=True):
         self.app = app
 
         self.active = None
@@ -71,6 +71,8 @@ class Menu:
         self.stick_state = False
 
         self.debounce = False
+
+        self.capture = capture
 
     def make_vertical_menu(self, labels, font_size, default=None, callbacks = None, offset = 0, looping = True):
         xpos = self.app.ws/2

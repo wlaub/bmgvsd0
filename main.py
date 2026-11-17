@@ -111,6 +111,7 @@ class PhysicsDemo:
         ms = 8
         self.max_volume_setting = new_value
         if save:
+            #TODO debounce disk writes?
             self.flags.setnv('max_volume', new_value)
 
         volume_map = {
@@ -169,20 +170,24 @@ class PhysicsDemo:
     def update_fleshtime(self, now):
         self.fleshtime = now-self.flags.getv('_startup_time')-datetime.timedelta(seconds=self.pause_duration)
 
-    def pause(self):
+    def pause(self, make_menu = True):
         if self.paused:
             return
         self.pause_stamp = time.time()
         self.paused = True
         self.run_physics = False
         self.redraw = True
-        self.make_pause_menu()
+        if make_menu:
+            self.make_pause_menu()
 
     def unpause(self):
         if not self.paused:
             return
+        if self.pause_menu is not None and self.pause_menu.capture:
+            return
         self.pause_duration += time.time()-self.pause_stamp
         self.paused = False
+        self.pause_menu = None
         self.run_physics = True
 
     def reset(self, first_time = False):
@@ -335,7 +340,7 @@ class PhysicsDemo:
         if self.flags.getnv('c_first_question', False) and not self.flags.getnv('c_just_kidding', False):
             pass #TODO
 
-        self.pause_menu = m = menus.Menu(self)
+        self.pause_menu = m = menus.Menu(self, capture=False)
 
         def _quit():
             self.running = False
@@ -664,7 +669,7 @@ class PhysicsDemo:
         self.controller.update()
 
         now = datetime.datetime.now()
-        if self.controller.pause():
+        if self.controller.pause() and not self.debug_console.active:
             if self.paused:
                 self.unpause()
             else:
@@ -696,8 +701,11 @@ class PhysicsDemo:
             w,h = self.ws, self.hs
             pygame.gfxdraw.box(self.main_screen, pygame.Rect(0,0,w,h), (0,0,0,49))
 
-            self.pause_menu.update()
-            self.pause_menu.render(self.main_screen)
+            if self.pause_menu is not None:
+                if not self.debug_console.active:
+                    self.pause_menu.update()
+            if self.pause_menu is not None:
+                self.pause_menu.render(self.main_screen)
 
         self.debug_console.draw(self.main_screen)
 
