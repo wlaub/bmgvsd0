@@ -178,7 +178,8 @@ class PhysicsDemo:
             return
         self.pause_stamp = time.time()
         self.paused = True
-        self.run_physics = False
+        if self.player is not None:
+            self.run_physics = False
         self.redraw = True
         if make_menu:
             self.make_pause_menu()
