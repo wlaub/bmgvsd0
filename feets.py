@@ -275,6 +275,7 @@ class WthrdEars(Equipment):
     def __init__(self, app):
         super().__init__(app)
         self.prefix = 'wthrd_ears/'
+        self.app.audio_manager.preload_prefix(self.prefix)
 
     def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
         if sound_name is None: return

@@ -100,6 +100,10 @@ class PhysicsDemo:
                 print(e)
                 if self.flags.geta('_crash', False):
                     raise
+        self.cleanup()
+
+    def cleanup(self):
+        self.audio_manager.cleanup()
 
 
     def connect_camera(self, entity):
@@ -156,8 +160,8 @@ class PhysicsDemo:
         self.audio_manager = audio.AudioManager(self, 'assets/sounds')
 
 #        self.sound_manager = dsfxr.SoundManager('assets/sounds')
-        self.audio_manager.sound_manager.get_sound('wthrd_ears/player_dead_1') #TODO temp solution to precache long sounds
-        self.audio_manager.sound_manager.get_sound('wthrd_ears/player_hurt_1')
+#        self.audio_manager.sound_manager.preload_sound('wthrd_ears/player_dead_1') #TODO temp solution to precache long sounds
+#        self.audio_manager.sound_manager.preload_sound('wthrd_ears/player_hurt_1')
 
 
 
@@ -721,6 +725,7 @@ class PhysicsDemo:
         pygame.display.flip()
 
         self.clock.tick(60)
+
 
 #        pygame.display.set_caption(f"fps: {len(self.tracker['Ball'])}, {self.clock.get_fps():.2f}")
 

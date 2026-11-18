@@ -23,7 +23,16 @@ class AudioManager:
         self.sound_manager = dsfxr.SoundManager(base_dir)
         self.tracked_sounds = set()
 
+        self.sound_manager.start_regen_thread()
+
+    def preload_prefix(self, prefix):
+        self.sound_manager.preload_prefix(prefix)
+
+    def cleanup(self):
+        self.sound_manager.cleanup()
+
     def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
+        print(f'>playing sound {sound_name}')
         volume *= self.app.max_volume
         if sound_name is None: return
 #        try:
