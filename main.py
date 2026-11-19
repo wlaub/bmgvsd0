@@ -287,6 +287,7 @@ class PhysicsDemo:
 #                self.spawn_entity('Zeekn', Vec2d(50+10*i, 90+10*i))
             self.spawn_entity('Zeekn', Vec2d(-50, 50))
             self.spawn_entity('Zeekn', Vec2d(-150, -150))
+            self.flags.setv('_death', False)
 
 
             for x in range(7):

@@ -304,8 +304,10 @@ class Zbln(BallEnemy):
                 }
 
         self.body_map = body_map
+        self.polarity = 1 #TODO depend on initial angular velocity
 
-        self.shells[1] = dict(body_map)
+#        self.shells[1] = dict(body_map)
+        new_shell = dict(body_map)
 
         center = Vec2d(0,0)
         avg_vel = Vec2d(0,0)
@@ -333,6 +335,8 @@ class Zbln(BallEnemy):
         for body in body_map.keys():
             c = self.get_joints(body, self.body)
             self.joints.extend(c)
+
+        self.shells[1] = new_shell
 
         self.shapes = []
         for body, shapes in self.body_map.items():
@@ -363,7 +367,7 @@ class Zbln(BallEnemy):
         self.target_bodies = []
 
     def get_valence_shell(self):
-        for i in range(3):
+        for i in range(7):
             shell = self.shells.setdefault(i, {})
             if len(shell) < i+1:
                 return i, shell
@@ -468,10 +472,13 @@ class Zbln(BallEnemy):
         vi, vs = self.get_valence_shell()
 #        r = abs(a.position-b.position)
 #        return pymunk.DampedSpring(a,b,(0,0),(0,0), r,2000000, 1000)
+        delta = self.body.position - a.position
+        r = (vi*2-1)*3
+#        print(vi, vs, abs(delta), r)
         return [
 #                pymunk.PinJoint(a,b),
 #                pymunk.PinJoint(a,self.body),
-                pymunk.SlideJoint(self.body, a, (0,0),(0,0),min = 0, max = (vi*2-1)*(1))
+                pymunk.SlideJoint(self.body, a, (0,0),(0,0),min = 0, max = r)
 #                pymunk.DampedSpring(a, self.camera_body,(0,0),(0,0), 0, 1000, 1000),
                 ]
 
@@ -487,6 +494,9 @@ class Zbln(BallEnemy):
         #TODO maybe it's based on speed of collision
 
     def absorb(self, other):
+        vi, vs = self.get_valence_shell()
+        if vs is None: return
+
         self.app.remove_entity(other, preserve_physics = True)
         body, shape = other.body, other.shape
         self.body_map[body] = (shape,)
@@ -496,7 +506,7 @@ class Zbln(BallEnemy):
         self.joints.extend(c)
         self.app.space.add(*c)
 
-        vi, vs = self.get_valence_shell()
+#        vi, vs = self.get_valence_shell()
         if vs is not None:
             vs[body] = self.body_map[body]
             print(f'shell {vi} at {len(vs)}')
@@ -547,6 +557,7 @@ class Zbln(BallEnemy):
 #        if not self.app.camera.contains(self.position, 2):
 #            speed = self.speed*10
 
+        self._seek_force = delta*speed
         self.body.apply_force_at_local_point(delta*speed)
 
     def apply_friction(self, player):
@@ -615,6 +626,7 @@ class Zbln(BallEnemy):
         self.seek_player(target_position)
 
         self.gravitate_bodies()
+        self.spin2()
 
 #        self.spin(player)
 
@@ -654,6 +666,16 @@ class Zbln(BallEnemy):
         p = self.app.jj(p)
         pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
 
+        sf = 100000
+        p2 = p + self._gravity_force/sf
+        pygame.draw.aaline(self.app.screen, (255,0,0),p,p2)
+        p2 = p + self._friction_force/sf
+        pygame.draw.aaline(self.app.screen, (255,0,255),p,p2)
+        p2 = p + self._seek_force/sf
+        pygame.draw.aaline(self.app.screen, (0,0,0),p,p2)
+
+
+
         for body in self.target_bodies:
             p = self.app.jj(body.position)
             pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
@@ -682,14 +704,19 @@ class Zbln(BallEnemy):
         dist = abs(delta)+20
         dir_ = delta/dist
 
+        vi, _ = self.get_valence_shell()
+
 #        mass = self.body.mass
-        mass = 70*total_mass+self.body.mass
-        g = mass*dir_*(abs(self.angular_speed)**0.5)*.2
+        mass = 1400*total_mass+self.body.mass
+#        g = mass*dir_*(abs(self.angular_speed)**0.5)*.2
+        g = mass*dir_*vi
 #        print(f'{abs(g):02.4g} {self.speed:02.4g} {abs(self.angular_speed):02.4g}')
 #        g *= self.body.mass
+        self._gravity_force = g
         self.body.apply_force_at_local_point(g)
 
-        friction = -10*self.body.velocity*self.body.mass/(dist-18)
+        friction = -10*vi*self.body.velocity*self.body.mass/(dist-18)
+        self._friction_force = friction
         self.body.apply_force_at_local_point(friction)
 
         l,r,u,d = self.app.camera.lrud
@@ -736,6 +763,22 @@ class Zbln(BallEnemy):
         self.angular_speed = ang*(a) + self.angular_speed*(1-a)
 #        print(self.angular_speed)
         return ang
+
+    def spin2(self):
+        for vi, vs in self.shells.items():
+            if vi == 0: continue
+            shell_polarity = self.polarity*((vi%2)*2-1)
+            force = shell_polarity*100
+            for body, shape in vs.items():
+                bvel = body.velocity-self.velocity
+                rpos = body.position-self.position
+                tan = Vec2d(-rpos.y, rpos.x)
+                alignment = -shell_polarity*bvel.dot(tan)/2
+                print(alignment)
+#                print(bvel.dot(tan))
+                tan = body.mass*force*tan/(abs(tan)*max(1, alignment))
+                body.apply_force_at_local_point(tan)
+
 
     def spin(self, player):
 
