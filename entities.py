@@ -288,6 +288,8 @@ class Zbln(BallEnemy):
         self.base_speed = 50
         self.base_friction = -0.2
 
+        self.shells = {}
+
         if isinstance(body_map, Vec2d):
             pos = body_map
             a = self.app.create_entity('Zeekn', pos+Vec2d(-1.5, 0))
@@ -302,6 +304,8 @@ class Zbln(BallEnemy):
                 }
 
         self.body_map = body_map
+
+        self.shells[1] = dict(body_map)
 
         center = Vec2d(0,0)
         avg_vel = Vec2d(0,0)
@@ -318,6 +322,8 @@ class Zbln(BallEnemy):
         body.position = Vec2d(*center)
         body.velocity = avg_vel
         self.app.space.add(body)
+
+        self.shells[0] = {self.body:tuple()}
 
         self.camera_body = pm.Body(body_type=pymunk.Body.KINEMATIC)
         self.camera_body.position = self.app.camera.reference_position
@@ -355,6 +361,13 @@ class Zbln(BallEnemy):
         self.app.space.on_collision(0,ZBLN_COLLIDE,post_solve=self.post_solve)
         self.absorb_targets = []
         self.target_bodies = []
+
+    def get_valence_shell(self):
+        for i in range(3):
+            shell = self.shells.setdefault(i, {})
+            if len(shell) < i+1:
+                return i, shell
+        return i, None
 
     def post_solve(self, arbiter, space, data):
         if not arbiter.is_first_contact:
@@ -452,11 +465,13 @@ class Zbln(BallEnemy):
         return self.body.velocity
 
     def get_joints(self, a, b):
+        vi, vs = self.get_valence_shell()
 #        r = abs(a.position-b.position)
 #        return pymunk.DampedSpring(a,b,(0,0),(0,0), r,2000000, 1000)
         return [
 #                pymunk.PinJoint(a,b),
-                pymunk.PinJoint(a,self.body),
+#                pymunk.PinJoint(a,self.body),
+                pymunk.SlideJoint(self.body, a, (0,0),(0,0),min = 0, max = (vi*2-1)*(1))
 #                pymunk.DampedSpring(a, self.camera_body,(0,0),(0,0), 0, 1000, 1000),
                 ]
 
@@ -475,10 +490,16 @@ class Zbln(BallEnemy):
         self.app.remove_entity(other, preserve_physics = True)
         body, shape = other.body, other.shape
         self.body_map[body] = (shape,)
-        c = self.get_joints(body, self.last_hit_body)
-#        c = self.get_joint(body, self.body)
+        shape.unsafe_set_radius(3)
+#        c = self.get_joints(body, self.last_hit_body)
+        c = self.get_joints(body, self.body)
         self.joints.extend(c)
         self.app.space.add(*c)
+
+        vi, vs = self.get_valence_shell()
+        if vs is not None:
+            vs[body] = self.body_map[body]
+            print(f'shell {vi} at {len(vs)}')
 
         shape.filter=pm.ShapeFilter(categories=ZBLN_COLLIDE)
         shape.collision_type=ZBLN_COLLIDE
@@ -495,7 +516,14 @@ class Zbln(BallEnemy):
             except AssertionError: pass
 
     def try_hit(self, other_shape):
-        for body, shapes in self.body_map.items():
+        vi, vs = self.get_valence_shell()
+        if vs is None:
+            return
+
+        if len(vs) == 0:
+            vs = self.shells[vi-1]
+
+        for body, shapes in vs.items():
             for shape in shapes:
                 try:
                     hit = other_shape.shapes_collide(shape)
@@ -588,7 +616,7 @@ class Zbln(BallEnemy):
 
         self.gravitate_bodies()
 
-        self.spin(player)
+#        self.spin(player)
 
 
 #        if False and len(self.body_map) < 7:
@@ -647,7 +675,7 @@ class Zbln(BallEnemy):
 
             total_force += g
 #            body.apply_force_at_local_point(g)
-
+#            body.apply_force_at_local_point(-g)
 
 
         delta = self.camera_body.position - self.body.position

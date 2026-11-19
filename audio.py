@@ -32,7 +32,6 @@ class AudioManager:
         self.sound_manager.cleanup()
 
     def play_sound(self, sound_name, volume=1, position=None, **play_kwargs):
-#        print(f'>playing sound {sound_name}')
         volume *= self.app.max_volume
         if sound_name is None: return
 #        try:
