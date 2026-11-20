@@ -469,7 +469,7 @@ class Zbln(BallEnemy):
         return self.body.velocity
 
     def get_shell_radius(self, vi):
-        return 3.5*(vi*2-1)
+        return 3.1*(vi*2-1)
 
     def get_joints(self, a, b):
         vi, vs = self.get_valence_shell()
@@ -662,16 +662,19 @@ class Zbln(BallEnemy):
                 entity = self.app.spawn_entity('Zeekn', self.position+delta)
 
     def draw(self):
-        for body, shapes in self.body_map.items():
-            for shape in shapes:
-                p = body.position + shape.offset.cpvrotate(body.rotation_vector)
-                p = self.app.jj(p)
+        for vi, vs in self.shells.items():
+            if vi == 0 : continue
 
-                color = (0,0,255)
-                if self.app.engine_time-self.last_hit < 0.08:
-                    color = (255,0,0)
+            for body, shapes in vs.items():
+                for shape in shapes:
+                    p = body.position + shape.offset.cpvrotate(body.rotation_vector)
+                    p = self.app.jj(p)
 
-                pygame.draw.circle(self.app.screen, color, p, int(shape.radius), 2)
+                    color = (0,255*(vi%2),255)
+                    if self.app.engine_time-self.last_hit < 0.08:
+                        color = (255,0,0)
+
+                    pygame.draw.circle(self.app.screen, color, p, int(shape.radius), 2)
 
         p = self.body.position
         p = self.app.jj(p)
@@ -776,50 +779,64 @@ class Zbln(BallEnemy):
         return ang
 
     def spin2(self):
+
+        total_tanvel = 0
         for vi, vs in self.shells.items():
             if vi == 0: continue
             shell_polarity = self.polarity*((vi%2)*2-1)
-            force = shell_polarity*2000*vi
+            force = shell_polarity*2000*vi*vi
             for body, shape in vs.items():
                 bvel = body.velocity-self.velocity
                 rpos = body.position-self.position
                 tan = Vec2d(-rpos.y, rpos.x)
-                alignment = shell_polarity*bvel.dot(tan)/70
+
+                tanvel = bvel.dot(tan)
+                total_tanvel += tanvel/abs(tan)
+
+                alignment = shell_polarity*tanvel/1000
 #                print(alignment)
 #                print(bvel.dot(tan))
                 tan = body.mass*force*tan/(abs(tan)*max(1, alignment))
                 body.apply_force_at_local_point(tan)
 
 #                body.apply_force_at_local_point(1000*rpos/abs(rpos))
-                """
                 for _b, _s in self.body_map.items():
                     if body == _b: continue
                     d = body.position-_b.position
                     a = _b.position-self.position
-                    if d.length_squared < 100:
-                        d/=d.length_squared
-                        body.apply_force_at_local_point(d*100*vi)
-                """
+#                    if d.length_squared < 100:
+                    d/=d.length_squared
+                    body.apply_force_at_local_point(d*1000*vi)
+
+        vi, vs = self.get_valence_shell()
+        if vs is None: vi += 1
 
 
-            wind_force = -vi*100
-            targets = self.app.tracker['Enemy']
+        wind_force = -7000
+        wind_force += -(vi*vi)*total_tanvel/13
+        print(vi, total_tanvel, wind_force)
+#        if vi%2 == 0:
+#            wind_force = -(vi*vi)*total_tanvel
+#        else:
+#            wind_force = -(vi*vi)*total_tanvel/2000
+#            wind_force = vi*vi*10
+        targets = self.app.tracker['Enemy']
 
 #            if len(targets) <= 1:
 #                print('!!!!!!!!!!!!!!')
 #                self.app.space.remove(*self.joints)
 #                self.joints = []
 #                self.app.pause()
-            for entity in targets:
-                if entity is self: continue
-                try:
-                    body = entity.body
-                    delta = body.position - self.position
-                    delta /= abs(delta)
-                    body.apply_force_at_local_point(delta*wind_force)
+        for entity in targets:
+            if entity is self: continue
+            try:
+                body = entity.body
+                delta = body.position - self.position
+                delta /= abs(delta)
+                body.apply_force_at_local_point(delta*wind_force)
 
-                except Exception as e:
-                    print(e)
+            except Exception as e:
+                print(e)
 
 
 
