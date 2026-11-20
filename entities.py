@@ -513,11 +513,13 @@ class Zbln(BallEnemy):
         if vs is not None:
             vs[body] = self.body_map[body]
             print(f'shell {vi} at {len(vs)}')
+            if len(vs) == vi+1:
+                self.burst(self.position, self.m*vi*vi*0.75)
 
         shape.filter=pm.ShapeFilter(categories=ZBLN_COLLIDE)
         shape.collision_type=ZBLN_COLLIDE
 
-        self.burst(body.position, self.m*(1+len(self.body_map)/7))
+        self.burst(body.position, self.m*(1+len(self.body_map)/7)/1.5)
         self.next_merge = self.app.engine_time+self.merge_interval
 
 
