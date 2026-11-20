@@ -514,6 +514,7 @@ class Zbln(BallEnemy):
         body, shape = other.body, other.shape
         self.body_map[body] = (shape,)
         shape.unsafe_set_radius(3)
+        shape.mass = 579
 #        c = self.get_joints(body, self.last_hit_body)
         c = self.get_joints(body, self.body)
         self.joints.extend(c)
@@ -801,7 +802,7 @@ class Zbln(BallEnemy):
         for vi, vs in self.shells.items():
             if vi == 0: continue
             shell_polarity = self.polarity*((vi%2)*2-1)
-            force = shell_polarity*2000*vi*vi
+            force = shell_polarity*100*vi*vi
             for body, shape in vs.items():
                 bvel = body.velocity-self.velocity
                 rpos = body.position-self.position
@@ -810,7 +811,7 @@ class Zbln(BallEnemy):
                 tanvel = bvel.dot(tan)
                 total_tanvel += tanvel/abs(tan)
 
-                alignment = shell_polarity*tanvel/1000
+                alignment = shell_polarity*tanvel/80000
 #                print(alignment)
 #                print(bvel.dot(tan))
                 tan = body.mass*force*tan/(abs(tan)*max(1, alignment))
