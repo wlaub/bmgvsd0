@@ -850,10 +850,24 @@ class Zbln(BallEnemy):
                 body = entity.body
                 delta = body.position - self.position
                 delta /= abs(delta)
+                #mass = 8-35
                 body.apply_force_at_local_point(delta*wind_force*body.mass/25)
 
             except Exception as e:
                 print(e)
+
+
+        if self.app.player is not None:
+            entity = self.app.player
+            try:
+                body = entity.body
+                delta = body.position - self.position
+                delta /= abs(delta)
+                body.apply_force_at_local_point(delta*wind_force*body.mass/3)
+
+            except Exception as e:
+                print(e)
+
 
 
 
