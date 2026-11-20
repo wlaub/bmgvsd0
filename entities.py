@@ -366,6 +366,16 @@ class Zbln(BallEnemy):
         self.absorb_targets = []
         self.target_bodies = []
 
+
+        self.slots = {}
+        self.slotted = {}
+        for i in range(1,7):
+            r = self.get_shell_radius(i)
+            for n in range(i+1):
+                a = n*math.pi*2/(i+1) + ((-1)**i)*(6+i%7)*math.pi/14 -math.pi/2
+                pos = Vec2d(r*math.cos(a), r*math.sin(a))
+                self.slots[(i,n)] = pos
+
     def get_valence_shell(self):
         for i in range(7):
             shell = self.shells.setdefault(i, {})
@@ -682,6 +692,11 @@ class Zbln(BallEnemy):
         p = self.app.jj(p)
         pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
 
+#        for (i, n), pos in self.slots.items():
+#            pygame.draw.circle(self.app.screen, (0,0,0), p+pos, 1)
+
+
+
         sf = 100000
         p2 = p + self._gravity_force/sf
         pygame.draw.aaline(self.app.screen, (255,0,0),p,p2)
@@ -835,7 +850,7 @@ class Zbln(BallEnemy):
                 body = entity.body
                 delta = body.position - self.position
                 delta /= abs(delta)
-                body.apply_force_at_local_point(delta*wind_force)
+                body.apply_force_at_local_point(delta*wind_force*body.mass/25)
 
             except Exception as e:
                 print(e)
