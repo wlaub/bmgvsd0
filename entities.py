@@ -811,7 +811,7 @@ class Zbln(BallEnemy):
                 tanvel = bvel.dot(tan)
                 total_tanvel += tanvel/abs(tan)
 
-                alignment = shell_polarity*tanvel/80000
+                alignment = shell_polarity*tanvel/25000
 #                print(alignment)
 #                print(bvel.dot(tan))
                 tan = body.mass*force*tan/(abs(tan)*max(1, alignment))
