@@ -468,17 +468,20 @@ class Zbln(BallEnemy):
     def velocity(self):
         return self.body.velocity
 
+    def get_shell_radius(self, vi):
+        return 3.5*(vi*2-1)
+
     def get_joints(self, a, b):
         vi, vs = self.get_valence_shell()
 #        r = abs(a.position-b.position)
 #        return pymunk.DampedSpring(a,b,(0,0),(0,0), r,2000000, 1000)
         delta = self.body.position - a.position
-        r = (vi*2-1)*3
+        r = self.get_shell_radius(vi)
 #        print(vi, vs, abs(delta), r)
         return [
 #                pymunk.PinJoint(a,b),
 #                pymunk.PinJoint(a,self.body),
-                pymunk.SlideJoint(self.body, a, (0,0),(0,0),min = 0, max = r)
+                pymunk.SlideJoint(self.body, a, (0,0),(0,0),min = abs(delta), max = r)
 #                pymunk.DampedSpring(a, self.camera_body,(0,0),(0,0), 0, 1000, 1000),
                 ]
 
@@ -528,7 +531,7 @@ class Zbln(BallEnemy):
     def try_hit(self, other_shape):
         vi, vs = self.get_valence_shell()
         if vs is None:
-            return
+            raise AssertionError
 
         if len(vs) == 0:
             vs = self.shells[vi-1]
@@ -624,6 +627,14 @@ class Zbln(BallEnemy):
 #        target_position = player.position*ia + self.app.camera.reference_position*a
         target_position = player.position
         self.seek_player(target_position)
+
+        for vi, vs in self.shells.items():
+            for body, shape in vs.items():
+                d = body.position-self.position
+                r = self.get_shell_radius(vi)
+                if d.length_squared > r*r:
+                    d = r*d/abs(d)
+                    body.position = self.position+d
 
         self.gravitate_bodies()
         self.spin2()
@@ -768,16 +779,48 @@ class Zbln(BallEnemy):
         for vi, vs in self.shells.items():
             if vi == 0: continue
             shell_polarity = self.polarity*((vi%2)*2-1)
-            force = shell_polarity*100
+            force = shell_polarity*2000*vi
             for body, shape in vs.items():
                 bvel = body.velocity-self.velocity
                 rpos = body.position-self.position
                 tan = Vec2d(-rpos.y, rpos.x)
-                alignment = -shell_polarity*bvel.dot(tan)/2
-                print(alignment)
+                alignment = shell_polarity*bvel.dot(tan)/70
+#                print(alignment)
 #                print(bvel.dot(tan))
                 tan = body.mass*force*tan/(abs(tan)*max(1, alignment))
                 body.apply_force_at_local_point(tan)
+
+#                body.apply_force_at_local_point(1000*rpos/abs(rpos))
+                """
+                for _b, _s in self.body_map.items():
+                    if body == _b: continue
+                    d = body.position-_b.position
+                    a = _b.position-self.position
+                    if d.length_squared < 100:
+                        d/=d.length_squared
+                        body.apply_force_at_local_point(d*100*vi)
+                """
+
+
+            wind_force = -vi*100
+            targets = self.app.tracker['Enemy']
+
+#            if len(targets) <= 1:
+#                print('!!!!!!!!!!!!!!')
+#                self.app.space.remove(*self.joints)
+#                self.joints = []
+#                self.app.pause()
+            for entity in targets:
+                if entity is self: continue
+                try:
+                    body = entity.body
+                    delta = body.position - self.position
+                    delta /= abs(delta)
+                    body.apply_force_at_local_point(delta*wind_force)
+
+                except Exception as e:
+                    print(e)
+
 
 
     def spin(self, player):

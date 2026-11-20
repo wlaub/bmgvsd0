@@ -290,8 +290,8 @@ class PhysicsDemo:
             self.flags.setv('_death', False)
 
 
-            for x in range(7):
-                for y in range(7):
+            for x in range(3):
+                for y in range(3):
                     p = Vec2d(100,-40)
                     self.spawn_entity('Ball', p+Vec2d(x*7,y*7))
 
@@ -608,6 +608,7 @@ class PhysicsDemo:
         M = 1
         N = 1
         dt = 1/(120*N)
+#        dt = 1/(240*N)
         for _ in range(N*M):
             self.space.step(dt)
 
