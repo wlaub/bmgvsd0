@@ -6,6 +6,7 @@ import time
 import datetime
 import uuid
 import glob
+import json
 
 from collections import defaultdict
 
@@ -259,6 +260,9 @@ class PhysicsDemo:
         self.eidhwm = 0
         self.entities = []
         self.entity_map = {}
+        self.entity_args={}
+        self.entities_to_remove={}
+
         self.draw_layers = defaultdict(list)
         self.tracker = defaultdict(list)
 
@@ -453,6 +457,7 @@ class PhysicsDemo:
         result = entity_registry.create_entity(name, self, *args, **kwargs)
         if self.flags.geta('_map_creation'):
             self.entity_map[result.eid] = result
+            self.entity_args[result] = (name, args, kwargs)
         return result
 
     def spawn_entity(self, name, *args, **kwargs):
@@ -472,9 +477,113 @@ class PhysicsDemo:
             self.tracker[tag].append(e)
         e.on_add()
 
+    def dump_state(self, name):
+        filename = os.path.join('saved_states', f'{name}.json')
+        result = self._dump_state()
+        with open(filename, 'w') as fp:
+            json.dump(result, fp)
+        return result
+
+    def load_state(self, name):
+        filename = os.path.join('saved_states', f'{name}.json')
+        with open(filename, 'r') as fp:
+            data = json.load(fp)
+        self._load_state(data)
+        return data
+
+    def _dump_state(self):
+        result = self._dump_entities()
+
+        result.update({
+            'lore_score': self.lore_score,
+            'beans': self.beans,
+            'field': self.field.current_props,
+            })
+        return result
+
+    def _load_state(self, data):
+        self._load_entities(data)
+        self.lore_score = data['lore_score']
+        self.beans = data['beans']
+        self.field.current_props.update(data['field'])
+
+    def _dump_entities(self):
+        result = {
+            'entities': [],
+            }
+        for entity in self.entities:
+            if entity in self.entity_args.keys():
+                try:
+                    data = entity.to_json()
+                    name, args, kwargs = self.entity_args[entity]
+                    #for some reason Vec2d(0,0) serializes to an empty list??
+                    args = [x if x != Vec2d.zero() else (0,0) for x in args]
+
+                    chunk = {
+                        'eid': entity.eid,
+                        'args': (name, args, kwargs),
+                        'data': data,
+                        }
+                    result['entities'].append(chunk)
+                except NotImplementedError:
+                    print(f'failed to dump {entity}')
+                    continue
+        return result
+
+    def _load_entities(self, data):
+
+        reclaimed = set()
+        reclaimed.add(self.player)
+        for entity in self.entities:
+            if entity not in reclaimed:
+                try:
+                    entity.to_json()
+                    self.remove_entity(entity)
+                except NotImplementedError:
+                    continue
+
+
+        for entry in data['entities']:
+            try:
+                chunk = entry['data']
+                name, args, kwargs = entry['args']
+                eid = entry['eid']
+                if name != 'Player':
+                    if eid not in self.entity_map.keys() or True:
+                        entity = self.spawn_entity(name, *args, **kwargs)
+#                        print(f'spawn new entity for {eid} {name} new eid {entity.eid}')
+                    else:
+
+                        e = self.entity_map[eid]
+                        if e.__class__.__name__ != name:
+                            entity = self.spawn_entity(name, *args, **kwargs)
+#                            print(f'{eid} {name} != {e.__class__.__name__}')
+                        else:
+                            entity = e
+#                            print(f'found existing entity for {eid} {name}')
+                else:
+                    entity=self.player
+                try:
+                    entity.from_json(chunk)
+    #                entity.eid = eid
+                    reclaimed.add(entity)
+                except NotImplementedError:
+                    print(f'failed to load{name}')
+            except Exception as e:
+                print(e)
+                print(entry)
+
     class AlreadyRemoved(Exception): pass
 
-    def remove_entity(self, e, preserve_physics = False):
+    def remove_entity(self, e, *args, **kwargs):
+        self.entities_to_remove[e] = (args, kwargs)
+
+    def do_removals(self):
+        for entity, (args, kwargs) in self.entities_to_remove.items():
+            self._remove_entity(entity, *args, **kwargs)
+        self.entities_to_remove = {}
+
+    def _remove_entity(self, e, preserve_physics = False):
 #        print(f'remvoing {e}')
 #        print(sys._getframe(1).f_code.co_name)
         try:
@@ -488,6 +597,8 @@ class PhysicsDemo:
 
             if not self.flags.geta('_preserve_ghosts'):
                 self.entity_map.pop(e.eid)
+            if e in self.entity_args.keys():
+                self.entity_args.pop(e)
             self.draw_layers[e.layer].remove(e)
             class_name = e.__class__.__name__
             for tag in entity_registry.name_tags[class_name]:
@@ -645,6 +756,8 @@ class PhysicsDemo:
 
         for coro in removals:
             self.coroutines.remove(coro)
+
+        self.do_removals()
 
     def try_forget(self, entity):
         dist = self.camera.get_distance(entity.position)

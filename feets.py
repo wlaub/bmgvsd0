@@ -69,6 +69,18 @@ class Leg(Entity):
         self.offset = Vec2d(x,y)
         self.last_step = StepState.shuffle
 
+    def to_json(self):
+        result = {
+            'pos':self.foot_body.position,
+            'ssp':self.step_start_position,
+            'ss':self.step_state.value,
+            }
+        return result
+
+    def from_json(self, data):
+        self.foot_body.position = data['pos']
+        self.step_start_position = data['ssp']
+        self.step_state = StepState(data['ss'])
 
     @property
     def position(self):

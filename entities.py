@@ -683,7 +683,8 @@ class Zbln(BallEnemy):
                     p = body.position + shape.offset.cpvrotate(body.rotation_vector)
                     p = self.app.jj(p)
 
-                    color = (0,255*(vi%2),255)
+#                    color = (0,255*(vi%2),255)
+                    color = (0,0,255)
                     if self.app.engine_time-self.last_hit < 0.08:
                         color = (255,0,0)
 
@@ -691,7 +692,7 @@ class Zbln(BallEnemy):
 
         p = self.body.position
         p = self.app.jj(p)
-        pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
+#        pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
 
 #        for (i, n), pos in self.slots.items():
 #            pygame.draw.circle(self.app.screen, (0,0,0), p+pos, 1)
@@ -700,17 +701,17 @@ class Zbln(BallEnemy):
 
         sf = 100000
         p2 = p + self._gravity_force/sf
-        pygame.draw.aaline(self.app.screen, (255,0,0),p,p2)
+#        pygame.draw.aaline(self.app.screen, (255,0,0),p,p2)
         p2 = p + self._friction_force/sf
-        pygame.draw.aaline(self.app.screen, (255,0,255),p,p2)
+#        pygame.draw.aaline(self.app.screen, (255,0,255),p,p2)
         p2 = p + self._seek_force/sf
-        pygame.draw.aaline(self.app.screen, (0,0,0),p,p2)
+#        pygame.draw.aaline(self.app.screen, (0,0,0),p,p2)
 
 
 
         for body in self.target_bodies:
             p = self.app.jj(body.position)
-            pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
+#            pygame.draw.circle(self.app.screen, (0,255,0), p, 2)
 
 
 
@@ -831,7 +832,7 @@ class Zbln(BallEnemy):
 
 
         wind_force = -7000
-        wind_force += -(vi*vi)*total_tanvel/13
+        wind_force += -self.polarity*(vi*vi)*total_tanvel/13
         print(vi, total_tanvel, wind_force)
 #        if vi%2 == 0:
 #            wind_force = -(vi*vi)*total_tanvel

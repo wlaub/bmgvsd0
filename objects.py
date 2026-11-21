@@ -278,6 +278,12 @@ class Entity:
         name = self.__class__.__name__
         return f'E{self.eid:05} {p.x:6.1f} {p.y:6.1f} {name}'
 
+    def to_json(self):
+        raise NotImplementedError
+
+    def from_json(self, data):
+        raise NotImplementedError
+
     @property
     def ename(self):
         return self.__class__.__name__
@@ -394,6 +400,15 @@ class Remnant(Entity):
         self.next_frame = self.app.engine_time + self.draw_args['frame_duration']
         self.get_frame(f'{sprite_name}0')
 
+    def to_json(self):
+        result = {
+            'pos': tuple(self.base_position),
+            }
+        return result
+
+    def from_json(self, data):
+        self.base_position = data['pos']
+
     def get_frame(self, key):
         sprite = self.sprites[key]
         scale = self.draw_args['scale']
@@ -483,6 +498,26 @@ class BallEnemy(Enemy):
         self.growl_event = AudioEvent()
 
         self.bump_next_turn_growl()
+
+    def to_json(self):
+        result = {
+            'position': tuple(self.body.position),
+            'velocity': tuple(self.body.velocity),
+            'health': self.health,
+            'r': self.r,
+            'm': self.m,
+            }
+        return result
+
+    def from_json(self, data):
+        self.health = data['health']
+        self.body.position = data['position']
+        self.body.velocity = data['velocity']
+        self.r=r=data['r']
+        self.m=m=data['m']
+        self.body.moment = pm.moment_for_circle(m,0,r)
+        self.shape.unsafe_set_radius(r)
+
 
     def bump_next_turn_growl(self):
         self.next_turn_growl = self.app.engine_time + random.uniform(14,42)
@@ -574,6 +609,15 @@ class Pckp(Entity):
         self.app.field.update_liquidity(-self.hype)
 
         self.player_on = False
+
+    def to_json(self):
+        result = {
+            'pos':self.body.position,
+            }
+        return result
+
+    def from_json(self, data):
+        self.body.position = data['pos']
 
     def on_add(self):
         self.app.field.update_liquidity(self.energy_of_instantiation+self.hype)

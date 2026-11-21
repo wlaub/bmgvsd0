@@ -141,6 +141,23 @@ class Player(Entity):
             if (equipment := self.app.flags.geta(f'_equip_{slot}')) is not None:
                 self.equip(slot, equipment)
 
+    def to_json(self):
+        result = {
+            'position': tuple(self.body.position),
+            'velocity': tuple(self.body.velocity),
+            'health': self.health,
+            'left_leg': self.left_leg.to_json(),
+            'right_leg': self.right_leg.to_json(),
+            }
+        return result
+
+    def from_json(self, data):
+        self.health = data['health']
+        self.body.position = data['position']
+        self.body.velocity = data['velocity']
+        self.left_leg.from_json(data['left_leg'])
+        self.right_leg.from_json(data['right_leg'])
+
 
     def get_slot_hit(self, other_shape, slots):
         for slot in slots:

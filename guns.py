@@ -26,6 +26,7 @@ class RbtcSord(Equipment):
         super().__init__(app)
         self.last_hit = self.app.engine_time
         self.length = 9 #this is off by one because of the way it is
+        self.body = pm.Body(body_type = pm.Body.KINEMATIC)
 
     def attach(self, parent, slot):
         self.parent = parent
@@ -33,7 +34,7 @@ class RbtcSord(Equipment):
         self.offset = self.parent.front_hand_position + Vec2d(self.length,0)
         x,y = self.offset
 
-        self.body = pm.Body(body_type = pm.Body.KINEMATIC)
+
         self.body.position = parent.body.position + self.offset
         self.shape = pm.Circle(self.body, 0.5)
         self.shape.sensor=True

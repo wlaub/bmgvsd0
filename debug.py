@@ -244,6 +244,31 @@ class DebugConsole:
         except Exception as e:
             print(e)
 
+    def _do_dump(self, cmd, parts):
+        if len(parts) > 0:
+            filename = parts[0]
+        else:
+            filename = 'state_dump'
+
+        result = self.app.dump_state(filename)
+
+#        result = self.app._dump_state()
+#        with open(filename, 'w') as fp:
+#            json.dump(result, fp)
+#        result =json.dumps(result, indent=2)
+#        print(result)
+
+    def _do_load(self, cmd, parts):
+        if len(parts) > 0:
+            filename = parts[0]
+        else:
+            filename = 'state_dump'
+
+        self.app.load_state(filename)
+
+    def _do_save(self, cmd, parts):
+        self._do_dump(cmd, parts)
+
     def _do_spawn(self, cmd, parts):
         name = parts[0]
         self.app.spawn_entity(name, self.app.mpos, *parts[1:])
